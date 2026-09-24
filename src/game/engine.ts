@@ -2,6 +2,8 @@ import Decimal from 'break_infinity.js';
 import { COATS, PRODUCERS, UPGRADES, type ProducerId, type UpgradeId, type TalentId } from './catalog';
 
 export type Quantity = 1 | 10 | 'max';
+// Beyond the authored prototype content, bound transactions and imported teams.
+export const MAX_OWNED = 10000;
 export interface GameState {
   version: 1;
   yarn: Decimal;
@@ -66,14 +68,14 @@ export function tap(game: GameState, now: number): Decimal {
   game.lastTap = now;
   const amount = tapValue(game);
   earn(game, amount);
-  game.stats.taps++;
+  game.stats.taps = Math.min(Number.MAX_SAFE_INTEGER, game.stats.taps + 1);
   return amount;
 }
 
 export function advance(game: GameState, seconds: number): void {
   if (!Number.isFinite(seconds) || seconds <= 0) return;
   earn(game, production(game).mul(seconds));
-  game.stats.playSeconds += seconds;
+  game.stats.playSeconds = Math.min(Number.MAX_SAFE_INTEGER, game.stats.playSeconds + seconds);
 }
 
 export function updateCollection(game: GameState): void {
@@ -87,38 +89,26 @@ function price(id: ProducerId, owned: number): Decimal {
   return Decimal.pow(1.15, owned).mul(PRODUCERS.find(item => item.id === id)!.cost).ceil();
 }
 
-function costOf(id: ProducerId, owned: number, count: number): Decimal {
-  // Sum individually rounded prices at human-scale magnitudes. Above this,
-  // rounding is below Decimal precision; use a bounded geometric tail.
-  const exactCount = Math.min(count, Math.max(0, 256 - owned));
-  let sum = new Decimal(0);
-  for (let i = 0; i < exactCount; i++) sum = sum.add(price(id, owned + i));
-  const rest = count - exactCount;
-  if (rest) {
-    const first = Decimal.pow(1.15, owned + exactCount).mul(PRODUCERS.find(item => item.id === id)!.cost);
-    sum = sum.add(first.mul(Decimal.pow(1.15, rest).sub(1)).div(0.15));
-  }
-  return sum;
-}
-
-export function quote(game: GameState, id: ProducerId, quantity: Quantity): { count: number; cost: Decimal } {
+export function quote(game: GameState, id: ProducerId, quantity: Quantity): { count: number; cost: Decimal; remaining: Decimal; affordable: boolean } {
   const owned = game.owned[id];
-  if (quantity !== 'max') return { count: quantity, cost: costOf(id, owned, quantity) };
-  const base = price(id, owned);
-  const estimate = Math.floor(game.yarn.mul(0.15).div(base).add(1).log(1.15));
-  let low = 0, high = Math.min(Number.MAX_SAFE_INTEGER - owned, Math.max(1, estimate + 2));
-  while (low < high) {
-    const mid = low + Math.ceil((high - low) / 2);
-    if (costOf(id, owned, mid).lte(game.yarn)) low = mid;
-    else high = mid - 1;
+  const limit = Math.min(MAX_OWNED - owned, quantity === 'max' ? MAX_OWNED : quantity);
+  let remaining = game.yarn, cost = new Decimal(0), count = 0;
+  // Preserve the same arithmetic order as separate purchases, even at huge
+  // magnitudes. A geometric shortcut changes Decimal rounding at boundaries.
+  for (let i = 0; i < limit; i++) {
+    const next = price(id, owned + i);
+    if (quantity === 'max' && remaining.lt(next)) break;
+    remaining = remaining.sub(next);
+    cost = cost.add(next);
+    count++;
   }
-  return { count: low, cost: costOf(id, owned, low) };
+  return { count, cost, remaining, affordable: count > 0 && remaining.gte(0) };
 }
 
 export function buyProducer(game: GameState, id: ProducerId, quantity: Quantity): number {
   const purchase = quote(game, id, quantity);
-  if (!purchase.count || purchase.cost.gt(game.yarn) || game.owned[id] + purchase.count > Number.MAX_SAFE_INTEGER) return 0;
-  game.yarn = Decimal.max(0, game.yarn.sub(purchase.cost));
+  if (!purchase.affordable) return 0;
+  game.yarn = purchase.remaining;
   game.owned[id] += purchase.count;
   updateCollection(game);
   return purchase.count;

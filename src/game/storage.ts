@@ -1,6 +1,6 @@
 import Decimal from 'break_infinity.js';
 import { PRODUCERS, UPGRADES, TALENTS } from './catalog';
-import { createGame, type GameState } from './engine';
+import { createGame, MAX_OWNED, type GameState } from './engine';
 import { applyOffline } from './progression';
 
 export const SAVE_KEY = 'purrfect-threads.save.v1';
@@ -43,7 +43,7 @@ export function decode(raw: string): GameState {
   const game = createGame(integer(data.savedAt));
   for (const key of ['yarn', 'lifetime', 'runEarned', 'points', 'claimed'] as const) game[key] = decimal(data[key]);
   const owned = record(data.owned);
-  for (const item of PRODUCERS) game.owned[item.id] = integer(owned[item.id]);
+  for (const item of PRODUCERS) game.owned[item.id] = integer(owned[item.id], MAX_OWNED);
   game.upgrades = knownList(data.upgrades, UPGRADES.map(item => item.id));
   game.talents = knownList(data.talents, TALENTS.map(item => item.id));
   game.collection = knownList(data.collection, [0, 1, 2, 3, 4, 5]);
@@ -54,6 +54,7 @@ export function decode(raw: string): GameState {
   if (![0, 3].includes(game.starterCats) || (game.starterCats && !game.talents.includes('welcome'))) throw new Error('Invalid starting team.');
   if (game.upgrades.includes('master') && !game.talents.includes('knitters')) throw new Error('Missing permanent talent.');
   if (game.yarn.gt(game.lifetime) || game.runEarned.gt(game.lifetime) || game.points.gt(game.claimed) || !game.points.floor().eq(game.points) || !game.claimed.floor().eq(game.claimed)) throw new Error('Inconsistent save totals.');
+  if (game.claimed.gt(game.lifetime.div(100000).sqrt().floor()) || game.yarn.gt(game.runEarned)) throw new Error('Unearned progress in save.');
   const stats = record(data.stats);
   game.stats.taps = integer(stats.taps);
   if (typeof stats.playSeconds !== 'number' || !Number.isFinite(stats.playSeconds) || stats.playSeconds < 0) throw new Error('Invalid play time.');

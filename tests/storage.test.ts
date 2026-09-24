@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import Decimal from 'break_infinity.js';
-import { createGame } from '../src/game/engine';
+import { advance, createGame } from '../src/game/engine';
 import { decode, encode, loadGame, saveGame, SAVE_KEY, BACKUP_KEY, type StoragePort } from '../src/game/storage';
 
 function memoryStorage(): StoragePort {
@@ -57,5 +57,25 @@ describe('versioned local saves', () => {
     const first = loadGame(storage, 11000);
     expect(first.offline.toNumber()).toBe(50);
     expect(loadGame(storage, 11000).offline.toNumber()).toBe(0);
+  });
+  it('rejects unearned prestige points and inconsistent run balances', () => {
+    const raw = JSON.parse(encode(createGame(100)));
+    expect(() => decode(JSON.stringify({ ...raw, claimed: '1', points: '1' }))).toThrow();
+    expect(() => decode(JSON.stringify({ ...raw, lifetime: '100', yarn: '2', runEarned: '1' }))).toThrow();
+  });
+  it('recovers a valid backup when a primary has impossible prestige totals', () => {
+    const storage = memoryStorage();
+    const valid = encode(createGame(100));
+    storage.setItem(BACKUP_KEY, valid);
+    storage.setItem(SAVE_KEY, JSON.stringify({ ...JSON.parse(valid), claimed: '1', points: '1' }));
+    expect(loadGame(storage, 100).status).toBe('recovered');
+    expect(storage.getItem(BACKUP_KEY)).toBe(valid);
+  });
+  it('keeps counters serializable under runaway finite time deltas', () => {
+    const game = createGame(0);
+    game.owned.kitten = 1;
+    advance(game, Number.MAX_VALUE);
+    advance(game, Number.MAX_VALUE);
+    expect(() => decode(encode(game))).not.toThrow();
   });
 });

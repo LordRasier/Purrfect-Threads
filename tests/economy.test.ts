@@ -60,4 +60,21 @@ describe('yarn economy', () => {
     expect(tap(game, 0).toNumber()).toBe(2);
     expect(game.yarn.toString()).not.toContain('Infinity');
   });
+  it.each([250, 255, 256, 300])('keeps bulk and sequential balances identical at owned=%i', owned => {
+    const bulk = createGame(0), single = createGame(0);
+    bulk.owned.kitten = single.owned.kitten = owned;
+    bulk.yarn = single.yarn = new Decimal('1e25');
+    buyProducer(bulk, 'kitten', 10);
+    for (let i = 0; i < 10; i++) buyProducer(single, 'kitten', 1);
+    expect(bulk.yarn.eq(single.yarn)).toBe(true);
+    expect(bulk.owned).toEqual(single.owned);
+  });
+  it('max quotes agree with the individually rounded next-unit boundary', () => {
+    const game = createGame(0);
+    game.owned.kitten = 255;
+    game.yarn = Decimal.pow(1.15, 255).mul(15).ceil();
+    expect(quote(game, 'kitten', 'max').count).toBe(1);
+    expect(buyProducer(game, 'kitten', 'max')).toBe(1);
+    expect(game.yarn.eq(0)).toBe(true);
+  });
 });
