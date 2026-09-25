@@ -1,3 +1,4 @@
+import { enterWorkshop } from './entry';
 import { test, expect } from '@playwright/test';
 import Decimal from 'break_infinity.js';
 import { createGame } from '../src/game/engine';
@@ -9,7 +10,7 @@ test.beforeEach(async ({page}) => {
 });
 
 test('crew scroll keeps owned crews decorated while yarn stays on the workshop home', async ({page}) => {
-  await page.goto('/'); await expect(page.locator('#world')).toHaveAttribute('data-ready','true');
+  await page.goto('/'); await enterWorkshop(page); await expect(page.locator('#world')).toHaveAttribute('data-ready','true');
   await page.locator('.navigation [data-screen="crew"]').click();
   await page.getByRole('button',{name:'Adopt Kitten',exact:true}).click();
   await expect(page.locator('#card-kitten .crew-motif')).toHaveCount(1);
@@ -23,7 +24,7 @@ test('crew scroll keeps owned crews decorated while yarn stays on the workshop h
 });
 
 test('notes and embroidered patches open details without accidental purchases', async ({page}) => {
-  await page.goto('/');
+  await page.goto('/'); await enterWorkshop(page);
   await page.getByRole('button',{name:'Upgrades',exact:true}).click();
   await expect(page.locator('.sticky-note')).toHaveCount(12);
   await expect(page.locator('#upgrade-bell')).toHaveAccessibleName('Inspect Lucky Bell');
@@ -43,7 +44,7 @@ test('notes and embroidered patches open details without accidental purchases', 
 });
 
 test('Olympus is a separate sky realm and yarn remains on workshop home', async ({page}) => {
-  await page.goto('/'); await expect(page.locator('#world')).toHaveAttribute('data-ready','true');
+  await page.goto('/'); await enterWorkshop(page); await expect(page.locator('#world')).toHaveAttribute('data-ready','true');
   await page.getByRole('button',{name:'New chapter',exact:true}).click();
   await expect(page.locator('#app')).toHaveClass(/olympus-open/);
   await expect(page.locator('.sky-realm')).toHaveAttribute('aria-hidden','false');
@@ -60,7 +61,7 @@ test('Olympus is a separate sky realm and yarn remains on workshop home', async 
 });
 
 test('Spanish language and separate music level persist through reload', async ({page}) => {
-  await page.goto('/'); await page.getByRole('button',{name:'Settings',exact:true}).click();
+  await page.goto('/'); await enterWorkshop(page); await page.getByRole('button',{name:'Settings',exact:true}).click();
   await page.getByRole('combobox',{name:'Language',exact:true}).selectOption('es');
   await expect(page.getByRole('dialog')).toContainText('Español');
   await page.locator('#music-volume').focus(); await page.keyboard.press('Home');
@@ -68,7 +69,7 @@ test('Spanish language and separate music level persist through reload', async (
   await page.keyboard.press('Escape');
   await expect(page.getByRole('button',{name:'Mejoras',exact:true})).toBeVisible();
   await expect(page.getByRole('heading',{name:'Un poco de lana. Un montón de gatos.',exact:true})).toBeVisible();
-  await page.reload();
+  await page.reload(); await enterWorkshop(page);
   await expect(page.locator('html')).toHaveAttribute('lang','es');
   await page.getByRole('button',{name:'Ajustes',exact:true}).click();
   await expect(page.locator('#language')).toHaveValue('es');
@@ -78,7 +79,7 @@ test('Spanish language and separate music level persist through reload', async (
 test('keyboard-only players can leave Olympus and unlock music', async ({page}) => {
   await page.goto('/'); await expect(page.locator('#world')).toHaveAttribute('data-ready','true');
   const music = page.waitForResponse(response => response.url().endsWith('apple-cider.ogg'), {timeout:5000});
-  await page.keyboard.press('Space');
+  await enterWorkshop(page, true);
   expect((await music).ok()).toBe(true);
   await page.getByRole('button',{name:'New chapter',exact:true}).click();
   await page.keyboard.press('Escape');
@@ -88,7 +89,7 @@ test('keyboard-only players can leave Olympus and unlock music', async ({page}) 
 test('save recovery remains scrollable inside a short viewport', async ({page}) => {
   await page.setViewportSize({width:320,height:568});
   await page.addInitScript(key => localStorage.setItem(key,'broken'), SAVE_KEY);
-  await page.goto('/');
+  await page.goto('/'); await enterWorkshop(page);
   await expect(page.locator('.boot-message')).toBeVisible();
   const area = await page.locator('.boot-message').boundingBox();
   expect(area!.y).toBeGreaterThanOrEqual(0);

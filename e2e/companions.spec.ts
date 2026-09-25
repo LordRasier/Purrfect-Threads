@@ -1,3 +1,4 @@
+import { enterWorkshop } from './entry';
 import { test, expect, type Page } from '@playwright/test';
 import Decimal from 'break_infinity.js';
 import { createGame, type GameState } from '../src/game/engine';
@@ -10,7 +11,7 @@ async function seed(page: Page, game: GameState) {
       localStorage.setItem(key, raw); sessionStorage.setItem('seeded', 'true');
     }
   }, { key: SAVE_KEY, raw: encode(game) });
-  await page.goto('/');
+  await page.goto('/'); await enterWorkshop(page);
   await expect(page.locator('#world')).toHaveAttribute('data-ready', 'true');
 }
 
@@ -46,7 +47,7 @@ test('selected companion changes the bonus and cushion art, persists, and suppor
   await expect(page.locator('#companion-summary')).toContainText('Manual touches +25%');
   await expect(page.locator('#world')).toHaveAttribute('data-companion', 'mario');
   await expect(page.locator('#world')).toHaveAttribute('data-companion-ready', 'true');
-  await page.reload();
+  await page.reload(); await enterWorkshop(page);
   await expect(page.locator('#world')).toHaveAttribute('data-companion', 'mario');
   await page.getByRole('button', { name: 'Cat collection', exact: true }).click();
   await expect(page.locator('#select-companion-1')).toHaveAttribute('aria-pressed', 'true');

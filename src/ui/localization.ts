@@ -4,6 +4,7 @@ export type Language = 'en' | 'es';
 let language: Language = 'en';
 
 const sourceCatalog: Record<string, string> = {
+  'Tap to enter': 'Toca para entrar',
   'Play': 'Jugar', 'Crew': 'Equipo', 'Badges': 'Logros',
   'Six familiar faces, six little talents. Complete their challenges to welcome them home.': 'Seis caras conocidas, seis pequeños talentos. Completa sus desafíos para darles la bienvenida.',
   'Only your selected companion provides a bonus.': 'Solo el acompañante seleccionado aporta una bonificación.',

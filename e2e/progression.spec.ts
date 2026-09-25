@@ -1,3 +1,4 @@
+import { enterWorkshop } from './entry';
 import { test, expect } from '@playwright/test';
 import Decimal from 'break_infinity.js';
 import { createGame } from '../src/game/engine';
@@ -7,7 +8,7 @@ test('collection milestones do not relock after a chapter reset', async ({ page 
   const game = createGame(Date.now());
   game.owned.kitten = 3; game.collection = [0, 1, 2, 3, 4, 5];
   await page.addInitScript(({ key, raw }) => localStorage.setItem(key, raw), { key: SAVE_KEY, raw: encode(game) });
-  await page.goto('/');
+  await page.goto('/'); await enterWorkshop(page);
   await page.getByRole('button', { name: 'Cat collection', exact: true }).click();
   await expect(page.locator('#goal-title')).toHaveText('A family worth purring about.');
 });
@@ -20,7 +21,7 @@ test('prestige, permanent talents, collection and imports survive reload', async
   await page.addInitScript(({ key, raw }) => {
     if (!sessionStorage.getItem('seeded')) { localStorage.setItem(key, raw); sessionStorage.setItem('seeded', 'true'); }
   }, { key: SAVE_KEY, raw: encode(game) });
-  await page.goto('/');
+  await page.goto('/'); await enterWorkshop(page);
   await page.getByRole('button', { name: 'New chapter', exact: true }).click();
   await page.getByRole('button', { name: 'Begin a new chapter' }).click();
   await expect(page.getByRole('dialog')).toContainText('Your yarn stash, working teams, buildings, and chapter upgrades reset.');
@@ -36,7 +37,7 @@ test('prestige, permanent talents, collection and imports survive reload', async
   await expect(page.locator('#pull')).toBeInViewport();
   await page.getByRole('button', { name: 'Cat collection', exact: true }).click();
   await page.getByRole('button', { name: 'Choose companion · Mario', exact: true }).click();
-  await page.reload();
+  await page.reload(); await enterWorkshop(page);
   await page.getByRole('button', { name: 'Cat collection', exact: true }).click();
   await expect(page.getByText('Your companion', { exact: true })).toHaveCount(1);
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
@@ -52,7 +53,7 @@ test('prestige, permanent talents, collection and imports survive reload', async
   page.once('dialog', dialog => dialog.accept());
   await page.locator('#import-file').setInputFiles({ name: 'valid.json', mimeType: 'application/json', buffer: Buffer.from(encode(imported)) });
   await expect(page.getByTestId('population')).toHaveText('16');
-  await page.reload();
+  await page.reload(); await enterWorkshop(page);
   await expect(page.getByTestId('population')).toHaveText('16');
 });
 
@@ -61,18 +62,18 @@ test('corrupt primary uses backup and a second tab cannot overwrite the game', a
   await page.addInitScript(({ primary, backup, raw }) => {
     localStorage.setItem(primary, 'broken'); localStorage.setItem(backup, raw);
   }, { primary: SAVE_KEY, backup: BACKUP_KEY, raw: encode(game) });
-  await page.goto('/');
+  await page.goto('/'); await enterWorkshop(page);
   await expect(page.getByRole('status').filter({ hasText: 'last valid backup' })).toBeVisible();
   await expect(page.getByTestId('population')).toHaveText('2');
   const second = await context.newPage();
-  await second.goto('/');
+  await second.goto('/'); await enterWorkshop(second);
   await expect(second.getByRole('heading', { name: 'Your cats are busy in another tab.' })).toBeVisible();
   await second.close();
 });
 
 test('unrecoverable saves are preserved and recovery is explicit', async ({ page }) => {
   await page.addInitScript(({ key }) => localStorage.setItem(key, 'broken'), { key: SAVE_KEY });
-  await page.goto('/');
+  await page.goto('/'); await enterWorkshop(page);
   await expect(page.getByRole('heading', { name: 'Your save needs a little care.' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Download existing data' })).toBeVisible();
   expect(await page.evaluate(key => localStorage.getItem(key), SAVE_KEY)).toBe('broken');

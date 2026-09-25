@@ -1,3 +1,4 @@
+import { enterWorkshop } from './entry';
 import { test, expect } from '@playwright/test';
 import Decimal from 'break_infinity.js';
 import { createGame } from '../src/game/engine';
@@ -12,7 +13,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('twelve illustrated gods fit desktop and open inspect-before-buy dialogs', async ({ page }, info) => {
-  await page.goto('/');
+  await page.goto('/'); await enterWorkshop(page);
   if (info.project.name === 'desktop') await page.setViewportSize({width:961,height:854});
   await page.getByRole('button', {name:'New chapter', exact:true}).click();
   await expect(page.locator('.statue-viewport')).toHaveCount(12);
@@ -47,7 +48,7 @@ test('twelve illustrated gods fit desktop and open inspect-before-buy dialogs', 
   await page.locator('#talent-welcome').click();
   await expect(page.getByRole('dialog').getByRole('button',{name:'Purchased',exact:true})).toBeDisabled();
   await page.keyboard.press('Escape');
-  await page.reload();
+  await page.reload(); await enterWorkshop(page);
   await page.getByRole('button', {name:'New chapter',exact:true}).click();
   await expect(page.locator('#talent-welcome')).toHaveClass(/purchased/);
   await expect(page.locator('.olympus')).toHaveAttribute('data-ready','true');
@@ -60,7 +61,7 @@ test('twelve illustrated gods fit desktop and open inspect-before-buy dialogs', 
 test('compact pantheon survives short desktop, mobile scrolling and repeated navigation', async ({ page }, info) => {
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
-  await page.goto('/');
+  await page.goto('/'); await enterWorkshop(page);
   if (info.project.name === 'desktop') await page.setViewportSize({width:1280,height:720});
   for (let i=0;i<3;i++) {
     await page.getByRole('button', {name:'New chapter',exact:true}).click();
@@ -88,7 +89,7 @@ test('a Spanish v3 workshop retains earned paws and blessings after migration', 
   const legacy = { ...JSON.parse(encode(game)), version:3 };
   delete legacy.legacyClaimed; delete legacy.legacyChapters;
   await page.addInitScript(({key,raw}) => { if (!sessionStorage.getItem('legacy-seeded')) { localStorage.setItem(key,raw); sessionStorage.setItem('legacy-seeded','1'); } },{key:SAVE_KEY,raw:JSON.stringify(legacy)});
-  await page.goto('/');
+  await page.goto('/'); await enterWorkshop(page);
   await page.getByRole('button',{name:'Nuevo capítulo',exact:true}).click();
   await expect(page.locator('#points-label')).toHaveText('1 pata dorada');
   await expect(page.locator('#talent-welcome')).toHaveClass(/purchased/);
@@ -98,7 +99,7 @@ test('a Spanish v3 workshop retains earned paws and blessings after migration', 
   await expect(page.getByRole('dialog')).toContainText('Atenea');
   await expect(page.getByRole('dialog')).toContainText('Desbloquea Herramientas maestras');
   await page.keyboard.press('Escape');
-  await page.reload();
+  await page.reload(); await enterWorkshop(page);
   await page.getByRole('button',{name:'Nuevo capítulo',exact:true}).click();
   await expect(page.locator('#points-label')).toHaveText('1 pata dorada');
   await expect(page.locator('#talent-welcome')).toHaveClass(/purchased/);
@@ -111,7 +112,7 @@ test('a Spanish v3 workshop retains earned paws and blessings after migration', 
 
 test('a failed portrait keeps an inspectable fallback and does not block other gods', async ({page}) => {
   await page.route('**/art/olympians/helping.webp', route => route.abort());
-  await page.goto('/');
+  await page.goto('/'); await enterWorkshop(page);
   await page.getByRole('button', {name:'New chapter',exact:true}).click();
   await expect(page.locator('[data-statue-id="helping"]')).toHaveAttribute('data-art-ready','error');
   await expect(page.locator('.statue-viewport[data-art-ready="true"]')).toHaveCount(11);

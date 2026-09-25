@@ -1,3 +1,4 @@
+import { enterWorkshop } from './entry';
 import { test, expect } from '@playwright/test';
 import Decimal from 'break_infinity.js';
 import { createGame } from '../src/game/engine';
@@ -7,7 +8,7 @@ test('compact ten-crew shop and separate cozy progression spaces', async ({ page
   const game = createGame(Date.now()); game.yarn = game.runEarned = game.lifetime = new Decimal('1e14');
   game.chapters = 9; game.claimed = new Decimal(9); game.points = new Decimal(6); game.talents = ['knitters'];
   await page.addInitScript(({key, raw}) => localStorage.setItem(key,raw), {key:SAVE_KEY,raw:encode(game)});
-  await page.goto('/');
+  await page.goto('/'); await enterWorkshop(page);
   if (info.project.name === 'desktop') await page.setViewportSize({width:961,height:854});
   await expect(page.locator('#world')).toHaveAttribute('data-ready','true');
   await page.locator('.navigation [data-screen="crew"]').click();
@@ -47,7 +48,7 @@ test('compact ten-crew shop and separate cozy progression spaces', async ({ page
 test('simultaneous badges are announced without losing the purchase feedback', async ({ page }) => {
   const game = createGame(Date.now()); game.yarn = game.runEarned = game.lifetime = new Decimal('1e10'); game.stats.taps = 1000; game.owned.corner = 4; game.owned.kitten = 49;
   await page.addInitScript(({key, raw}) => localStorage.setItem(key,raw), {key:SAVE_KEY,raw:encode(game)});
-  await page.goto('/');
+  await page.goto('/'); await enterWorkshop(page);
   await page.locator('.navigation [data-screen="crew"]').click();
   await page.getByRole('button', {name:'Adopt Kitten',exact:true}).click();
   await expect(page.locator('#toast')).toContainText('Achievement unlocked');

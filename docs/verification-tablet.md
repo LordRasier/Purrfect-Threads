@@ -44,3 +44,13 @@ Artwork is original inline vector art and existing icons, bounded to three anima
 Regression coverage includes single and bulk activation, subsequent purchases, reload, live quality changes, reduced motion, and purchase-button hit testing. Desktop and mobile-emulation screenshots were visually inspected for readable controls. Physical-device performance is not claimed.
 
 Validation: 116 unit tests passed (16 files), 76 browser tests passed (desktop and mobile emulation), and the production build passed. The existing Three.js chunk-size warning remains.
+
+## Tablet app launch — September 25, 2026
+
+Each page opening now starts inside the tablet display with a yarn-ball mark and the Purrfect Threads wordmark. A gentle 1.5-second entrance settles the logo; after two seconds, Tap to enter (Toca para entrar in Spanish) becomes available. Activation fades the welcome screen over 450 ms and focuses the workshop's yarn control. Reloading shows the welcome screen again; internal tab navigation does not.
+
+The underlying header and play surface are inert until entry. Held Space cannot earn yarn behind the screen. Save loading, ownership checks, recovery, and passive production retain their existing lifecycle. Reduced-motion users receive a static logo and an immediate dismissal, with the same two-second prompt delay. No save schema or progression changes are involved.
+
+Existing browser scenarios enter through the real welcome button using a shared test helper; recovery and duplicate-tab screens are not bypassed. Dedicated launch cases cover delayed availability, blocked input, keyboard entry, reload, reduced motion, and phone/desktop layouts.
+
+Validation: 116 unit tests and 80 browser tests passed; production build passed with the existing Three.js chunk warning. Launch screenshots were inspected on [desktop](screenshots/app-launch-desktop.png) and [mobile emulation](screenshots/app-launch-mobile.png). RDD remained off; no remote operations or release ZIP changes.

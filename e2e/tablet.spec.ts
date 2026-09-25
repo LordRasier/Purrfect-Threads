@@ -1,3 +1,4 @@
+import { enterWorkshop } from './entry';
 import { test, expect } from '@playwright/test';
 
 test('tablet home and internal tabs share one device without a floating yarn dock', async ({page}) => {
@@ -5,7 +6,7 @@ test('tablet home and internal tabs share one device without a floating yarn doc
     document.documentElement.dataset.observedTravel = document.querySelector<HTMLElement>('#app')?.dataset.travel;
     document.documentElement.dataset.observedTabAnimation = String((document.querySelector('#management')?.getAnimations().length ?? 0) > 0);
   }));
-  await page.goto('/');
+  await page.goto('/'); await enterWorkshop(page);
   await expect(page.locator('.tablet-device #pull')).toBeVisible();
   await expect(page.locator('#world')).toHaveAttribute('data-ready','true');
   await expect(page.locator('#management')).toBeHidden();
@@ -25,7 +26,7 @@ test('sky journey ascends out of the tablet and reverses safely, including reduc
     document.documentElement.dataset.observedTravel = document.querySelector<HTMLElement>('#app')?.dataset.travel;
     document.documentElement.dataset.observedTabAnimation = String((document.querySelector('#management')?.getAnimations().length ?? 0) > 0);
   }));
-  await page.goto('/'); await expect(page.locator('#world')).toHaveAttribute('data-ready','true');
+  await page.goto('/'); await enterWorkshop(page); await expect(page.locator('#world')).toHaveAttribute('data-ready','true');
   await page.locator('.navigation [data-screen="chapter"]').click();
   await expect(page.locator('html')).toHaveAttribute('data-observed-travel','ascending');
   await expect(page.locator('#app')).toHaveAttribute('data-travel','idle');
@@ -49,7 +50,7 @@ test('sky journey ascends out of the tablet and reverses safely, including reduc
 });
 
 test('tablet and sky fit small phones, landscape and desktop with usable controls', async ({page}) => {
-  await page.emulateMedia({reducedMotion:'reduce'});await page.goto('/');
+  await page.emulateMedia({reducedMotion:'reduce'});await page.goto('/'); await enterWorkshop(page);
   await expect(page.locator('#world')).toHaveAttribute('data-ready','true');
   for (const size of [{width:320,height:568},{width:390,height:844},{width:844,height:390},{width:1366,height:768}]) {
     await page.setViewportSize(size);
@@ -69,7 +70,7 @@ test('tablet and sky fit small phones, landscape and desktop with usable control
 
 
 test('leaving the play screen cancels held input and prevents hidden Space clicks', async ({page}) => {
-  await page.goto('/');await expect(page.locator('#world')).toHaveAttribute('data-ready','true');
+  await page.goto('/'); await enterWorkshop(page);await expect(page.locator('#world')).toHaveAttribute('data-ready','true');
   await page.locator('#pull').focus();await page.keyboard.down('Space');await page.waitForTimeout(450);
   await page.locator('.navigation [data-screen="crew"]').click();
   const balance=await page.locator('#tablet-yarn').textContent();
@@ -84,7 +85,7 @@ test('leaving the play screen cancels held input and prevents hidden Space click
 });
 
 test('travel completion follows the animation, and a mid-flight reversal preserves the viewport', async ({page}) => {
-  await page.goto('/');await expect(page.locator('#world')).toHaveAttribute('data-ready','true');
+  await page.goto('/'); await enterWorkshop(page);await expect(page.locator('#world')).toHaveAttribute('data-ready','true');
   await page.evaluate(() => {
     const track = document.querySelector('.journey-track')!;
     getComputedStyle(track).transform;
@@ -101,7 +102,7 @@ test('travel completion follows the animation, and a mid-flight reversal preserv
 });
 
 test('home shortcuts transfer keyboard focus and regions never receive pressed state', async ({page}) => {
-  await page.goto('/');await page.locator('.home-actions button').focus();await page.keyboard.press('Enter');
+  await page.goto('/'); await enterWorkshop(page);await page.locator('.home-actions button').focus();await page.keyboard.press('Enter');
   await expect(page.locator('#management')).toBeFocused();
   await expect(page.locator('[role="region"][aria-pressed]')).toHaveCount(0);
 });

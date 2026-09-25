@@ -128,3 +128,21 @@
 @keyframes crew-roll { 0%,100% { transform:translateX(0) rotate(-15deg); } 50% { transform:translateX(12px) rotate(35deg); } }
 .reduced-motion .crew-scene,.reduced-motion .crew-sprite,.crew-scene[data-resting=true],.crew-scene[data-resting=true] .crew-sprite { animation:none; }
 @media(prefers-reduced-motion:reduce) { .crew-scene,.crew-sprite { animation:none !important; } }
+
+/* App welcome occupies the display, not the tablet bezel. */
+.tablet-app .app-launch { position:absolute; z-index:10; inset:24px 16px 23px; border:1px solid #d4c4ad; border-radius:22px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:38px; background:radial-gradient(ellipse at 50% 43%,#fffdf6 0%,#f5ecdb 75%); outline:none; }
+.launch-logo { text-align:center; animation:launch-arrive 1.5s cubic-bezier(.22,.8,.25,1) both; }
+.launch-yarn { margin:0 auto 20px; width:clamp(82px,14vh,128px); height:clamp(82px,14vh,128px); display:grid; place-items:center; border-radius:50%; background:#f4dfce; color:#cf7d67; box-shadow:0 12px 32px #c7a27c20; }
+.launch-yarn .icon { width:68%; height:68%; stroke-width:1.2; }
+.launch-logo h1 { margin:0; font-family:Georgia,serif; font-size:clamp(34px,6vw,62px); line-height:.95; font-weight:500; letter-spacing:-2px; color:#585044; }
+.launch-logo h1>span { display:block; }
+#enter-workshop { min-height:48px; padding:12px 26px; background:transparent; color:#77654f; font-size:14px; letter-spacing:2px; border:1px solid #d8c7ae; border-radius:28px; visibility:hidden; }
+.launch-ready #enter-workshop { visibility:visible; animation:launch-prompt .5s ease both; }
+#enter-workshop:focus-visible { outline:2px solid #8b9c76; outline-offset:5px; }
+.is-launching #toast,.is-launching #notice { visibility:hidden; }
+@keyframes launch-arrive { from { opacity:0; transform:translateY(30px) scale(.94); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes launch-prompt { from { opacity:0; } to { opacity:1; } }
+.launch-static .launch-logo,.launch-static #enter-workshop,.reduced-motion .launch-logo,.reduced-motion #enter-workshop { animation:none; }
+@media(max-width:850px) { .tablet-app .app-launch { inset:19px 7px 17px; border-radius:16px; } }
+@media(max-height:540px) and (min-width:600px) { .tablet-app .app-launch { inset:14px 10px; gap:18px; }.launch-yarn { width:62px;height:62px;margin-bottom:10px; }.launch-logo h1 { font-size:34px; } }
+@media(prefers-reduced-motion:reduce) { .launch-logo,#enter-workshop { animation:none !important; } }

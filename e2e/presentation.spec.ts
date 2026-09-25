@@ -1,3 +1,4 @@
+import { enterWorkshop } from './entry';
 import { test, expect } from '@playwright/test';
 import Decimal from 'break_infinity.js';
 import { createGame } from '../src/game/engine';
@@ -10,7 +11,7 @@ test('responsive controls, reduced motion and a populated workshop', async ({ pa
   game.collection = [0, 1, 2, 3, 4, 5];
   await page.addInitScript(({ key, raw }) => localStorage.setItem(key, raw), { key: SAVE_KEY, raw: encode(game) });
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/');
+  await page.goto('/'); await enterWorkshop(page);
   await expect(page.locator('#world')).toHaveAttribute('data-ready', 'true');
   await expect(page.locator('body')).toHaveClass(/reduced-motion/);
   for (const size of [{ width: 1440, height: 1000 }, { width: 375, height: 812 }, { width: 812, height: 375 }, { width: 320, height: 568 }]) {

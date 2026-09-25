@@ -1,3 +1,4 @@
+import { showLaunch } from './launch';
 import { refreshCompanions } from './companions';
 import Decimal from 'break_infinity.js';
 import { COATS, PRODUCERS, UPGRADES, TALENTS, type ProducerId } from '../game/catalog';
@@ -13,6 +14,7 @@ import { crewPanel, upgradePanel, chapterPanel, collectionPanel, achievementsPan
 export type Screen = 'workshop' | 'crew' | 'upgrades' | 'achievements' | 'collection' | 'chapter';
 export class GameUI {
   screen: Screen = 'workshop';
+  launching = true;
   quantity: Quantity = 1;
   private achievementCategory = 'all';
   readonly dialog: HTMLDialogElement;
@@ -81,6 +83,7 @@ export class GameUI {
       if (event.key === 'Escape' && this.screen === 'chapter' && !this.dialog.open) { event.preventDefault(); this.navigate('workshop'); }
     });
     this.renderPanel(); this.refresh();
+    showLaunch(root, () => this.game().settings.reducedMotion || matchMedia('(prefers-reduced-motion: reduce)').matches, () => { this.launching = false; this.pull.focus({preventScroll:true}); });
   }
 
   private navigate(screen: Screen): void {

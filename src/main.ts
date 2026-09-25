@@ -136,7 +136,7 @@ async function start(session: Session): Promise<void> {
     sound.setAttribute('aria-label', audible ? text.mute : text.unmute);
   }
   function pull(scheduledTime = performance.now()): void {
-    if (!session.active || ui.screen !== 'workshop' || ui.dialog.open || suspended || importPending) return;
+    if (!session.active || ui.launching || ui.screen !== 'workshop' || ui.dialog.open || suspended || importPending) return;
     const now = performance.now();
     const amount = tap(game, scheduledTime);
     if (amount.gt(0)) { world?.pulse(now); ui.floating(`${format(amount)}${amount.gt(tapValue(game)) ? ' · ' + text.critical : ''}`, reduced()); audio.play(game.settings.volume); ui.refresh(); }
@@ -204,7 +204,7 @@ async function start(session: Session): Promise<void> {
   ui.pull.addEventListener('lostpointercapture', () => held.release('pointer', performance.now()));
   ui.pull.addEventListener('click', event => { if (event.detail === 0) pull(); });
   document.addEventListener('keydown', event => {
-    if (event.code !== 'Space' || event.repeat || ui.dialog.open || ui.screen !== 'workshop') return;
+    if (ui.launching || event.code !== 'Space' || event.repeat || ui.dialog.open || ui.screen !== 'workshop') return;
     const focused = document.activeElement;
     if (focused !== document.body && focused !== ui.pull) return;
     event.preventDefault(); held.press('keyboard', performance.now());

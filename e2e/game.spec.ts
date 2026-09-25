@@ -1,10 +1,11 @@
+import { enterWorkshop } from './entry';
 import { test, expect } from '@playwright/test';
 
 test('a new workshop can earn, adopt, produce, and reload', async ({ page, isMobile }) => {
   test.setTimeout(60000);
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
-  await page.goto('/');
+  await page.goto('/'); await enterWorkshop(page);
   await expect(page.getByRole('heading', { name: 'A little yarn. A lot of cats.' })).toBeVisible();
   const pull = page.getByRole('button', { name: 'Pull yarn', exact: true });
   await expect(pull).toBeVisible();
@@ -22,14 +23,14 @@ test('a new workshop can earn, adopt, produce, and reload', async ({ page, isMob
   await adopt.click();
   await expect(page.getByTestId('population')).toHaveText('1');
   await expect(page.getByTestId('rate')).toHaveText('1');
-  await page.reload();
+  await page.reload(); await enterWorkshop(page);
   await expect(page.getByTestId('population')).toHaveText('1');
   expect(errors).toEqual([]);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
 test('tabs, collection and settings are accessible', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/'); await enterWorkshop(page);
   await page.getByRole('button', { name: 'Cat collection', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Meet your little legends.' })).toBeVisible();
   await page.getByRole('button', { name: 'New chapter', exact: true }).click();
