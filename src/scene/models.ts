@@ -5,6 +5,7 @@ import { COATS } from '../game/catalog';
 
 const sphere = new THREE.SphereGeometry(1, 20, 14);
 const box = new RoundedBoxGeometry(1, 1, 1, 2, 0.09);
+const pennantGeometry = new THREE.ConeGeometry(0.13, 0.29, 3);
 const materials = new Map<string, THREE.MeshStandardMaterial>();
 export function material(color: string): THREE.MeshStandardMaterial {
   if (!materials.has(color)) materials.set(color, new THREE.MeshStandardMaterial({ color, roughness: 0.84 }));
@@ -35,7 +36,15 @@ function bake(group: THREE.Group): THREE.Group {
     if (!(object instanceof THREE.Mesh)) return;
     const mat = object.material as THREE.Material;
     const parts = byMaterial.get(mat) ?? [];
-    parts.push(object.geometry.clone().applyMatrix4(object.matrixWorld));
+    let part = object.geometry.clone().applyMatrix4(object.matrixWorld);
+    // Three primitives do not consistently share an index buffer. Normalize every
+    // static part before merging so decorative tubes and rounded boxes coexist.
+    if (part.index) {
+      const nonIndexed = part.toNonIndexed();
+      part.dispose();
+      part = nonIndexed;
+    }
+    parts.push(part);
     byMaterial.set(mat, parts);
   });
   const result = new THREE.Group();
@@ -160,5 +169,50 @@ export function makeWorkshop(): THREE.Group {
     block(group, '#faf2d7', [x, 1.14, 0.77], [0.41, 0.045, 0.035]);
   }
   block(group, '#b58e71', [0.53, 2.32, -0.22], [0.27, 0.65, 0.28]);
-  return bake(group);
+  const details = new THREE.Group();
+  // Offset rows of warm cedar tiles give the tiny roof a readable handcrafted texture.
+  for (let row = 0; row < 4; row++) {
+    const y = 1.98 + row * 0.18;
+    const width = 1.98 - row * 0.28;
+    for (let x = -width / 2 + 0.18 + (row % 2) * 0.10; x < width / 2; x += 0.38) {
+      block(details, '#d98973', [x, y, 0.045], [0.34, 0.10, 0.07]);
+    }
+  }
+  block(details, '#8d624c', [0.53, 2.67, -0.22], [0.33, 0.10, 0.34]);
+  ball(details, '#f5eee2', [0.55, 3.04, -0.18], [0.23, 0.16, 0.18]);
+
+  // The facade tells a little story even when no cats are standing in front of it.
+  const line = new THREE.Mesh(tube([
+    new THREE.Vector3(-0.98, 1.84, 0.82), new THREE.Vector3(-0.45, 1.72, 0.84),
+    new THREE.Vector3(0.1, 1.85, 0.84), new THREE.Vector3(0.74, 1.72, 0.84),
+  ], 0.022, 18), material('#8d624c'));
+  details.add(line);
+  for (const [i, x] of [-0.72, -0.32, 0.08, 0.48].entries()) {
+    const pennant = shape(details, pennantGeometry, '#a8c5bb', [x, 1.66 + (i % 2) * 0.05, 0.85], [1, 1, 0.22]);
+    pennant.rotation.x = Math.PI;
+  }
+  block(details, '#a97d60', [-1.18, 1.08, 0.69], [0.56, 0.37, 0.08]);
+  block(details, '#f2d9ad', [-1.18, 1.08, 0.75], [0.43, 0.25, 0.025]);
+  ball(details, '#dd675c', [-1.18, 1.08, 0.78], [0.10, 0.10, 0.02]);
+
+  block(details, '#a97d60', [1.24, 0.69, 0.70], [0.82, 0.13, 0.36]);
+  for (const x of [0.94, 1.54]) block(details, '#a97d60', [x, 0.35, 0.70], [0.10, 0.55, 0.10]);
+  for (const [i, x] of [1.05, 1.31, 1.57].entries()) {
+    shape(details, new THREE.CylinderGeometry(0.11, 0.11, 0.24, 12), '#a8c5bb', [x, 0.92, 0.70]);
+    shape(details, new THREE.CylinderGeometry(0.14, 0.14, 0.035, 12), '#f2d9ad', [x, 1.045, 0.70]);
+  }
+  for (const x of [-0.72, 0.72]) {
+    block(details, '#a97d60', [x, 0.63, 0.83], [0.58, 0.15, 0.14]);
+    for (let petal = 0; petal < 4; petal++) {
+      const angle = petal * Math.PI / 2;
+      ball(details, '#f0c5ae', [x + Math.cos(angle) * 0.11, 0.87, 0.86 + Math.sin(angle) * 0.05], [0.075, 0.09, 0.035]);
+    }
+    ball(details, '#d98973', [x, 0.87, 0.87], [0.05, 0.06, 0.025]);
+  }
+  const bakedDetails = bake(details);
+  bakedDetails.name = 'workshop-details';
+  // Keep the detail cluster named for inspection while the structural shell stays merged.
+  const workshop = bake(group);
+  workshop.add(bakedDetails);
+  return workshop;
 }

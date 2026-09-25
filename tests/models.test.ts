@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { Box3, Group } from 'three';
-import { makeCat, makeYarn, visibleCatCount } from '../src/scene/models';
+import { makeCat, makeWorkshop, makeYarn, visibleCatCount } from '../src/scene/models';
 
 describe('bounded original scene assets', () => {
   it('builds a recognizable volumetric cat with independently animated limbs', () => {
@@ -21,5 +21,25 @@ describe('bounded original scene assets', () => {
     expect(visibleCatCount(0)).toBe(1);
     expect(visibleCatCount(10000)).toBe(24);
     expect(visibleCatCount(10000, true)).toBeLessThanOrEqual(12);
+  });
+  it('merges workshop details without BufferGeometry index warnings', () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      makeWorkshop();
+      expect(error).not.toHaveBeenCalled();
+      expect(warn).not.toHaveBeenCalled();
+    } finally {
+      error.mockRestore();
+      warn.mockRestore();
+    }
+  });
+  it('builds a decorated workshop with a bounded merged detail group', () => {
+    const workshop = makeWorkshop();
+    const details = workshop.getObjectByName('workshop-details');
+    expect(details).toBeDefined();
+    expect(details!.children.length).toBeLessThanOrEqual(8);
+    const bounds = new Box3().setFromObject(workshop);
+    expect(bounds.max.y).toBeGreaterThan(2.7);
   });
 });
