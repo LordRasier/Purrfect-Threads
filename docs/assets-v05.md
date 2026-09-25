@@ -5,7 +5,7 @@ Six original character illustrations were generated with the built-in image gene
 - Runtime assets: `public/art/companions/{id}.webp`.
 - Final generation prompts: [companion-art-prompts.json](companion-art-prompts.json).
 - Each character is 512 × 512 with transparent alpha. The bundled Sharp library was used only for delivery resizing and WebP encoding (quality85, alpha100). No new project dependency.
-- Combined compressed size: **294,092 bytes**. All six are local and available offline.
+- Combined compressed size: **288,094 bytes**. All six are local and available offline.
 - The same artwork is used in collection cards and the workshop. The latter is a camera-facing Three.js Sprite over the existing 3D cushion; workers remain procedural 3D cats.
 - Only the currently selected portrait owns a GPU texture. Changing selection releases the old texture. Stale asynchronous loads cannot replace a newer selection, and the controller disposes its texture/material on teardown.
 - Unavailable/locked companions never show on the cushion. Loading or failed portraits remain hidden instead of displaying stale art. The HTML collection and its bonuses do not depend on WebGL rendering.
@@ -39,3 +39,7 @@ The user's personal photograph identifies Biscuit (formerly displayed as Biscoch
 ## Lola personal reference portrait — 25 September 2026
 
 The user's photograph establishes Lola as a petite mostly white short-haired cat with an asymmetrical dark mark over part of her forehead and nose, dark patches on her side/back, and a dark tail. Her revised chibi sprite reclines with a small white front paw extended toward the viewer and a restrained affectionate gaze. The old oversized glossy eyes and blush were removed. The personal photograph is not redistributed; this is an art-only replacement with no changes to bonuses, unlocks, IDs, gameplay or saves.
+
+## Luigi four-leg anatomy correction — 25 September 2026
+
+The user spotted a missing leg on Luigi's viewer-right lower flank in the previous portrait. The revised sprite now shows two attached front legs and two hind legs with four distinct white paws; the viewer-right hind leg connects visibly from haunch to paw. His gentle expression, coat and tail remain intact. This replaces only the local portrait asset and does not change companion mechanics or save data.
