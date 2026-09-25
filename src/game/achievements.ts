@@ -32,7 +32,7 @@ export const ACHIEVEMENTS: readonly Achievement[] = [
   badge('nine-lives', 'Nine lives, new address', 'Begin nine new chapters.', 'Chapters', 'chapters', 9, 'cloud'),
   badge('divine-favor', 'Divine favor', 'Buy one permanent Olympus talent.', 'Chapters', 'talents', 1, 'star'),
   badge('demigod', 'Demigod of fluff', 'Buy two permanent Olympus talents.', 'Chapters', 'talents', 2, 'star'),
-  badge('pantheon', 'The purrfect pantheon', 'Buy all three permanent Olympus talents.', 'Chapters', 'talents', 3, 'star'),
+  badge('pantheon', 'The purrfect pantheon', 'Buy all twelve permanent Olympus talents.', 'Chapters', 'talents', 12, 'star'),
   badge('hello-friend', 'Hello, friend', 'Meet your first collectible companion.', 'Collection', 'coats', 1, 'heart'),
   badge('friend-circle', 'The cuddle circle', 'Meet three collectible companions.', 'Collection', 'coats', 3, 'heart'),
   badge('whole-family', 'The whole family', 'Meet all six collectible companions.', 'Collection', 'coats', 6, 'heart'),

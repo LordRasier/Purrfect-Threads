@@ -4,7 +4,24 @@ export type Language = 'en' | 'es';
 let language: Language = 'en';
 
 const sourceCatalog: Record<string, string> = {
-  'PLAYABLE PROTOTYPE · 0.3': 'PROTOTIPO JUGABLE · 0.3',
+  'ONLY WHEN YOU RESTART': 'SOLO AL REINICIAR',
+  'One restart. One golden paw. Extra yarn never increases the reward.': 'Un reinicio. Una pata dorada. Acumular más lana no aumenta la recompensa.',
+  'Chapter restart progress': 'Progreso para reiniciar el capítulo',
+  'Chapter complete. Your golden paw is claimed only when you restart.': 'Capítulo completado. Recibes tu pata dorada únicamente al reiniciar.',
+  'A permanent blessing. Inspect freely; purchase once.': 'Una bendición permanente. Puedes inspeccionarla y comprarla una sola vez.',
+  '3D statues are unavailable. You can still inspect and buy every blessing.': 'Las estatuas 3D no están disponibles. Todavía puedes inspeccionar y comprar cada bendición.',
+  'Hera': 'Hera', 'Hermes': 'Hermes', 'Athena': 'Atenea', 'Zeus': 'Zeus', 'Poseidon': 'Poseidón', 'Demeter': 'Deméter', 'Apollo': 'Apolo', 'Artemis': 'Artemisa', 'Ares': 'Ares', 'Aphrodite': 'Afrodita', 'Hephaestus': 'Hefesto', 'Dionysus': 'Dioniso',
+  'Thunder Paws': 'Patas del trueno', '+20% yarn from every touch.': '+20% de lana con cada toque.',
+  'Tidal Tails': 'Colas de marea', '+20% Kitten and Basket Buddies production.': '+20% de producción de Gatitos y Amigos de la canasta.',
+  'Harvest Threads': 'Cosecha de hilos', '+20% Knitter and Artisan Cats production.': '+20% de producción de Gatos tejedores y Gatos artesanos.',
+  'Sunlit Spools': 'Carretes solares', '+20% Cloud and Tailor Tabbies production.': '+20% de producción de Gatos nube y Atigrados sastres.',
+  'Moon Hunt': 'Caza lunar', '+20% Rainbow Dyers and Spinning Siamese production.': '+20% de producción de Tintoreros arcoíris y Siameses hilanderos.',
+  'Warrior Weave': 'Tejido guerrero', '+20% Dream Weavers and Celestial Cats production.': '+20% de producción de Tejedores de sueños y Gatos celestiales.',
+  'Love of Labor': 'Amor por el oficio', '+10% all automatic production.': '+10% de toda la producción automática.',
+  'Forge of Paws': 'Forja de patas', '+10% automatic production per purchased chapter upgrade.': '+10% de producción automática por cada mejora de capítulo comprada.',
+  'Joyful Pull': 'Toque alegre', '+10% yarn from every touch.': '+10% de lana con cada toque.',
+  'Buy all twelve permanent Olympus talents.': 'Compra los doce talentos permanentes del Olimpo.',
+  'PLAYABLE PROTOTYPE · 0.4': 'PROTOTIPO JUGABLE · 0.4',
   'Prototype safety limit: 10,000 purchases per team type.': 'Límite de seguridad del prototipo: 10.000 compras por tipo de equipo.',
   'A lot of cats.': 'Un montón de gatos.',
   'Upgrades': 'Mejoras', 'Achievements': 'Logros', 'Cats': 'Gatos', 'Olympus': 'Olimpo',
@@ -54,7 +71,7 @@ export function getLocalizedText(englishText: Copy): Copy {
   const localized: Copy = {
     ...translated,
     achievementsCount: (n, total) => `${n} / ${total} obtenidos`, achievementsUnlocked: count => `¡${count} logros desbloqueados! Mira tu álbum.`, achievementUnlocked: name => `Logro desbloqueado: ${name}`,
-    adopt: name => `Adoptar a ${name}`, owned: count => `${count} en propiedad`, catsAdded: count => `+${count} gatos`, productionAdded: count => `+${count} lana / seg`, cost: count => `${count} lana`, unlockCats: count => `Conoce a ${count.toLocaleString('es-AR')} gatos trabajando`, chapterLabel: count => `CAPÍTULO ${String(count + 1).padStart(2, '0')} · EL TALLER ACOGEDOR`, reward: count => `+${count} patas doradas`, remaining: count => `Faltan ${count} de lana total para tu próxima pata dorada`, offline: count => `Tus gatos hicieron ${count} de lana mientras no estabas.`, milestone: name => `¡${name} se sumó a tu colección!`, crewJoined: count => `${count} patas nuevas en el equipo.`, progressGoal: count => `${count} / 75 de lana`, firstGoal: 'Tu primer pequeño ayudante', firstGoalDetail: '75 de lana traen a casa a tu primer gatito.', nextGoal: name => `Haz lugar para ${name}`, percent: value => `${value}% del camino`, perTap: count => `+${count} por toque`, spendPoints: count => `${count} pata${count === 1 ? '' : 's'} dorada${count === 1 ? '' : 's'}`, talentBought: 'Un truco nuevo, para siempre.', upgradeBought: 'Una pequeña mejora. Mucha posibilidad.', buy: name => `Comprar ${name}`, criticalOdds: (chance = 0) => `Probabilidad actual: ${chance}% de lana ×3. Las bonificaciones se suman.`,
+    adopt: name => `Adoptar a ${name}`, owned: count => `${count} en propiedad`, catsAdded: count => `+${count} gatos`, productionAdded: count => `+${count} lana / seg`, cost: count => `${count} lana`, unlockCats: count => `Conoce a ${count.toLocaleString('es-AR')} gatos trabajando`, chapterLabel: count => `CAPÍTULO ${String(count + 1).padStart(2, '0')} · EL TALLER ACOGEDOR`, reward: count => `+${count} pata${count === '1' ? '' : 's'} dorada${count === '1' ? '' : 's'}`, remaining: count => `Produce ${count} más de lana en este capítulo para desbloquear el reinicio.`, offline: count => `Tus gatos hicieron ${count} de lana mientras no estabas.`, milestone: name => `¡${name} se sumó a tu colección!`, crewJoined: count => `${count} patas nuevas en el equipo.`, progressGoal: count => `${count} / 75 de lana`, firstGoal: 'Tu primer pequeño ayudante', firstGoalDetail: '75 de lana traen a casa a tu primer gatito.', nextGoal: name => `Haz lugar para ${name}`, percent: value => `${value}% del camino`, perTap: count => `+${count} por toque`, spendPoints: count => `${count} pata${String(count) === '1' ? '' : 's'} dorada${String(count) === '1' ? '' : 's'}`, talentBought: 'Un truco nuevo, para siempre.', upgradeBought: 'Una pequeña mejora. Mucha posibilidad.', buy: name => `Comprar ${name}`, criticalOdds: (chance = 0) => `Probabilidad actual: ${chance}% de lana ×3. Las bonificaciones se suman.`,
   };
   spanishCopyCache.set(englishText, localized);
   return localized;

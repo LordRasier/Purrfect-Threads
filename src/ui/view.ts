@@ -1,7 +1,7 @@
 import Decimal from 'break_infinity.js';
 import { COATS, PRODUCERS, UPGRADES, TALENTS, type ProducerId } from '../game/catalog';
 import { population, production, producerOutput, quote, tapValue, MAX_OWNED, type GameState, type Quantity } from '../game/engine';
-import { prestigeReward } from '../game/progression';
+import { prestigeReward, prestigeGoal } from '../game/progression';
 import { text } from './copy';
 import { getLanguage, setLanguage, translate as tr } from './localization';
 import { format } from './format';
@@ -141,6 +141,11 @@ export class GameUI {
       const item = UPGRADES.find(item => item.id === confirm.dataset.id);
       confirm.disabled = !item || game.upgrades.includes(item.id) || game.yarn.lt(item.cost) || (item.id === 'master' && !game.talents.includes('knitters'));
     }
+    const talentConfirm = this.dialog.querySelector<HTMLButtonElement>('[data-action="talent"]');
+    if (talentConfirm) {
+      const talent = TALENTS.find(item => item.id === talentConfirm.dataset.id);
+      talentConfirm.disabled = !talent || game.talents.includes(talent.id) || game.points.lt(talent.cost);
+    }
     if (this.screen === 'achievements') {
       set('achievement-count', text.achievementsCount(game.achievements.length, ACHIEVEMENTS.length));
       for (const item of ACHIEVEMENTS) {
@@ -153,15 +158,20 @@ export class GameUI {
     }
     if (this.screen === 'chapter') {
       const reward = prestigeReward(game);
-      set('prestige-reward', text.reward(format(reward, 0)));
-      const next = game.claimed.add(reward).add(1).pow(2).mul(100000).sub(game.lifetime);
-      set('prestige-remaining', text.remaining(format(Decimal.max(0, next), 0)));
+      set('prestige-reward', text.reward('1'));
+      const next = Decimal.max(0, prestigeGoal(game).sub(game.runEarned));
+      set('prestige-remaining', reward.gte(1) ? text.restartReady : text.remaining(format(next, 0)));
+      const progress = Math.min(100, game.runEarned.div(prestigeGoal(game)).mul(100).toNumber());
+      const bar = this.panel.querySelector<HTMLElement>('.chapter-progress')!;
+      bar.setAttribute('aria-valuenow', String(Math.floor(progress)));
+      bar.querySelector<HTMLElement>('i')!.style.width = `${progress}%`;
       (document.getElementById('prestige-button') as HTMLButtonElement).disabled = reward.lt(1);
-      set('points-label', `${format(game.points, 0)} ${text.pointName}`);
+      set('points-label', text.spendPoints(format(game.points, 0)));
       TALENTS.forEach(talent => {
         const bought = game.talents.includes(talent.id);
         const button = document.getElementById(`talent-${talent.id}`) as HTMLButtonElement;
-        button.disabled = bought || game.points.lt(talent.cost);
+        button.disabled = false;
+        button.setAttribute('aria-label', `${text.inspect} ${tr(talent.god)} · ${tr(talent.name)}${bought ? ' · ' + text.bought : ''}`);
         button.classList.toggle('purchased', bought);
         set(`talent-price-${talent.id}`, bought ? text.bought : text.spendPoints(talent.cost));
       });

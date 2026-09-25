@@ -49,7 +49,7 @@ describe('v3 settings migration', () => {
     const old = JSON.parse(encode(game)); old.version = 2;
     delete old.settings.language; delete old.settings.musicVolume;
     const restored = decode(JSON.stringify(old));
-    expect(restored.version).toBe(3); expect(restored.owned.kitten).toBe(10);
+    expect(restored.version).toBe(4); expect(restored.owned.kitten).toBe(10);
     expect(restored.settings.language).toBe('en'); expect(restored.settings.musicVolume).toBe(.2);
   });
   it('validates and retains the selected language and music level across prestige', () => {

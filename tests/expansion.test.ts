@@ -10,7 +10,7 @@ import { ACHIEVEMENTS, achievementProgress } from '../src/game/achievements';
 describe('expanded workshop', () => {
   it('keeps UTF-8 copy and the current release label intact', () => {
     expect(text.chapterLabel(0)).toContain(' · ');
-    expect(text.prototype).toBe('PLAYABLE PROTOTYPE · 0.3');
+    expect(text.prototype).toBe('PLAYABLE PROTOTYPE · 0.4');
   });
   it('requires 75 valid pulls for the first kitten', () => {
     const game = createGame(0);
@@ -76,7 +76,7 @@ describe('expanded workshop', () => {
     for (const key of ['tailor','dyer','spinner','weaver','astral']) delete legacy.owned[key];
     delete legacy.achievements; legacy.stats = { taps: 75, playSeconds: 22 };
     const restored = decode(JSON.stringify(legacy));
-    expect(restored.version).toBe(3); expect(restored.owned.kitten).toBe(10); expect(restored.owned.astral).toBe(0);
+    expect(restored.version).toBe(4); expect(restored.owned.kitten).toBe(10); expect(restored.owned.astral).toBe(0);
     expect(restored.yarn.eq(10000)).toBe(true); expect(restored.settings).toEqual(game.settings);
     expect(restored.achievements).toContain('first-thread');
     expect(restored.stats.upgradePurchases).toBe(0);

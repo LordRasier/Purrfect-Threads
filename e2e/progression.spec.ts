@@ -27,8 +27,11 @@ test('prestige, permanent talents, collection and imports survive reload', async
   await page.getByRole('button', { name: 'Move to the new workshop' }).click();
   await expect(page.getByTestId('population')).toHaveText('0');
   await page.getByRole('button', { name: /Welcome Home/ }).click();
-  await expect(page.getByRole('button', { name: /Welcome Home/ })).toBeDisabled();
-  await page.getByRole('button', { name: /Helping Paw/ }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Buy Welcome Home', exact:true }).click();
+  await expect(page.locator('#talent-welcome')).toHaveClass(/purchased/);
+  await page.locator('#talent-helping').click();
+  await expect(page.getByRole('dialog').getByRole('button', {name:'Buy Helping Paw',exact:true})).toBeDisabled();
+  await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'Back to workshop', exact: true }).click();
   await page.getByRole('button', { name: 'Cat collection', exact: true }).click();
   await page.getByRole('button', { name: 'Choose companion', exact: true }).click();

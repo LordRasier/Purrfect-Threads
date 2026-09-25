@@ -5,7 +5,7 @@ import { encode, SAVE_KEY } from '../src/game/storage';
 
 test('compact ten-crew shop and separate cozy progression spaces', async ({ page }, info) => {
   const game = createGame(Date.now()); game.yarn = game.runEarned = game.lifetime = new Decimal('1e14');
-  game.points = game.claimed = new Decimal(6); game.talents = ['knitters'];
+  game.chapters = 9; game.claimed = new Decimal(9); game.points = new Decimal(6); game.talents = ['knitters'];
   await page.addInitScript(({key, raw}) => localStorage.setItem(key,raw), {key:SAVE_KEY,raw:encode(game)});
   await page.goto('/');
   if (info.project.name === 'desktop') await page.setViewportSize({width:961,height:854});
@@ -16,12 +16,12 @@ test('compact ten-crew shop and separate cozy progression spaces', async ({ page
   const art = await row.locator('.producer-icon').boundingBox();
   const buy = await row.getByRole('button').boundingBox();
   expect(Math.abs((art!.y + art!.height / 2) - (buy!.y + buy!.height / 2))).toBeLessThan(4);
-  if (info.project.name === 'desktop') await page.screenshot({path:'docs/screenshots/v03-crew.png',fullPage:true});
+  if (info.project.name === 'desktop') await page.screenshot({path:'docs/screenshots/v04-crew.png',fullPage:true});
   await expect(page.locator('#upgrade-paws')).toHaveCount(0);
   await expect(page.locator('.milestone')).toHaveCount(0);
   await page.getByRole('button', {name:'Upgrades',exact:true}).click();
   await expect(page.locator('.upgrade-board')).toBeVisible();
-  if (info.project.name === 'desktop') await page.screenshot({path:'docs/screenshots/v03-board.png',fullPage:true});
+  if (info.project.name === 'desktop') await page.screenshot({path:'docs/screenshots/v04-board.png',fullPage:true});
   await page.getByRole('button', {name:'Inspect Soft Paws',exact:true}).click();
   await page.getByRole('dialog').getByRole('button', {name:'Buy Soft Paws',exact:true}).click();
   await expect(page.locator('#upgrade-paws')).toHaveClass(/purchased/);
@@ -30,13 +30,14 @@ test('compact ten-crew shop and separate cozy progression spaces', async ({ page
   await expect(page.getByText('A bright idea',{exact:true})).toBeVisible();
   await page.getByLabel('Achievement category').selectOption('Upgrades');
   await expect(page.locator('.achievement-card')).toHaveCount(4);
-  if (info.project.name === 'desktop') await page.screenshot({path:'docs/screenshots/v03-achievements.png',fullPage:true});
+  if (info.project.name === 'desktop') await page.screenshot({path:'docs/screenshots/v04-achievements.png',fullPage:true});
   await page.getByRole('button', {name:'New chapter',exact:true}).click();
   await expect(page.locator('.olympus')).toBeVisible();
-  await expect(page.locator('.talent-statue')).toHaveCount(3);
-  if (info.project.name === 'desktop') await page.screenshot({path:'docs/screenshots/v03-olympus.png',fullPage:true});
+  await expect(page.locator('.statue-viewport')).toHaveCount(12);
+  if (info.project.name === 'desktop') await page.screenshot({path:'docs/screenshots/v04-olympus.png',fullPage:true});
   await page.getByRole('button', {name:/Welcome Home/}).click();
-  await expect(page.getByRole('button', {name:/Welcome Home/})).toBeDisabled();
+  await page.getByRole('dialog').getByRole('button',{name:'Buy Welcome Home',exact:true}).click();
+  await expect(page.locator('#talent-welcome')).toHaveClass(/purchased/);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 

@@ -3,6 +3,7 @@ import './ui/style.css';
 import './ui/responsive.css';
 import './ui/expansion.css';
 import './ui/experience.css';
+import './ui/olympus.css';
 import { PRODUCERS, UPGRADES, TALENTS, COATS } from './game/catalog';
 import { advance, buyProducer, buyUpgrade, createGame, tap, tapValue, criticalChance, type GameState } from './game/engine';
 import { applyOffline, buyTalent, prestige, prestigeReward, selectCoat } from './game/progression';
@@ -17,6 +18,7 @@ import { format } from './ui/format';
 import { ACHIEVEMENTS, achievementProgress } from './game/achievements';
 import { HoldInput } from './game/input';
 import type { WorkshopWorld } from './scene/world';
+import type { OlympusWorld } from './scene/olympus';
 
 const root = document.getElementById('app')!;
 function download(raw: string, name = 'purrfect-threads-save.json'): void {
@@ -64,6 +66,25 @@ async function start(session: Session): Promise<void> {
   let game = loaded.game;
   setLanguage(game.settings.language);
   let world: WorkshopWorld | undefined;
+  let olympus: OlympusWorld | undefined;
+  let olympusHost: HTMLElement | null = null;
+  let olympusPending = false;
+  function syncOlympus(): void {
+    const host = root.querySelector<HTMLElement>('.olympus');
+    if (host !== olympusHost) { olympus?.dispose(); olympus = undefined; olympusHost = host; }
+    if (host && !olympus && !olympusPending && !host.dataset.ready) {
+      olympusPending = true;
+      void import('./scene/olympus').then(({ OlympusWorld }) => {
+        if (!session.active || host !== root.querySelector('.olympus')) return;
+        olympus = new OlympusWorld(host);
+        if (!olympus.supported) { olympus.dispose(); olympus = undefined; throw new Error('WebGL unavailable.'); }
+        olympus.sync(game.talents, game.settings.quality);
+        host.dataset.ready = 'true';
+      }).catch(() => { if (host.isConnected) { host.dataset.ready = 'fallback'; ui.notice(text.statuesUnavailable); } }).finally(() => { olympusPending = false; });
+    }
+    olympus?.sync(game.talents, game.settings.quality);
+  }
+  window.addEventListener('pagehide', () => { olympus?.dispose(); }, { once: true });
   const audio = new CozyAudio();
   const music = new CozyMusic();
   music.setVolume(game.settings.musicVolume); music.setVisible(!document.hidden);
@@ -136,9 +157,14 @@ async function start(session: Session): Promise<void> {
       const item = ACHIEVEMENTS.find(item => item.id === id); if (!item) return;
       stopHolding(); const progress = achievementProgress(game,item);
       ui.showDialog(`<span class="detail-art embroidered">${icon(item.icon)}</span><span class="eyebrow">${tr(item.category)}</span><h2 id="modal-title">${tr(item.name)}</h2><p>${tr(item.detail)}</p><p>${game.achievements.includes(item.id) ? text.unlocked : `${format(progress.value,0)} / ${format(item.target,0)}`}</p><div class="badge-progress"><i style="width:${progress.ratio * 100}%"></i></div><p>${text.achievementsSubtitle}</p>`);
+    } else if (kind === 'talent-info') {
+      const talent = TALENTS.find(item => item.id === id); if (!talent) return;
+      stopHolding();
+      ui.showDialog(`<span class="detail-art">${icon(talent.icon)}</span><span class="eyebrow">${tr(talent.god)} · ${text.divineBlessings}</span><h2 id="modal-title">${tr(talent.name)}</h2><p>${tr(talent.detail)}</p><p>${text.statueHint}</p><p class="detail-cost">${text.spendPoints(talent.cost)}</p><button class="primary-button" data-action="talent" data-id="${talent.id}">${game.talents.includes(talent.id) ? text.bought : text.buy(tr(talent.name))}</button>`);
+      ui.refresh();
     } else if (kind === 'talent') {
       const talent = TALENTS.find(item => item.id === id);
-      if (talent && buyTalent(game, talent.id)) changed(text.talentBought);
+      if (talent && buyTalent(game, talent.id)) { ui.dialog.close(); changed(text.talentBought); document.getElementById(`talent-${id}`)?.focus({preventScroll:true}); }
     } else if (kind === 'coat') {
       if (selectCoat(game, Number(id))) changed();
     } else if (kind === 'prestige') {
@@ -242,6 +268,8 @@ async function start(session: Session): Promise<void> {
       advance(game, delta);
       held.flush(now);
       if (now - lastUI >= 160) { refresh(); lastUI = now; }
+      syncOlympus();
+      olympus?.render(now, reduced());
       world?.render(now, delta, reduced());
       if (now - lastSave >= 5000) {
         persist(); lastSave = now;

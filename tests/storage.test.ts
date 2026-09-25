@@ -24,7 +24,7 @@ describe('versioned local saves', () => {
   it.each([
     { version: 8 }, { yarn: '-1' }, { yarn: 'Infinity' }, { yarn: 'NaN' },
     { owned: { kitten: -1 } }, { upgrades: ['paws', 'paws'] },
-    { settings: { volume: 9 } }, { collection: [99] }, { savedAt: -1 },
+    { settings: { volume: 9 } }, { collection: [99] }, { savedAt: -1 }, { chapters: 3000001 },
   ])('rejects malformed input rather than silently resetting: %j', patch => {
     const raw = JSON.parse(encode(createGame(100)));
     expect(() => decode(JSON.stringify({ ...raw, ...patch }))).toThrow();
@@ -77,5 +77,25 @@ describe('versioned local saves', () => {
     advance(game, Number.MAX_VALUE);
     advance(game, Number.MAX_VALUE);
     expect(() => decode(encode(game))).not.toThrow();
+  });
+
+  it('grandfathers legitimate v3 claims exactly once and preserves talents across reload', () => {
+    const game = createGame(100);
+    game.version = 4;
+    game.lifetime = new Decimal('1000000'); game.runEarned = game.yarn = new Decimal(100);
+    game.chapters = 2; game.claimed = new Decimal(3); game.points = new Decimal(1); game.talents = ['welcome', 'helping', 'knitters']; game.achievements = ['pantheon'];
+    const legacy = JSON.parse(encode(game)); legacy.version = 3; delete legacy.legacyClaimed; delete legacy.legacyChapters;
+    const migrated = decode(JSON.stringify(legacy));
+    expect(migrated.version).toBe(4);
+    expect(migrated.points.toNumber()).toBe(1); expect(migrated.claimed.toNumber()).toBe(3);
+    expect(migrated.legacyClaimed.toNumber()).toBe(3); expect(migrated.legacyChapters).toBe(2);
+    expect(migrated.talents).toEqual(['welcome', 'helping', 'knitters']);
+    expect(migrated.achievements).toContain('pantheon');
+    expect(decode(encode(migrated)).points.eq(1)).toBe(true);
+  });
+  it('rejects arbitrary v4 points and claims outside the migration allowance', () => {
+    const raw = JSON.parse(encode(createGame(100)));
+    expect(() => decode(JSON.stringify({ ...raw, points: '1', claimed: '1' }))).toThrow();
+    expect(() => decode(JSON.stringify({ ...raw, legacyClaimed: '1', legacyChapters: 0, points: '1', claimed: '1' }))).toThrow();
   });
 });

@@ -1,17 +1,22 @@
 import Decimal from 'break_infinity.js';
 import { updateAchievements } from './achievements';
 import { TALENTS, type TalentId } from './catalog';
-import { createGame, production, updateCollection, type GameState } from './engine';
+import { MAX_CHAPTERS, createGame, production, updateCollection, type GameState } from './engine';
 
+export function prestigeGoal(game: GameState): Decimal {
+  return new Decimal(100000).mul(Decimal.pow(2, game.chapters));
+}
+
+/** A completed chapter always awards exactly one golden paw. */
 export function prestigeReward(game: GameState): Decimal {
-  return Decimal.max(0, game.lifetime.div(100000).sqrt().floor().sub(game.claimed));
+  return game.chapters < MAX_CHAPTERS && game.runEarned.gte(prestigeGoal(game)) ? new Decimal(1) : new Decimal(0);
 }
 
 export function prestige(game: GameState): boolean {
   const reward = prestigeReward(game);
   if (reward.lt(1)) return false;
   game.points = game.points.add(reward);
-  game.claimed = game.claimed.add(reward);
+  game.claimed = game.claimed.add(1);
   game.chapters++;
   updateAchievements(game);
   game.yarn = new Decimal(0);

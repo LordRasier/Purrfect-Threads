@@ -5,8 +5,10 @@ import { COATS, PRODUCERS, UPGRADES, type ProducerId, type UpgradeId, type Talen
 export type Quantity = 1 | 10 | 'max';
 // Beyond the authored prototype content, bound transactions and imported teams.
 export const MAX_OWNED = 10000;
+// Keeps exponential chapter goals inside the supported Decimal save exponent range.
+export const MAX_CHAPTERS = 3_000_000;
 export interface GameState {
-  version: 3;
+  version: 4;
   yarn: Decimal;
   lifetime: Decimal;
   runEarned: Decimal;
@@ -15,6 +17,8 @@ export interface GameState {
   talents: TalentId[];
   points: Decimal;
   claimed: Decimal;
+  legacyClaimed: Decimal;
+  legacyChapters: number;
   chapters: number;
   starterCats: number;
   collection: number[];
@@ -28,9 +32,9 @@ export interface GameState {
 
 export function createGame(now = Date.now()): GameState {
   return {
-    version: 3, yarn: new Decimal(0), lifetime: new Decimal(0), runEarned: new Decimal(0),
+    version: 4, yarn: new Decimal(0), lifetime: new Decimal(0), runEarned: new Decimal(0),
     owned: Object.fromEntries(PRODUCERS.map(item => [item.id, 0])) as Record<ProducerId, number>,
-    upgrades: [], talents: [], points: new Decimal(0), claimed: new Decimal(0), chapters: 0,
+    upgrades: [], talents: [], points: new Decimal(0), claimed: new Decimal(0), legacyClaimed: new Decimal(0), legacyChapters: 0, chapters: 0,
     starterCats: 0, collection: [], coat: 0, achievements: [], stats: { taps: 0, playSeconds: 0, upgradePurchases: 0, bulkPurchases: 0, maxPurchases: 0, coatChanges: 0, offlineYarn: new Decimal(0) },
     settings: { volume: 0.35, musicVolume: 0.2, language: 'en', reducedMotion: false, quality: 'auto' }, savedAt: now, lastTap: -Infinity,
   };
@@ -49,6 +53,13 @@ export function producerOutput(game: GameState, id: ProducerId, count = 1): Deci
   if (game.upgrades.includes('purring')) multiplier *= 1.5;
   if (game.upgrades.includes('moonlit')) multiplier *= 2;
   if (game.upgrades.includes('master') && (id === 'workshop' || id === 'factory')) multiplier *= 2;
+  if (game.talents.includes('poseidon') && (id === 'kitten' || id === 'basket')) multiplier *= 1.2;
+  if (game.talents.includes('demeter') && (id === 'corner' || id === 'workshop')) multiplier *= 1.2;
+  if (game.talents.includes('apollo') && (id === 'factory' || id === 'tailor')) multiplier *= 1.2;
+  if (game.talents.includes('artemis') && (id === 'dyer' || id === 'spinner')) multiplier *= 1.2;
+  if (game.talents.includes('ares') && (id === 'weaver' || id === 'astral')) multiplier *= 1.2;
+  if (game.talents.includes('aphrodite')) multiplier *= 1.1;
+  if (game.talents.includes('hephaestus')) multiplier *= 1 + game.upgrades.length * 0.1;
   return new Decimal(item.cats).mul(count).mul(multiplier);
 }
 
@@ -61,7 +72,10 @@ export function tapValue(game: GameState): Decimal {
   let base = new Decimal(game.upgrades.includes('paws') ? 2 : 1);
   if (game.upgrades.includes('mittens')) base = base.mul(1.5);
   if (game.upgrades.includes('silky')) base = base.mul(2);
-  return game.talents.includes('helping') ? base.add(production(game).mul(0.01)) : base;
+  if (game.talents.includes('helping')) base = base.add(production(game).mul(0.01));
+  if (game.talents.includes('zeus')) base = base.mul(1.2);
+  if (game.talents.includes('dionysus')) base = base.mul(1.1);
+  return base;
 }
 
 function earn(game: GameState, amount: Decimal): void {

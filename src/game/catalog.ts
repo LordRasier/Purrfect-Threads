@@ -28,9 +28,18 @@ export const UPGRADES = [
 ] as const;
 export type UpgradeId = typeof UPGRADES[number]['id'];
 export const TALENTS = [
-  { id: 'welcome', name: 'Welcome Home', detail: 'Start every new chapter with 3 cats.', cost: 1, icon: 'house' },
-  { id: 'helping', name: 'Helping Paw', detail: 'Each touch also earns 1% of your yarn per second.', cost: 2, icon: 'paw' },
-  { id: 'knitters', name: 'Master Knitters', detail: 'Unlock Master Tools to buy in every chapter.', cost: 3, icon: 'knit' },
+  { id: 'welcome', name: 'Welcome Home', god: 'Hera', statue: 0, detail: 'Start every new chapter with 3 cats.', cost: 1, icon: 'house' },
+  { id: 'helping', name: 'Helping Paw', god: 'Hermes', statue: 1, detail: 'Each touch also earns 1% of your yarn per second.', cost: 2, icon: 'paw' },
+  { id: 'knitters', name: 'Master Knitters', god: 'Athena', statue: 2, detail: 'Unlock Master Tools to buy in every chapter.', cost: 3, icon: 'knit' },
+  { id: 'zeus', name: 'Thunder Paws', god: 'Zeus', statue: 3, detail: '+20% yarn from every touch.', cost: 2, icon: 'star' },
+  { id: 'poseidon', name: 'Tidal Tails', god: 'Poseidon', statue: 4, detail: '+20% Kitten and Basket Buddies production.', cost: 2, icon: 'cloud' },
+  { id: 'demeter', name: 'Harvest Threads', god: 'Demeter', statue: 5, detail: '+20% Knitter and Artisan Cats production.', cost: 2, icon: 'heart' },
+  { id: 'apollo', name: 'Sunlit Spools', god: 'Apollo', statue: 6, detail: '+20% Cloud and Tailor Tabbies production.', cost: 3, icon: 'sun' },
+  { id: 'artemis', name: 'Moon Hunt', god: 'Artemis', statue: 7, detail: '+20% Rainbow Dyers and Spinning Siamese production.', cost: 3, icon: 'moon' },
+  { id: 'ares', name: 'Warrior Weave', god: 'Ares', statue: 8, detail: '+20% Dream Weavers and Celestial Cats production.', cost: 4, icon: 'star' },
+  { id: 'aphrodite', name: 'Love of Labor', god: 'Aphrodite', statue: 9, detail: '+10% all automatic production.', cost: 4, icon: 'heart' },
+  { id: 'hephaestus', name: 'Forge of Paws', god: 'Hephaestus', statue: 10, detail: '+10% automatic production per purchased chapter upgrade.', cost: 3, icon: 'house' },
+  { id: 'dionysus', name: 'Joyful Pull', god: 'Dionysus', statue: 11, detail: '+10% yarn from every touch.', cost: 2, icon: 'paw' },
 ] as const;
 export type TalentId = typeof TALENTS[number]['id'];
 export const COATS = [
