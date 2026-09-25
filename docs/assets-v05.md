@@ -5,7 +5,7 @@ Six original character illustrations were generated with the built-in image gene
 - Runtime assets: `public/art/companions/{id}.webp`.
 - Final generation prompts: [companion-art-prompts.json](companion-art-prompts.json).
 - Each character is 512 × 512 with transparent alpha. The bundled Sharp library was used only for delivery resizing and WebP encoding (quality85, alpha100). No new project dependency.
-- Combined compressed size: **386,008 bytes**. All six are local and available offline.
+- Combined compressed size: **380,000 bytes**. All six are local and available offline.
 - The same artwork is used in collection cards and the workshop. The latter is a camera-facing Three.js Sprite over the existing 3D cushion; workers remain procedural 3D cats.
 - Only the currently selected portrait owns a GPU texture. Changing selection releases the old texture. Stale asynchronous loads cannot replace a newer selection, and the controller disposes its texture/material on teardown.
 - Unavailable/locked companions never show on the cushion. Loading or failed portraits remain hidden instead of displaying stale art. The HTML collection and its bonuses do not depend on WebGL rendering.
@@ -15,3 +15,7 @@ The rest of the game's artwork and music credits are unchanged. This is generate
 ## Luigi reference correction — 25 September 2026
 
 The later photograph supplied by the user shows a fluffy brown/grey tabby with dark stripes, a white muzzle, bib, belly and sock paws. Luigi's illustration now follows those markings while retaining its feisty expression, upright pose and alpha silhouette. The original photograph is not included. This is an art-only correction: no buffs, unlock conditions, IDs, save data or runtime code changed.
+
+## Kira personal reference correction — 25 September 2026
+
+The user supplied a photograph of the actual Kira after the initial generic tabby reference. Her portrait now follows the more tapered face, large ears, narrow unimpressed eyes, fine brown/grey tabby markings, cream chest and dark fluffy tail. The bossy raised paw and illustrated style remain. The personal photograph is not redistributed. This art-only update preserves all companion behavior, bonuses and saved progress.
