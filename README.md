@@ -10,6 +10,14 @@ A browser-first, single-player yarn clicker: pull a coral yarn ball, adopt a cre
 
 No package installation or internet connection is needed to play the included build. Do not open `dist/index.html` directly: browsers restrict module loading from `file://`. The launcher binds only to the local computer; it does not publish the game. Use a modern browser with WebGL2 and Web Locks support. The HTML clicker remains playable if 3D initialization fails.
 
+## Tablet navigation update
+
+The entire workshop now lives inside one cozy tablet. **Workshop** is the play screen; **Your crew**, **Upgrades**, **Achievements**, and **Cats** are separate internal screens. The header keeps the yarn balance visible, and production continues while browsing. Manual pulling is available only on the play screen.
+
+**Olympus** takes the view upward out of the tablet into the sky. The back arrow or Escape returns to the workshop. Motion preferences skip the journey animation. The former floating yarn dock has been removed so it cannot cover gods or purchase controls on phones.
+
+See [tablet verification](docs/verification-tablet.md). Existing saves, companions, prices, and prestige rules are unchanged.
+
 ## What changed in 0.5.0
 
 - Six illustrated home companions: **Kira, Mario, Roman, Luigi, Lola, and Biscuit**, with personalities and markings based on the user's pets. Biscuit retains the legacy internal ID `biscocho` so existing saves remain valid.
@@ -42,7 +50,7 @@ See [0.5 verification](docs/verification-v05.md) and [companion artwork](docs/as
 
 - Exactly **one golden paw per completed restart**, never more for hoarding yarn. Produce `100,000 × 2^completed chapters` yarn in the current run to unlock a restart. Spending does not reduce this run goal; resetting clears it.
 - Twelve Greek cat gods with permanent talents. Select a god to inspect its effect, then confirm purchase. Owned pedestals turn gold and glow.
-- Compact Olympus header, icon-only back control, balance in the header, and restart controls beside the playable workshop dock. Twelve statues fit tested desktop sizes without scrolling; phones scroll.
+- Compact Olympus header, icon-only back control, balance in the header, and restart controls below the pantheon (the current tablet update removes the former workshop dock). Twelve statues fit tested desktop sizes without scrolling; phones scroll.
 - Existing v1–v3 saves migrate to v4 with earned paws, talents, achievements, collection, and settings preserved. Hoarded unclaimed rewards are not carried over. **v4 saves cannot be opened by older releases.** Export a backup before changing versions.
 
 ### Retained from 0.3

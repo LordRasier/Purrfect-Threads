@@ -10,6 +10,7 @@ test('compact ten-crew shop and separate cozy progression spaces', async ({ page
   await page.goto('/');
   if (info.project.name === 'desktop') await page.setViewportSize({width:961,height:854});
   await expect(page.locator('#world')).toHaveAttribute('data-ready','true');
+  await page.locator('.navigation [data-screen="crew"]').click();
   await expect(page.locator('.producer:visible')).toHaveCount(10);
   const row = page.locator('#card-kitten');
   expect((await row.boundingBox())!.height).toBeLessThanOrEqual(88);
@@ -47,6 +48,7 @@ test('simultaneous badges are announced without losing the purchase feedback', a
   const game = createGame(Date.now()); game.yarn = game.runEarned = game.lifetime = new Decimal('1e10'); game.stats.taps = 1000; game.owned.corner = 4; game.owned.kitten = 49;
   await page.addInitScript(({key, raw}) => localStorage.setItem(key,raw), {key:SAVE_KEY,raw:encode(game)});
   await page.goto('/');
+  await page.locator('.navigation [data-screen="crew"]').click();
   await page.getByRole('button', {name:'Adopt Kitten',exact:true}).click();
   await expect(page.locator('#toast')).toContainText('Achievement unlocked');
   await expect(page.locator('#toast')).toContainText('Kira');

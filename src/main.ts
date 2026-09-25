@@ -5,6 +5,7 @@ import './ui/expansion.css';
 import './ui/experience.css';
 import './ui/olympus.css';
 import './ui/companions.css';
+import './ui/tablet.css';
 import { PRODUCERS, UPGRADES, TALENTS, COATS } from './game/catalog';
 import { advance, buyProducer, buyUpgrade, createGame, tap, tapValue, criticalChance, type GameState } from './game/engine';
 import { applyOffline, buyTalent, prestige, prestigeReward, selectCoat } from './game/progression';
@@ -71,12 +72,12 @@ async function start(session: Session): Promise<void> {
   let olympusHost: HTMLElement | null = null;
   let olympusPending = false;
   function syncOlympus(): void {
-    const host = root.querySelector<HTMLElement>('.olympus');
+    const host = (ui.screen === 'chapter' || root.classList.contains('is-traveling')) ? root.querySelector<HTMLElement>('.olympus') : null;
     if (host !== olympusHost) { olympus?.dispose(); olympus = undefined; olympusHost = host; }
-    if (host && !olympus && !olympusPending && !host.dataset.ready) {
+    if (ui.screen === 'chapter' && host && !olympus && !olympusPending && !host.dataset.ready) {
       olympusPending = true;
       void import('./scene/olympus').then(({ OlympusWorld }) => {
-        if (!session.active || host !== root.querySelector('.olympus')) return;
+        if (!session.active || ui.screen !== 'chapter' || host !== root.querySelector('.olympus')) return;
         olympus = new OlympusWorld(host);
         if (!olympus.supported) { olympus.dispose(); olympus = undefined; throw new Error('WebGL unavailable.'); }
         olympus.sync(game.talents, game.settings.quality);
@@ -103,6 +104,7 @@ async function start(session: Session): Promise<void> {
   const reduced = () => game.settings.reducedMotion || motionPreference.matches;
   const held = new HoldInput(pull);
   const stopHolding = () => held.cancel();
+  root.addEventListener('screenchange', stopHolding);
   const persist = () => {
     if (!session.active) return;
     // Also checkpoint in-memory sessions: active time is never offline time.
@@ -134,7 +136,7 @@ async function start(session: Session): Promise<void> {
     sound.setAttribute('aria-label', audible ? text.mute : text.unmute);
   }
   function pull(scheduledTime = performance.now()): void {
-    if (!session.active || ui.dialog.open || suspended || importPending) return;
+    if (!session.active || ui.screen !== 'workshop' || ui.dialog.open || suspended || importPending) return;
     const now = performance.now();
     const amount = tap(game, scheduledTime);
     if (amount.gt(0)) { world?.pulse(now); ui.floating(`${format(amount)}${amount.gt(tapValue(game)) ? ' · ' + text.critical : ''}`, reduced()); audio.play(game.settings.volume); ui.refresh(); }
@@ -198,7 +200,7 @@ async function start(session: Session): Promise<void> {
   ui.pull.addEventListener('lostpointercapture', () => held.release('pointer', performance.now()));
   ui.pull.addEventListener('click', event => { if (event.detail === 0) pull(); });
   document.addEventListener('keydown', event => {
-    if (event.code !== 'Space' || event.repeat || ui.dialog.open) return;
+    if (event.code !== 'Space' || event.repeat || ui.dialog.open || ui.screen !== 'workshop') return;
     const focused = document.activeElement;
     if (focused !== document.body && focused !== ui.pull) return;
     event.preventDefault(); held.press('keyboard', performance.now());
@@ -275,7 +277,7 @@ async function start(session: Session): Promise<void> {
       if (now - lastUI >= 160) { refresh(); lastUI = now; }
       syncOlympus();
       olympus?.render(now, reduced());
-      world?.render(now, delta, reduced());
+      if (ui.screen === 'workshop') world?.render(now, delta, reduced());
       if (now - lastSave >= 5000) {
         persist(); lastSave = now;
         if (world) ui.worldHost.dataset.metrics = JSON.stringify(world.stats);

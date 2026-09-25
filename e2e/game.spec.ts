@@ -16,6 +16,7 @@ test('a new workshop can earn, adopt, produce, and reload', async ({ page, isMob
     await page.waitForTimeout(15200);
     await page.keyboard.up('Space');
   }
+  await page.locator('.navigation [data-screen="crew"]').click();
   const adopt = page.getByRole('button', { name: /Adopt Kitten/ });
   await expect(adopt).toBeEnabled();
   await adopt.click();
@@ -34,6 +35,7 @@ test('tabs, collection and settings are accessible', async ({ page }) => {
   await page.getByRole('button', { name: 'New chapter', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Mount Pawlympus' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Begin a new chapter' })).toBeDisabled();
+  await page.getByRole('button', { name: 'Back to workshop', exact: true }).click();
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
   await page.getByLabel('Reduced motion').check();

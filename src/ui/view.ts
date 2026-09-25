@@ -10,7 +10,7 @@ import { icon } from './icons';
 import { ACHIEVEMENTS, achievementProgress } from '../game/achievements';
 import { crewPanel, upgradePanel, chapterPanel, collectionPanel, achievementsPanel } from './panels';
 
-export type Screen = 'workshop' | 'upgrades' | 'achievements' | 'collection' | 'chapter';
+export type Screen = 'workshop' | 'crew' | 'upgrades' | 'achievements' | 'collection' | 'chapter';
 export class GameUI {
   screen: Screen = 'workshop';
   quantity: Quantity = 1;
@@ -20,23 +20,30 @@ export class GameUI {
   readonly worldHost: HTMLElement;
   private panel: HTMLElement;
   private toastTimer = 0;
+  private travelAnimation: Animation | null = null;
   private shellText: { node: Text; source: string }[] = [];
   private shellLabels: { node: Element; attribute: string; source: string }[] = [];
 
   constructor(private root: HTMLElement, private game: () => GameState, onAction: (action: string, id?: string) => void) {
     const language = getLanguage();
     setLanguage('en');
+    root.classList.add('tablet-app');
+    root.dataset.travel = 'idle';
     root.innerHTML = `
+      <div class="journey-track"><section class="sky-realm" inert aria-hidden="true"><div class="management realm-management" id="realm-management" role="region" tabindex="0" aria-label="${text.managementLabel}"></div></section>
+      <div class="tablet-stage"><div class="tablet-device"><div class="tablet-camera" aria-hidden="true"></div>
       <header class="topbar">
         <a class="brand" href="#" aria-label="${text.brand}"><span class="brand-mark">${icon('cat')}</span><span>${text.brandFirst}<span class="brand-second">${text.brandSecond}<span class="brand-dot">.</span></span></span></a>
         <nav class="navigation" aria-label="${text.sectionsLabel}">
-          <button data-screen="workshop" aria-pressed="true">${icon('house')}<span>${text.workshop}</span></button>
+          <button data-screen="workshop" aria-label="${text.workshop}" aria-pressed="true">${icon('house')}<span class="nav-long">${text.workshop}</span><span class="nav-short">${tr('Play')}</span></button>
+          <button data-screen="crew" aria-label="${text.team}" aria-pressed="false">${icon('paw')}<span class="nav-long">${text.team}</span><span class="nav-short">${tr('Crew')}</span></button>
           <button data-screen="upgrades" aria-label="${text.upgradesTab}" aria-pressed="false">${icon('knit')}<span>${text.upgradesTab}</span></button>
-          <button data-screen="achievements" aria-label="${text.achievementsTab}" aria-pressed="false">${icon('heart')}<span>${text.achievementsTab}</span></button>
+          <button data-screen="achievements" aria-label="${text.achievementsTab}" aria-pressed="false">${icon('heart')}<span class="nav-long">${text.achievementsTab}</span><span class="nav-short">${tr('Badges')}</span></button>
           <button data-screen="collection" aria-label="${text.collection}" aria-pressed="false">${icon('cat')}<span>${text.collectionShort}</span><span class="nav-count" id="collection-count">0/6</span></button>
           <button data-screen="chapter" aria-label="${text.chapter}" aria-pressed="false">${icon('star')}<span>${text.olympusShort}</span></button>
         </nav>
         <div class="header-actions"><span class="save-status" id="save-status" role="status">${text.saving}</span><button class="icon-button" data-action="sound" aria-label="${text.mute}" id="sound-button">${icon('sound')}</button><button class="icon-button" data-action="settings" aria-label="${text.settings}">${icon('settings')}</button></div>
+        <div class="tablet-wallet">${icon('yarn')}<strong id="tablet-yarn">0</strong></div>
       </header>
       <main class="layout">
         <section class="play-area" aria-label="${text.playAreaLabel}">
@@ -44,9 +51,11 @@ export class GameUI {
           <div class="stash"><span class="stash-label">${text.yarn}</span><div class="stash-value">${icon('yarn')}<span data-testid="yarn" id="yarn-count">0</span></div><div class="stats-line"><span><i class="status-dot"></i><strong data-testid="rate" id="rate">0</strong> ${text.perSecond}</span><span class="stat-divider"></span><span>${icon('paw')}<strong data-testid="population" id="population">0</strong> ${text.workingCats}</span></div></div>
           <div class="world" id="world"><div class="scene-halo"></div><span class="room-label" id="room-label">${text.chapterLabel(0)}</span><button id="pull" class="yarn-target" aria-label="${text.pull}"><span class="sr-only">${text.pull}</span></button><div class="float-layer" id="float-layer" aria-hidden="true"></div><span class="scene-sparkle sparkle-one">✦</span><span class="scene-sparkle sparkle-two">✧</span></div>
           <div class="pull-hint"><span class="hint-icon">${icon('paw')}</span><span><strong>${text.holdHint}</strong><small id="tap-hint">${text.keyboardHint}</small></span><span class="per-tap" id="per-tap">+1</span></div>
+          <div class="home-actions"><button class="soft-button" data-screen="crew">${icon('paw')}${text.team}${icon('arrow')}</button></div>
         </section>
-        <aside class="tablet-shell"><div class="tablet-camera" aria-hidden="true"></div><div class="management" id="management" role="region" tabindex="0" aria-label="${text.managementLabel}"></div><span class="tablet-home" aria-hidden="true"></span></aside>
+        <aside class="tablet-panel-shell" hidden><div class="management" id="management" role="region" tabindex="0" aria-label="${text.managementLabel}"></div></aside>
       </main>
+      <span class="tablet-home" aria-hidden="true"></span></div></div></div>
       <footer><span>${icon('heart')}${text.footer}</span><span>${text.prototype}</span></footer>
       <div class="notice" id="notice" role="status" hidden></div><div class="toast" id="toast" role="status" hidden></div>
       <dialog id="modal" aria-labelledby="modal-title"></dialog><input id="import-file" type="file" accept=".json,application/json" hidden />`;
@@ -76,9 +85,38 @@ export class GameUI {
 
   private navigate(screen: Screen): void {
     const previous = this.screen;
+    if (previous === screen) return;
+    const activator = document.activeElement;
+    const crossingRealms = (screen === 'chapter') !== (previous === 'chapter');
+    const track = this.root.querySelector<HTMLElement>('.journey-track')!;
+    // Sample before cancelling so a reversal starts at the current visual position.
+    const origin = crossingRealms ? getComputedStyle(track).transform : '';
+    if (crossingRealms) { this.travelAnimation?.cancel(); this.travelAnimation = null; }
+    this.root.dispatchEvent(new Event('screenchange'));
     this.screen = screen; this.renderPanel(); this.refresh(); this.panel.scrollTop = 0;
+    const reduced = this.game().settings.reducedMotion || matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (crossingRealms) {
+      this.root.dataset.travel = reduced ? 'idle' : screen === 'chapter' ? 'ascending' : 'descending';
+      this.root.classList.toggle('is-traveling', !reduced);
+      if (!reduced) {
+        const animation = track.animate([{transform:origin}, {transform:screen === 'chapter' ? 'translateY(100%)' : 'translateY(0)'}], {duration:900,easing:'cubic-bezier(.65,0,.25,1)'});
+        this.travelAnimation = animation;
+        animation.onfinish = () => {
+          if (this.travelAnimation !== animation) return;
+          this.travelAnimation = null;
+          this.root.dataset.travel = 'idle'; this.root.classList.remove('is-traveling');
+        };
+      }
+    } else if (!reduced) {
+      const target = screen === 'workshop' ? this.root.querySelector<HTMLElement>('.play-area')! : this.panel;
+      target.getAnimations().forEach(animation => animation.cancel());
+      target.animate([{ opacity: 0, transform: 'translateY(12px)' }, { opacity: 1, transform: 'translateY(0)' }], {duration:260,easing:'ease-out'});
+    }
     if (screen === 'chapter') this.panel.querySelector<HTMLButtonElement>('[data-screen="workshop"]')?.focus({preventScroll:true});
     else if (previous === 'chapter') this.root.querySelector<HTMLButtonElement>('.navigation [data-screen="workshop"]')?.focus({preventScroll:true});
+    else if (activator instanceof HTMLElement && (!activator.isConnected || activator.closest('[hidden],[inert]'))) {
+      (screen === 'workshop' ? this.pull : this.panel).focus({preventScroll:true});
+    }
   }
 
   localizeShell(): void {
@@ -90,28 +128,42 @@ export class GameUI {
   renderPanel(): void {
     const game = this.game();
     const focused = document.activeElement?.id;
+    const sky = this.screen === 'chapter';
+    const home = this.screen === 'workshop';
+    this.panel = this.root.querySelector(sky ? '#realm-management' : '#management')!;
+    // Keep the departing tablet screen intact while the camera rises into the sky.
+    if (!sky) {
+      this.root.querySelector<HTMLElement>('.play-area')!.hidden = !home;
+      this.root.querySelector<HTMLElement>('.tablet-panel-shell')!.hidden = home;
+    }
+    this.root.querySelector<HTMLElement>('.tablet-stage')!.inert = sky;
+    this.root.querySelector<HTMLElement>('.sky-realm')!.inert = !sky;
+    this.root.querySelector('.sky-realm')!.setAttribute('aria-hidden', String(!sky));
+    this.root.querySelector('.tablet-stage')!.setAttribute('aria-hidden', String(sky));
     this.panel.dataset.screen = this.screen;
     this.root.classList.toggle('olympus-open', this.screen === 'chapter');
-    const panels = { workshop: () => crewPanel(game), upgrades: () => upgradePanel(game), achievements: () => achievementsPanel(game, this.achievementCategory), collection: () => collectionPanel(game), chapter: () => chapterPanel() };
+    const panels = { workshop: () => '', crew: () => crewPanel(game), upgrades: () => upgradePanel(game), achievements: () => achievementsPanel(game, this.achievementCategory), collection: () => collectionPanel(game), chapter: () => chapterPanel() };
     this.panel.innerHTML = panels[this.screen]();
     if (focused) document.getElementById(focused)?.focus({ preventScroll: true });
   }
 
   refresh(): void {
     const game = this.game();
+    if (game.settings.reducedMotion || matchMedia('(prefers-reduced-motion: reduce)').matches) this.travelAnimation?.finish();
     const set = (id: string, value: string) => { const el = document.getElementById(id); if (el && el.textContent !== value) el.textContent = value; };
     set('yarn-count', format(game.yarn.floor(), 0));
+    set('tablet-yarn', format(game.yarn.floor(), 0));
     set('rate', format(production(game)));
     set('population', format(population(game), 0));
     set('per-tap', text.perTap(format(tapValue(game))));
     set('collection-count', `${game.collection.length}/6`);
     set('room-label', text.chapterLabel(game.chapters));
-    this.root.querySelectorAll<HTMLButtonElement>('[data-screen]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.screen === this.screen)));
+    this.root.querySelectorAll<HTMLButtonElement>('.navigation button[data-screen]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.screen === this.screen)));
     this.root.querySelectorAll<HTMLButtonElement>('[data-quantity]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.quantity === String(this.quantity))));
     const nextCat = COATS.find((_, index) => !game.collection.includes(index));
     set('goal-title', nextCat ? text.nextGoal(nextCat.name) : text.familyTitle);
     set('tap-hint', population(game).eq(0) ? text.firstGoalDetail : text.keyboardHint);
-    if (this.screen === 'workshop') {
+    if (this.screen === 'crew') {
       PRODUCERS.forEach((item, i) => {
         const q = quote(game, item.id, this.quantity);
         const next = q.count ? q : quote(game, item.id, 1);

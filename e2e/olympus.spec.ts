@@ -25,7 +25,7 @@ test('twelve illustrated gods fit desktop and open inspect-before-buy dialogs', 
     const heading = await page.locator('.realm-toolbar h2').boundingBox();
     const control = await back.boundingBox();
     expect(Math.abs(heading!.y + heading!.height / 2 - control!.y - control!.height / 2)).toBeLessThan(30);
-    expect(await page.locator('#management').evaluate(el => el.scrollHeight <= el.clientHeight + 1)).toBe(true);
+    expect(await page.locator('#realm-management').evaluate(el => el.scrollHeight <= el.clientHeight + 1)).toBe(true);
     for (const card of await page.locator('.statue-card').all()) await expect(card).toBeInViewport({ratio:1});
     await expect(page.locator('#prestige-button')).toBeInViewport({ratio:1});
   }
@@ -51,7 +51,7 @@ test('twelve illustrated gods fit desktop and open inspect-before-buy dialogs', 
   await page.getByRole('button', {name:'New chapter',exact:true}).click();
   await expect(page.locator('#talent-welcome')).toHaveClass(/purchased/);
   await expect(page.locator('.olympus')).toHaveAttribute('data-ready','true');
-  await expect(page.locator('#pull')).toBeInViewport();
+  await expect(page.locator('#pull')).toBeHidden();
   await expect(page.locator('.statue-viewport[data-art-ready="true"]')).toHaveCount(12);
   if (info.project.name === 'desktop') await page.screenshot({path:'docs/screenshots/v041-illustrated-pantheon.png'});
   else await page.screenshot({path:'docs/screenshots/v041-illustrated-mobile.png'});
@@ -66,7 +66,7 @@ test('compact pantheon survives short desktop, mobile scrolling and repeated nav
     await page.getByRole('button', {name:'New chapter',exact:true}).click();
     await expect(page.locator('.olympus')).toHaveAttribute('data-ready','true');
     if (info.project.name === 'desktop') {
-      expect(await page.locator('#management').evaluate(el => el.scrollHeight <= el.clientHeight + 1)).toBe(true);
+      expect(await page.locator('#realm-management').evaluate(el => el.scrollHeight <= el.clientHeight + 1)).toBe(true);
     } else {
       await page.locator('#talent-dionysus').scrollIntoViewIfNeeded();
       await page.locator('#talent-dionysus').click();

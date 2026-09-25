@@ -31,7 +31,10 @@ test('responsive controls, reduced motion and a populated workshop', async ({ pa
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'Pull yarn', exact: true }).focus();
   await page.keyboard.press('Tab');
+  await expect(page.locator('.home-actions').getByRole('button', { name: 'Your crew', exact: true })).toBeFocused();
+  await page.keyboard.press('Enter');
   await expect(page.getByRole('region', {name:'Workshop management',exact:true})).toBeFocused();
   await page.keyboard.press('Tab');
   expect(await page.evaluate(() => document.activeElement?.tagName)).toBe('BUTTON');
+  await expect(page.locator('#pull')).toBeHidden();
 });

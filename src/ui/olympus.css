@@ -1,5 +1,5 @@
 /* A compact gallery: descriptions belong in dialogs, not in the statue grid. */
-.olympus-open .management { display:grid; grid-template-rows:auto minmax(0,1fr) auto; gap:14px; padding:16px 28px; scrollbar-gutter:auto; background:linear-gradient(#f8efda75,#b69bb133 65%,#faf0dfb3); }
+.sky-realm .management { display:grid; grid-template-rows:auto minmax(0,1fr) auto; gap:14px; padding:16px 28px; scrollbar-gutter:auto; background:linear-gradient(#f8efda75,#b69bb133 65%,#faf0dfb3); }
 .realm-toolbar { display:grid; grid-template-columns:44px minmax(0,1fr) 44px; gap:16px; position:relative; z-index:3; }
 .realm-toolbar>.icon-button { background:#fff9e9f0; border-color:#cfb884; color:#655177; box-shadow:0 3px 12px #75557a22; }
 .realm-back .icon { transform:rotate(180deg); }
@@ -8,46 +8,46 @@
 .realm-title h2 { grid-column:1; margin:1px 0 0; font:clamp(24px,3vw,38px)/1.1 Georgia,serif; color:#715986; }
 .realm-balance { grid-column:2; grid-row:1/3; display:flex; align-items:center; gap:8px; border-left:1px solid #d4bd8b; padding-left:24px; }
 .realm-balance .icon { width:27px; height:27px; color:#ac7d2c; }
-.olympus-open #points-label { font-size:13px; color:#70551f; }
-.olympus-open .olympus { position:relative; width:100%; height:100%; min-height:0; max-width:1240px; padding:0; margin:0 auto; }
-.olympus-open .talent-list { height:100%; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); grid-template-rows:repeat(3,minmax(0,1fr)); gap:12px 20px; }
-.olympus-open .statue-card { min-height:0; min-width:0; width:100%; display:flex; flex-direction:column; align-items:stretch; padding:5px 8px 9px; gap:0; border:1px solid #cbb386; border-radius:55% 55% 18px 18px / 30% 30% 18px 18px; background:linear-gradient(#fffaf0cf,#e9decbf5); box-shadow:inset 0 0 0 4px #fff8e540,0 5px 0 #b9a58a,0 8px 18px #72577733; color:#51425e; transition:border-color .2s,box-shadow .2s,background .2s; }
-.olympus-open .statue-card:hover { border-color:#aa8037; background:linear-gradient(#fffdf5,#f2e9d4); }
-.olympus-open .statue-card.purchased { border:2px solid #c09032; background:radial-gradient(ellipse at 50% 40%,#fff4b8ed,#f7e9c9e8 60%,#eddbb5); box-shadow:inset 0 0 0 3px #ffeebd80,0 4px 0 #b8934e,0 0 22px #ffd57480; }
+.sky-realm #points-label { font-size:13px; color:#70551f; }
+.sky-realm .olympus { position:relative; width:100%; height:100%; min-height:0; max-width:1240px; padding:0; margin:0 auto; }
+.sky-realm .talent-list { height:100%; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); grid-template-rows:repeat(3,minmax(0,1fr)); gap:12px 20px; }
+.sky-realm .statue-card { min-height:0; min-width:0; width:100%; display:flex; flex-direction:column; align-items:stretch; padding:5px 8px 9px; gap:0; border:1px solid #cbb386; border-radius:55% 55% 18px 18px / 30% 30% 18px 18px; background:linear-gradient(#fffaf0cf,#e9decbf5); box-shadow:inset 0 0 0 4px #fff8e540,0 5px 0 #b9a58a,0 8px 18px #72577733; color:#51425e; transition:border-color .2s,box-shadow .2s,background .2s; }
+.sky-realm .statue-card:hover { border-color:#aa8037; background:linear-gradient(#fffdf5,#f2e9d4); }
+.sky-realm .statue-card.purchased { border:2px solid #c09032; background:radial-gradient(ellipse at 50% 40%,#fff4b8ed,#f7e9c9e8 60%,#eddbb5); box-shadow:inset 0 0 0 3px #ffeebd80,0 4px 0 #b8934e,0 0 22px #ffd57480; }
 .statue-viewport { display:block; flex:1; min-height:60px; position:relative; }
 .statue-fallback { position:absolute; inset:0; display:grid; place-items:center; color:#a4895a; }
 .statue-fallback .icon { width:50px; height:50px; }
 .statue-viewport[data-art-ready="true"] .statue-fallback { display:none; }
 .statue-label { position:relative; z-index:2; display:grid; justify-items:center; gap:2px; flex:none; }
-.olympus-open .statue-card .statue-label strong { font:700 17px/1.1 Georgia,serif; color:#5f486e; }
+.sky-realm .statue-card .statue-label strong { font:700 17px/1.1 Georgia,serif; color:#5f486e; }
 .blessing-name { font-size:11px; line-height:1.25; color:#62584a; }
-.olympus-open .talent-price { margin-top:3px; padding:3px 9px; font-size:10px; line-height:1.3; background:#ebdcba; color:#725929; border-radius:14px; min-height:0; }
-.olympus-open .statue-card.purchased .talent-price { background:#ead390; }
-.olympus-open .chapter-card { width:calc(100% - 196px); max-width:none; margin:0 0 0 196px; padding:12px 20px; min-height:128px; display:grid; grid-template-columns:minmax(160px,.8fr) minmax(240px,1.2fr); gap:18px; align-items:center; border:1px solid #d4bd8c; border-radius:22px; background:#fff9eaf5; box-shadow:0 5px 20px #76605e22; text-align:left; }
+.sky-realm .talent-price { margin-top:3px; padding:3px 9px; font-size:10px; line-height:1.3; background:#ebdcba; color:#725929; border-radius:14px; min-height:0; }
+.sky-realm .statue-card.purchased .talent-price { background:#ead390; }
+.sky-realm .chapter-card { width:calc(100% - 196px); max-width:none; margin:0 0 0 196px; padding:12px 20px; min-height:128px; display:grid; grid-template-columns:minmax(160px,.8fr) minmax(240px,1.2fr); gap:18px; align-items:center; border:1px solid #d4bd8c; border-radius:22px; background:#fff9eaf5; box-shadow:0 5px 20px #76605e22; text-align:left; }
 .chapter-summary { display:flex; flex-direction:column; gap:5px; }
 .chapter-summary .tiny-label { font-size:8px; letter-spacing:1.5px; }
-.olympus-open .chapter-card strong { font:26px/1.2 Georgia,serif; color:#947128; margin:0; }
-.olympus-open .chapter-card p { font-size:11px; line-height:1.4; margin:0; color:#74654f; }
+.sky-realm .chapter-card strong { font:26px/1.2 Georgia,serif; color:#947128; margin:0; }
+.sky-realm .chapter-card p { font-size:11px; line-height:1.4; margin:0; color:#74654f; }
 .chapter-action { display:flex; flex-direction:column; gap:7px; }
-.olympus-open .chapter-card .primary-button { margin:0; min-height:44px; padding:9px 12px; font-size:12px; width:100%; }
+.sky-realm .chapter-card .primary-button { margin:0; min-height:44px; padding:9px 12px; font-size:12px; width:100%; }
 .chapter-progress { height:4px; background:#e3d7bc; overflow:hidden; border-radius:4px; }
 .chapter-progress i { display:block; height:100%; background:#8c9c71; }
-.olympus-open .play-area { width:180px; height:128px; bottom:16px; left:28px; border-radius:20px; }
-.olympus-open .stash-value { height:25px; }
-.olympus-open .stash-value>span { font-size:20px; }
-@media(min-width:1200px) { .olympus-open .talent-list { grid-template-columns:repeat(6,minmax(0,1fr)); grid-template-rows:repeat(2,minmax(0,1fr)); } }
-@media(max-height:730px) and (min-width:851px) { .olympus-open .management { gap:10px; padding-top:10px; padding-bottom:10px; }.realm-title h2 { font-size:27px; }.olympus-open .chapter-card { min-height:114px; }.olympus-open .play-area { bottom:10px; height:114px; }.blessing-name { font-size:10px; } }
+.sky-realm .play-area { width:180px; height:128px; bottom:16px; left:28px; border-radius:20px; }
+.sky-realm .stash-value { height:25px; }
+.sky-realm .stash-value>span { font-size:20px; }
+@media(min-width:1200px) { .sky-realm .talent-list { grid-template-columns:repeat(6,minmax(0,1fr)); grid-template-rows:repeat(2,minmax(0,1fr)); } }
+@media(max-height:730px) and (min-width:851px) { .sky-realm .management { gap:10px; padding-top:10px; padding-bottom:10px; }.realm-title h2 { font-size:27px; }.sky-realm .chapter-card { min-height:114px; }.sky-realm .play-area { bottom:10px; height:114px; }.blessing-name { font-size:10px; } }
 /* Narrow screens keep a small playable dock; all gallery content can scroll past it. */
 @media(max-width:850px), (max-height:580px) {
-  .olympus-open .management { display:block; padding:12px 12px 152px; scroll-padding-bottom:152px; overflow:auto; }
+  .sky-realm .management { display:block; padding:12px 12px 152px; scroll-padding-bottom:152px; overflow:auto; }
   .realm-toolbar { gap:8px; margin-bottom:14px; }
   .realm-title { display:flex; flex-direction:column; padding:8px 10px; width:100%; border-radius:18px; gap:3px; }
   .realm-title h2 { font-size:25px; }.realm-title .eyebrow { font-size:6px; letter-spacing:1.2px; }
-  .realm-balance { border:0; padding:0; gap:4px; }.realm-balance .icon { width:16px; height:16px; }.olympus-open #points-label { font-size:11px; }
-  .olympus-open .olympus { height:auto; }
-  .olympus-open .talent-list { grid-template-columns:repeat(3,minmax(0,1fr)); grid-template-rows:none; grid-auto-rows:202px; gap:12px; }
-  .olympus-open .statue-card { padding:6px 5px 9px; }.olympus-open .statue-card .statue-label strong { font-size:17px; }.blessing-name { font-size:10px; }
-  .olympus-open .chapter-card { width:100%; margin:20px 0 0; min-height:0; padding:16px; grid-template-columns:1fr; gap:12px; }
-  .olympus-open .play-area { width:164px; height:124px; bottom:8px; left:8px; }
+  .realm-balance { border:0; padding:0; gap:4px; }.realm-balance .icon { width:16px; height:16px; }.sky-realm #points-label { font-size:11px; }
+  .sky-realm .olympus { height:auto; }
+  .sky-realm .talent-list { grid-template-columns:repeat(3,minmax(0,1fr)); grid-template-rows:none; grid-auto-rows:202px; gap:12px; }
+  .sky-realm .statue-card { padding:6px 5px 9px; }.sky-realm .statue-card .statue-label strong { font-size:17px; }.blessing-name { font-size:10px; }
+  .sky-realm .chapter-card { width:100%; margin:20px 0 0; min-height:0; padding:16px; grid-template-columns:1fr; gap:12px; }
+  .sky-realm .play-area { width:164px; height:124px; bottom:8px; left:8px; }
 }
-@media(max-width:500px) { .olympus-open .talent-list { grid-template-columns:repeat(2,minmax(0,1fr)); }.realm-title h2 { font-size:22px; }.realm-toolbar { grid-template-columns:44px minmax(0,1fr) 44px; }.realm-title .eyebrow { display:none; } }
+@media(max-width:500px) { .sky-realm .talent-list { grid-template-columns:repeat(2,minmax(0,1fr)); }.realm-title h2 { font-size:22px; }.realm-toolbar { grid-template-columns:44px minmax(0,1fr) 44px; }.realm-title .eyebrow { display:none; } }

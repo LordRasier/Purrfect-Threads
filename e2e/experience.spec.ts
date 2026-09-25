@@ -8,13 +8,16 @@ test.beforeEach(async ({page}) => {
   await page.addInitScript(({key,raw}) => { if (!localStorage.getItem(key)) localStorage.setItem(key,raw); }, {key:SAVE_KEY,raw:encode(game)});
 });
 
-test('tablet scroll keeps yarn visible and owned crews decorate their cards', async ({page}) => {
+test('crew scroll keeps owned crews decorated while yarn stays on the workshop home', async ({page}) => {
   await page.goto('/'); await expect(page.locator('#world')).toHaveAttribute('data-ready','true');
+  await page.locator('.navigation [data-screen="crew"]').click();
   await page.getByRole('button',{name:'Adopt Kitten',exact:true}).click();
   await expect(page.locator('#card-kitten .crew-motif')).toHaveCount(1);
   await page.getByRole('button',{name:'Adopt Kitten',exact:true}).click();
   await expect(page.locator('#card-kitten .crew-motif')).toHaveCount(2);
   await page.locator('#management').evaluate(el => el.scrollTop = el.scrollHeight);
+  await expect(page.locator('#pull')).toBeHidden();
+  await page.getByRole('button',{name:'Workshop',exact:true}).click();
   await expect(page.locator('#pull')).toBeInViewport();
   expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1)).toBe(true);
 });
@@ -39,22 +42,21 @@ test('notes and embroidered patches open details without accidental purchases', 
   await expect(page.locator('#achievement-first-thread')).toBeFocused();
 });
 
-test('Olympus is a separate full-screen realm with a playable yarn dock', async ({page},info) => {
+test('Olympus is a separate sky realm and yarn remains on workshop home', async ({page}) => {
   await page.goto('/'); await expect(page.locator('#world')).toHaveAttribute('data-ready','true');
   await page.getByRole('button',{name:'New chapter',exact:true}).click();
   await expect(page.locator('#app')).toHaveClass(/olympus-open/);
-  const rect = await page.locator('.tablet-shell').boundingBox(), viewport = page.viewportSize()!;
-  expect(rect!.width).toBeGreaterThan(viewport.width * .95);
-  await expect(page.locator('#pull')).toBeInViewport();
-  const pullSize = await page.locator('#pull').boundingBox();
-  expect(pullSize!.width).toBeGreaterThanOrEqual(44);
-  expect(pullSize!.height).toBeGreaterThanOrEqual(44);
+  await expect(page.locator('.sky-realm')).toHaveAttribute('aria-hidden','false');
+  await expect(page.locator('#realm-management')).toBeVisible();
+  await expect(page.locator('#management')).toBeHidden();
+  await expect(page.locator('#pull')).toBeHidden();
   await page.getByRole('button',{name:'Back to workshop',exact:true}).click();
   await expect(page.locator('#app')).not.toHaveClass(/olympus-open/);
   await expect(page.locator('#pull')).toBeInViewport();
   await page.getByRole('button',{name:'New chapter',exact:true}).click();
   await page.keyboard.press('Escape');
   await expect(page.locator('#app')).not.toHaveClass(/olympus-open/);
+  await expect(page.locator('#pull')).toBeInViewport();
 });
 
 test('Spanish language and separate music level persist through reload', async ({page}) => {

@@ -24,6 +24,8 @@ test('fresh cushion stays empty and six illustrated challenges need real progres
   await expect(page.locator('#companion-kira')).toContainText('250 cats and 1,000 lifetime taps');
   await expect.poll(() => page.locator('.companion-portrait img').evaluateAll(images => images.every(image => (image as HTMLImageElement).naturalWidth === 512))).toBe(true);
   await page.locator('#management').evaluate(el => el.scrollTop = el.scrollHeight);
+  await expect(page.locator('#pull')).toBeHidden();
+  await page.getByRole('button', { name: 'Workshop', exact: true }).click();
   await expect(page.locator('#pull')).toBeInViewport();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
@@ -56,8 +58,10 @@ test('touch challenge unlock is announced and immediately places Kira on the cus
   await seed(page, game);
   await page.getByRole('button', { name: 'Cat collection', exact: true }).click();
   await expect(page.locator('#select-companion-0')).toBeDisabled();
+  await page.getByRole('button', { name: 'Workshop', exact: true }).click();
   await page.getByRole('button', { name: 'Pull yarn', exact: true }).click();
   await expect(page.locator('#toast')).toContainText('Kira');
+  await page.getByRole('button', { name: 'Cat collection', exact: true }).click();
   await expect(page.locator('#select-companion-0')).toBeEnabled();
   await expect(page.locator('#world')).toHaveAttribute('data-companion', 'kira');
   await expect(page.locator('#world')).toHaveAttribute('data-companion-ready', 'true');
