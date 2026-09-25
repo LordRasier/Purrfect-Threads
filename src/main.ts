@@ -150,8 +150,12 @@ async function start(session: Session): Promise<void> {
     settle();
     if (kind === 'buy') {
       const producer = PRODUCERS.find(item => item.id === id); if (!producer) return;
+      const firstTeam = game.owned[producer.id] === 0;
       const count = buyProducer(game, producer.id, ui.quantity);
-      if (count) changed(text.crewJoined(format(count * producer.cats)));
+      if (count) {
+        changed(text.crewJoined(format(count * producer.cats)));
+        if (firstTeam) ui.activateCrew(producer.id);
+      }
     } else if (kind === 'upgrade') {
       const upgrade = UPGRADES.find(item => item.id === id);
       if (upgrade && buyUpgrade(game, upgrade.id)) { ui.dialog.close(); changed(text.upgradeBought); document.getElementById(`upgrade-${id}`)?.focus({preventScroll:true}); }

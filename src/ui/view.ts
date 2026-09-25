@@ -119,6 +119,10 @@ export class GameUI {
     }
   }
 
+  activateCrew(id: ProducerId): void {
+    this.panel.querySelector(`#card-${id}`)?.classList.add('crew-awakening');
+  }
+
   localizeShell(): void {
     document.documentElement.lang = getLanguage();
     for (const { node, source } of this.shellText) if (node.isConnected) node.textContent = source.replace(source.trim(), tr(source.trim()));
@@ -164,6 +168,10 @@ export class GameUI {
     set('goal-title', nextCat ? text.nextGoal(nextCat.name) : text.familyTitle);
     set('tap-hint', population(game).eq(0) ? text.firstGoalDetail : text.keyboardHint);
     if (this.screen === 'crew') {
+      const resting = String(game.settings.quality === 'low');
+      this.panel.querySelectorAll<HTMLElement>('.crew-scene').forEach(scene => {
+        if (scene.dataset.resting !== resting) scene.dataset.resting = resting;
+      });
       PRODUCERS.forEach((item, i) => {
         const q = quote(game, item.id, this.quantity);
         const next = q.count ? q : quote(game, item.id, 1);

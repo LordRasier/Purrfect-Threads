@@ -109,3 +109,22 @@
 }
 @media(prefers-reduced-motion:reduce) { .tablet-app .journey-track { transition:none; } }
 .reduced-motion.tablet-app .journey-track,.reduced-motion .tablet-app .journey-track { transition:none; }
+
+/* Activated teams have a tiny, bounded animated scene beneath the card controls. */
+.crew-scene { position:absolute; inset:0; z-index:-1; overflow:hidden; border-radius:inherit; pointer-events:none; color:#c99d6b; opacity:.5; }
+.crew-scene[data-palette=sage] { color:#95ad7c; }
+.crew-scene[data-palette=lilac] { color:#b29ac9; }
+.crew-scene[data-palette=blue] { color:#8ab4c2; }
+.crew-scene[data-palette=sand] { color:#c6ad72; }
+.crew-sprite { position:absolute; display:block; transform-origin:center bottom; }
+.crew-sprite svg { width:100%; height:100%; }
+.crew-worker { left:58%; bottom:2px; width:40px; height:40px; animation:crew-bob 3.2s ease-in-out infinite; }
+.crew-prop { left:43%; top:3px; width:23px; height:23px; animation:crew-sway 4.8s ease-in-out infinite; }
+.crew-thread { left:30%; bottom:2px; width:22px; height:22px; animation:crew-roll 5.6s ease-in-out infinite; }
+.crew-awakening .crew-scene { animation:crew-arrive .75s ease-out; }
+@keyframes crew-arrive { from { opacity:0; transform:translateY(14px) scale(.85); } 65% { opacity:.75; } to { opacity:.5; transform:translateY(0) scale(1); } }
+@keyframes crew-bob { 0%,100% { transform:translateY(0) rotate(-3deg); } 50% { transform:translateY(-5px) rotate(3deg); } }
+@keyframes crew-sway { 0%,100% { transform:translateY(0) rotate(-12deg); } 50% { transform:translateY(5px) rotate(12deg); } }
+@keyframes crew-roll { 0%,100% { transform:translateX(0) rotate(-15deg); } 50% { transform:translateX(12px) rotate(35deg); } }
+.reduced-motion .crew-scene,.reduced-motion .crew-sprite,.crew-scene[data-resting=true],.crew-scene[data-resting=true] .crew-sprite { animation:none; }
+@media(prefers-reduced-motion:reduce) { .crew-scene,.crew-sprite { animation:none !important; } }

@@ -34,3 +34,13 @@ Responsive cases include 320×568, 375×812, 390×844, 812×375, 844×390, 961×
 Mobile checks are Chrome touch emulation, not physical Android/iOS validation. No new FPS claim, Safari validation, economy balancing, store packaging, or release ZIP is included in this change. RDD was off; assessment could not classify untracked files, so an independent reviewer was used. No remote operations occurred.
 
 Rollback boundary: revert this UI navigation commit and its related browser tests/documentation together; no save migration or economic-data rollback is necessary.
+
+## Animated crew cards — September 25, 2026
+
+The first successful purchase of each crew in a chapter reveals a small animated cat, a catalog-specific prop, and yarn behind its controls. Further purchases retain the existing quantity-based motifs without replaying the entrance. Reloaded owned crews retain their scenery; unowned crews remain empty.
+
+Artwork is original inline vector art and existing icons, bounded to three animated sprites per card. Decorative layers cannot receive pointer events and are hidden from assistive technology. Reduced motion and Battery saver keep them static; changing Battery saver takes effect immediately. There is no save migration or economy change.
+
+Regression coverage includes single and bulk activation, subsequent purchases, reload, live quality changes, reduced motion, and purchase-button hit testing. Desktop and mobile-emulation screenshots were visually inspected for readable controls. Physical-device performance is not claimed.
+
+Validation: 116 unit tests passed (16 files), 76 browser tests passed (desktop and mobile emulation), and the production build passed. The existing Three.js chunk-size warning remains.
