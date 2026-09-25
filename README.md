@@ -16,7 +16,7 @@ No package installation or internet connection is needed to play the included bu
 - The selected unlocked companion appears on the workshop's 3D cushion. A new game leaves it empty. **Only the selected companion grants a bonus**; collecting more cats does not stack buffs.
 - Harder permanent challenges span tapping, crew growth, upgrades, offline production, and restarts. Collection cards show requirements, progress, and each bonus in English and Spanish.
 - Existing earned companions and their selection remain unlocked at the same save indices. New conditions apply to companions not already earned; no player progress is confiscated.
-- Six local transparent illustrations add 309,838 bytes. No new runtime dependency, account, download-at-playtime, or monetization was added.
+- Six local transparent illustrations add 296,188 bytes. No new runtime dependency, account, download-at-playtime, or monetization was added.
 
 | Companion | Unlock challenge | Selected bonus |
 | --- | --- | --- |

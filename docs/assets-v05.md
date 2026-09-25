@@ -5,7 +5,7 @@ Six original character illustrations were generated with the built-in image gene
 - Runtime assets: `public/art/companions/{id}.webp`.
 - Final generation prompts: [companion-art-prompts.json](companion-art-prompts.json).
 - Each character is 512 × 512 with transparent alpha. The bundled Sharp library was used only for delivery resizing and WebP encoding (quality85, alpha100). No new project dependency.
-- Combined compressed size: **309,838 bytes**. All six are local and available offline.
+- Combined compressed size: **296,188 bytes**. All six are local and available offline.
 - The same artwork is used in collection cards and the workshop. The latter is a camera-facing Three.js Sprite over the existing 3D cushion; workers remain procedural 3D cats.
 - Only the currently selected portrait owns a GPU texture. Changing selection releases the old texture. Stale asynchronous loads cannot replace a newer selection, and the controller disposes its texture/material on teardown.
 - Unavailable/locked companions never show on the cushion. Loading or failed portraits remain hidden instead of displaying stale art. The HTML collection and its bonuses do not depend on WebGL rendering.
@@ -27,3 +27,7 @@ Mario now follows the user's photograph: a fluffy white-and-muted-brown/grey tab
 ## Luigi gentle-firm portrait — 25 September 2026
 
 Luigi's revised sprite keeps his fluffy grey-brown tabby stripes, white muzzle, bib and paws, and full plume tail from the user's photograph. He now sits squarely with both front paws grounded. A small closed mouth and relaxed attentive eyes make him look quietly determined and affectionate rather than angry or threatening. The illustration follows the same simplified 2D chibi treatment as Kira. The personal reference photograph is not redistributed, and no bonus, unlock, ID, gameplay or save data changed.
+
+## Roman personal reference portrait — 25 September 2026
+
+The user's photograph establishes Roman's distinct white-and-cool-grey coat: a broad grey saddle across the upper back, grey head cap and tail, with a white face, chest, plump belly and front paws. His revised chibi sprite curls into a peaceful nap with his head on his paws, distinct from Mario's dangling-paws pose. The gentle closed-eye expression replaces the old exaggerated smiling belly pose. The personal reference photograph is not redistributed; this is an art-only replacement with no change to bonuses, unlocks, IDs, gameplay or saves.
