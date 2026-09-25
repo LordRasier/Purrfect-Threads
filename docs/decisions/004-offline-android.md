@@ -8,7 +8,7 @@ Use Capacitor 8.5.2 with the existing Vite/Three.js game bundled in `dist`.
 This avoids rewriting the game and does not depend on a hosted page or live-update service.
 A native rewrite would allow tighter platform integration but duplicate the current rendering and game UI.
 
-The provisional application ID is `com.auraliax.purrfectthreads`. Confirm it before the first Play upload; it must not change afterward.
+The application ID is `com.rasie.purrfectthreads`, confirmed by the owner on 2026-09-25 to match the existing Play Console entry. It replaces the provisional ID before the first Play upload and must remain stable afterward. Any previously installed debug build with the provisional ID is a separate application; local progress does not migrate automatically (use save export/import).
 
 - Android API 24 minimum, API 36 target/compile, Java 21.
 - Use Capacitor SystemBars native inset handling with `viewport-fit=contain`, keeping game controls out of status/navigation bars rather than drawing the tablet under them.

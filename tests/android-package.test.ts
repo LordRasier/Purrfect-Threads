@@ -3,6 +3,20 @@ import { readFileSync } from 'node:fs';
 import config from '../capacitor.config';
 
 describe('offline Android package safeguards', () => {
+  it('matches the existing Google Play application identity', () => {
+    const appId = 'com.rasie.purrfectthreads';
+    expect(config.appId).toBe(appId);
+    const gradle = readFileSync('android/app/build.gradle', 'utf8');
+    expect(gradle).toContain(`applicationId "${appId}"`);
+    expect(gradle).toContain(`namespace = "${appId}"`);
+    const strings = readFileSync('android/app/src/main/res/values/strings.xml', 'utf8');
+    expect(strings).toContain(`<string name="package_name">${appId}</string>`);
+    expect(strings).toContain(`<string name="custom_url_scheme">${appId}</string>`);
+    for (const name of ['MainActivity', 'SaveDocumentPlugin']) {
+      expect(readFileSync(`android/app/src/main/java/com/rasie/purrfectthreads/${name}.java`, 'utf8'))
+        .toContain(`package ${appId};`);
+    }
+  });
   it('loads bundled assets, never a development server', () => {
     expect(config.webDir).toBe('dist');
     expect(config.server?.url).toBeUndefined();

@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.auraliax.purrfectthreads',
+  appId: 'com.rasie.purrfectthreads',
   appName: 'Purrfect Threads',
   webDir: 'dist',
   // Keep controls inside system bars, including older Android WebViews.

@@ -1,4 +1,4 @@
-package com.auraliax.purrfectthreads;
+package com.rasie.purrfectthreads;
 
 import android.app.Activity;
 import android.content.Intent;

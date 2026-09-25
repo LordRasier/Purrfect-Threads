@@ -1,4 +1,4 @@
-package com.auraliax.purrfectthreads;
+package com.rasie.purrfectthreads;
 
 import com.getcapacitor.BridgeActivity;
 import android.os.Bundle;

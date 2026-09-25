@@ -1,4 +1,4 @@
-package com.auraliax.purrfectthreads;
+package com.rasie.purrfectthreads;
 
 import static org.junit.Assert.assertEquals;
 import android.Manifest;
@@ -16,7 +16,7 @@ public class OfflinePackageTest {
     @Test
     public void installedAppHasOfflineIdentityAndNoBackup() {
         Context app = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("com.auraliax.purrfectthreads", app.getPackageName());
+        assertEquals("com.rasie.purrfectthreads", app.getPackageName());
         assertEquals(PackageManager.PERMISSION_DENIED, app.checkSelfPermission(Manifest.permission.INTERNET));
         assertEquals(0, app.getApplicationInfo().flags & ApplicationInfo.FLAG_ALLOW_BACKUP);
     }
