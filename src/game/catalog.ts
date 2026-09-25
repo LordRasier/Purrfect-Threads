@@ -17,6 +17,14 @@ export const UPGRADES = [
   { id: 'happy', name: 'Happy Workers', detail: '+50% yarn from all your cats.', cost: 1000, icon: 'heart' },
   { id: 'tools', name: 'Better Tools', detail: 'Double all automatic production.', cost: 10000, icon: 'knit' },
   { id: 'master', name: 'Master Tools', detail: 'Double Artisan & Cloud Cats output.', cost: 25000, icon: 'star' },
+  { id: 'bell', name: 'Lucky Bell', detail: '5% chance for a triple-yarn touch.', cost: 300, icon: 'star' },
+  { id: 'clover', name: 'Four-leaf Paw', detail: '+5% chance for a triple-yarn touch.', cost: 1500, icon: 'paw' },
+  { id: 'mittens', name: 'Velvet Mittens', detail: '50% more yarn with every touch.', cost: 5000, icon: 'paw' },
+  { id: 'tea', name: 'Tea Break', detail: '25% more automatic production.', cost: 8000, icon: 'heart' },
+  { id: 'whiskers', name: 'Golden Whiskers', detail: '+10% chance for a triple-yarn touch.', cost: 50000, icon: 'cat' },
+  { id: 'purring', name: 'Purring Engine', detail: '50% more automatic production.', cost: 100000, icon: 'house' },
+  { id: 'silky', name: 'Silky Threads', detail: 'Double the yarn with every touch.', cost: 500000, icon: 'yarn' },
+  { id: 'moonlit', name: 'Moonlit Shift', detail: 'Double all automatic production.', cost: 1000000, icon: 'cloud' },
 ] as const;
 export type UpgradeId = typeof UPGRADES[number]['id'];
 export const TALENTS = [

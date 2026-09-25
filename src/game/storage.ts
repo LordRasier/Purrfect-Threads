@@ -40,7 +40,7 @@ function knownList<T extends string | number>(value: unknown, known: readonly T[
 export function decode(raw: string): GameState {
   if (raw.length > 100000) throw new Error('Save file is too large.');
   const data = record(JSON.parse(raw));
-  if (data.version !== 1 && data.version !== 2) throw new Error('This save version is not supported.');
+  if (data.version !== 1 && data.version !== 2 && data.version !== 3) throw new Error('This save version is not supported.');
   const game = createGame(integer(data.savedAt));
   for (const key of ['yarn', 'lifetime', 'runEarned', 'points', 'claimed'] as const) game[key] = decimal(data[key]);
   const owned = record(data.owned);
@@ -60,7 +60,7 @@ export function decode(raw: string): GameState {
   game.stats.taps = integer(stats.taps);
   if (typeof stats.playSeconds !== 'number' || !Number.isFinite(stats.playSeconds) || stats.playSeconds < 0) throw new Error('Invalid play time.');
   game.stats.playSeconds = stats.playSeconds;
-  if (data.version === 2) {
+  if (data.version >= 2) {
     game.achievements = knownList(data.achievements, ACHIEVEMENTS.map(item => item.id));
     for (const key of ['upgradePurchases', 'bulkPurchases', 'maxPurchases', 'coatChanges'] as const) game.stats[key] = integer(stats[key]);
     game.stats.offlineYarn = decimal(stats.offlineYarn);
@@ -71,7 +71,8 @@ export function decode(raw: string): GameState {
   }
   const settings = record(data.settings);
   if (typeof settings.volume !== 'number' || !Number.isFinite(settings.volume) || settings.volume < 0 || settings.volume > 1 || typeof settings.reducedMotion !== 'boolean' || !['auto', 'low', 'high'].includes(String(settings.quality))) throw new Error('Invalid settings.');
-  game.settings = { volume: settings.volume, reducedMotion: settings.reducedMotion, quality: settings.quality as GameState['settings']['quality'] };
+  if (data.version === 3 && (typeof settings.musicVolume !== 'number' || !Number.isFinite(settings.musicVolume) || settings.musicVolume < 0 || settings.musicVolume > 1 || !['en', 'es'].includes(String(settings.language)))) throw new Error('Invalid music or language settings.');
+  game.settings = { ...game.settings, volume: settings.volume, reducedMotion: settings.reducedMotion, quality: settings.quality as GameState['settings']['quality'], ...(data.version === 3 ? { musicVolume: settings.musicVolume as number, language: settings.language as 'en' | 'es' } : {}) };
   updateAchievements(game);
   return game;
 }

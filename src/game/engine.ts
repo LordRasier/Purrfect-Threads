@@ -6,7 +6,7 @@ export type Quantity = 1 | 10 | 'max';
 // Beyond the authored prototype content, bound transactions and imported teams.
 export const MAX_OWNED = 10000;
 export interface GameState {
-  version: 2;
+  version: 3;
   yarn: Decimal;
   lifetime: Decimal;
   runEarned: Decimal;
@@ -21,18 +21,18 @@ export interface GameState {
   coat: number;
   achievements: string[];
   stats: { taps: number; playSeconds: number; upgradePurchases: number; bulkPurchases: number; maxPurchases: number; coatChanges: number; offlineYarn: Decimal };
-  settings: { volume: number; reducedMotion: boolean; quality: 'auto' | 'low' | 'high' };
+  settings: { volume: number; musicVolume: number; language: 'en' | 'es'; reducedMotion: boolean; quality: 'auto' | 'low' | 'high' };
   savedAt: number;
   lastTap: number;
 }
 
 export function createGame(now = Date.now()): GameState {
   return {
-    version: 2, yarn: new Decimal(0), lifetime: new Decimal(0), runEarned: new Decimal(0),
+    version: 3, yarn: new Decimal(0), lifetime: new Decimal(0), runEarned: new Decimal(0),
     owned: Object.fromEntries(PRODUCERS.map(item => [item.id, 0])) as Record<ProducerId, number>,
     upgrades: [], talents: [], points: new Decimal(0), claimed: new Decimal(0), chapters: 0,
     starterCats: 0, collection: [], coat: 0, achievements: [], stats: { taps: 0, playSeconds: 0, upgradePurchases: 0, bulkPurchases: 0, maxPurchases: 0, coatChanges: 0, offlineYarn: new Decimal(0) },
-    settings: { volume: 0.35, reducedMotion: false, quality: 'auto' }, savedAt: now, lastTap: -Infinity,
+    settings: { volume: 0.35, musicVolume: 0.2, language: 'en', reducedMotion: false, quality: 'auto' }, savedAt: now, lastTap: -Infinity,
   };
 }
 
@@ -45,6 +45,9 @@ export function producerOutput(game: GameState, id: ProducerId, count = 1): Deci
   let multiplier = 1;
   if (game.upgrades.includes('happy')) multiplier *= 1.5;
   if (game.upgrades.includes('tools')) multiplier *= 2;
+  if (game.upgrades.includes('tea')) multiplier *= 1.25;
+  if (game.upgrades.includes('purring')) multiplier *= 1.5;
+  if (game.upgrades.includes('moonlit')) multiplier *= 2;
   if (game.upgrades.includes('master') && (id === 'workshop' || id === 'factory')) multiplier *= 2;
   return new Decimal(item.cats).mul(count).mul(multiplier);
 }
@@ -55,7 +58,9 @@ export function production(game: GameState): Decimal {
 }
 
 export function tapValue(game: GameState): Decimal {
-  const base = new Decimal(game.upgrades.includes('paws') ? 2 : 1);
+  let base = new Decimal(game.upgrades.includes('paws') ? 2 : 1);
+  if (game.upgrades.includes('mittens')) base = base.mul(1.5);
+  if (game.upgrades.includes('silky')) base = base.mul(2);
   return game.talents.includes('helping') ? base.add(production(game).mul(0.01)) : base;
 }
 
@@ -65,10 +70,16 @@ function earn(game: GameState, amount: Decimal): void {
   game.runEarned = game.runEarned.add(amount);
 }
 
-export function tap(game: GameState, now: number): Decimal {
+/** Independent rolls; percentage-point bonuses add, never affect passive income. */
+export function criticalChance(game: GameState): number {
+  return ((game.upgrades.includes('bell') ? 5 : 0) + (game.upgrades.includes('clover') ? 5 : 0) + (game.upgrades.includes('whiskers') ? 10 : 0)) / 100;
+}
+
+export function tap(game: GameState, now: number, random: () => number = Math.random): Decimal {
   if (!Number.isFinite(now) || now - game.lastTap < 200) return new Decimal(0);
   game.lastTap = now;
-  const amount = tapValue(game);
+  const chance = criticalChance(game);
+  const amount = tapValue(game).mul(chance > 0 && random() < chance ? 3 : 1);
   earn(game, amount);
   game.stats.taps = Math.min(Number.MAX_SAFE_INTEGER, game.stats.taps + 1);
   updateAchievements(game);
