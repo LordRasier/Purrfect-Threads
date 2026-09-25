@@ -4,3 +4,8 @@ test-results/
 playwright-report/
 .env*
 *.log
+
+*.jks
+*.keystore
+android/key.properties
+android/.idea/

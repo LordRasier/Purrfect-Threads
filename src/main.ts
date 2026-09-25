@@ -1,3 +1,4 @@
+import { exportProgress } from './platform/export';
 import Decimal from 'break_infinity.js';
 import './ui/style.css';
 import './ui/responsive.css';
@@ -23,12 +24,10 @@ import type { WorkshopWorld } from './scene/world';
 import type { OlympusWorld } from './scene/olympus';
 
 const root = document.getElementById('app')!;
-function download(raw: string, name = 'purrfect-threads-save.json'): void {
-  const url = URL.createObjectURL(new Blob([raw], { type: 'application/json' }));
-  const link = document.createElement('a'); link.href = url; link.download = name; link.click();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+async function download(raw: string, name = 'purrfect-threads-save.json'): Promise<boolean> {
+  try { return await exportProgress(raw, name); }
+  catch { window.alert(tr('The backup could not be exported. Your saved game has not been changed.')); return false; }
 }
-
 interface Session { active: boolean; onHide?: () => void }
 
 async function start(session: Session): Promise<void> {
@@ -48,9 +47,10 @@ async function start(session: Session): Promise<void> {
   if (!loaded.game) {
     root.innerHTML = `<main class="boot-message"><h1>${text.corruptTitle}</h1><p>${text.corruptBody}</p><button class="soft-button" id="download-damaged">${text.downloadDamaged}</button><label class="soft-button" for="restore-file">${text.import}</label><input id="restore-file" type="file" accept=".json,application/json" /><button class="soft-button" id="fresh">${text.fresh}</button><p id="restore-error" role="alert"></p></main>`;
     document.getElementById('download-damaged')!.onclick = () => download(JSON.stringify({ primary: storage!.getItem(SAVE_KEY), backup: storage!.getItem(BACKUP_KEY) }), 'purrfect-threads-recovery.json');
-    document.getElementById('fresh')!.onclick = () => {
+    document.getElementById('fresh')!.onclick = async () => {
       if (!session.active) return;
-      download(JSON.stringify({ primary: storage!.getItem(SAVE_KEY), backup: storage!.getItem(BACKUP_KEY) }), 'purrfect-threads-recovery.json');
+      if (!await download(JSON.stringify({ primary: storage!.getItem(SAVE_KEY), backup: storage!.getItem(BACKUP_KEY) }), 'purrfect-threads-recovery.json')) return;
+      if (!session.active) return;
       try { saveGame(storage!, createGame(), Date.now()); void start(session); } catch { document.getElementById('restore-error')!.textContent = text.saveError; }
     };
     document.getElementById('restore-file')!.onchange = async event => {
@@ -183,6 +183,8 @@ async function start(session: Session): Promise<void> {
       ui.showDialog(`<span class="eyebrow">${text.chapter}</span><h2 id="modal-title">${text.resetTitle}</h2><p><strong>${text.reward(format(prestigeReward(game), 0))}</strong></p><p>${text.resetLose}</p><p>${text.resetKeep}</p><div class="dialog-actions"><button class="soft-button" data-action="close">${text.cancel}</button><button class="primary-button" data-action="confirm-prestige">${text.confirm}</button></div>`);
     } else if (kind === 'confirm-prestige') {
       if (prestige(game)) { ui.dialog.close(); changed(text.freshStart); }
+    } else if (kind === 'privacy') {
+      stopHolding(); ui.showPrivacy();
     } else if (kind === 'settings') {
       stopHolding(); ui.showSettings();
     } else if (kind === 'sound') {
