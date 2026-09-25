@@ -1,11 +1,11 @@
 # Home companion artwork — 0.5.0
 
-Six original character illustrations were generated with the built-in image generation tool: Kira, Mario, Roman, Luigi, Lola, and Biscocho. They are based on the user's pet descriptions. Kira additionally uses the supplied grey/brown tabby photograph as a visual reference; that reference photograph is not redistributed in the game.
+Six original character illustrations were generated with the built-in image generation tool: Kira, Mario, Roman, Luigi, Lola, and Biscuit. They are based on the user's pet descriptions and later personal reference photographs; those photographs are not redistributed in the game. Biscuit retains the original `biscocho` internal ID and asset filename for save compatibility.
 
 - Runtime assets: `public/art/companions/{id}.webp`.
 - Final generation prompts: [companion-art-prompts.json](companion-art-prompts.json).
 - Each character is 512 × 512 with transparent alpha. The bundled Sharp library was used only for delivery resizing and WebP encoding (quality85, alpha100). No new project dependency.
-- Combined compressed size: **296,188 bytes**. All six are local and available offline.
+- Combined compressed size: **291,256 bytes**. All six are local and available offline.
 - The same artwork is used in collection cards and the workshop. The latter is a camera-facing Three.js Sprite over the existing 3D cushion; workers remain procedural 3D cats.
 - Only the currently selected portrait owns a GPU texture. Changing selection releases the old texture. Stale asynchronous loads cannot replace a newer selection, and the controller disposes its texture/material on teardown.
 - Unavailable/locked companions never show on the cushion. Loading or failed portraits remain hidden instead of displaying stale art. The HTML collection and its bonuses do not depend on WebGL rendering.
@@ -31,3 +31,7 @@ Luigi's revised sprite keeps his fluffy grey-brown tabby stripes, white muzzle, 
 ## Roman personal reference portrait — 25 September 2026
 
 The user's photograph establishes Roman's distinct white-and-cool-grey coat: a broad grey saddle across the upper back, grey head cap and tail, with a white face, chest, plump belly and front paws. His revised chibi sprite curls into a peaceful nap with his head on his paws, distinct from Mario's dangling-paws pose. The gentle closed-eye expression replaces the old exaggerated smiling belly pose. The personal reference photograph is not redistributed; this is an art-only replacement with no change to bonuses, unlocks, IDs, gameplay or saves.
+
+## Biscuit name and tangled-yarn portrait — 25 September 2026
+
+The user's personal photograph identifies Biscuit (formerly displayed as Biscocho) as a mostly white short-haired cat with a dark cap, back patch and tail. His revised chibi sprite is loosely tangled in coral yarn, looking gently bewildered rather than tongue-out or panicked. Only the displayed name changes: the `biscocho` ID, collection index 5, saved selection and existing bonus remain stable. The photograph is not redistributed.

@@ -12,11 +12,11 @@ No package installation or internet connection is needed to play the included bu
 
 ## What changed in 0.5.0
 
-- Six illustrated home companions: **Kira, Mario, Roman, Luigi, Lola, and Biscocho**, with personalities and markings based on the user's pets. Kira uses the supplied tabby reference.
+- Six illustrated home companions: **Kira, Mario, Roman, Luigi, Lola, and Biscuit**, with personalities and markings based on the user's pets. Biscuit retains the legacy internal ID `biscocho` so existing saves remain valid.
 - The selected unlocked companion appears on the workshop's 3D cushion. A new game leaves it empty. **Only the selected companion grants a bonus**; collecting more cats does not stack buffs.
 - Harder permanent challenges span tapping, crew growth, upgrades, offline production, and restarts. Collection cards show requirements, progress, and each bonus in English and Spanish.
 - Existing earned companions and their selection remain unlocked at the same save indices. New conditions apply to companions not already earned; no player progress is confiscated.
-- Six local transparent illustrations add 296,188 bytes. No new runtime dependency, account, download-at-playtime, or monetization was added.
+- Six local transparent illustrations add 291,256 bytes. No new runtime dependency, account, download-at-playtime, or monetization was added.
 
 | Companion | Unlock challenge | Selected bonus |
 | --- | --- | --- |
@@ -25,7 +25,7 @@ No package installation or internet connection is needed to play the included bu
 | Roman | 100,000 cumulative offline yarn | Offline earns 65% instead of 50% |
 | Luigi | 3 completed restarts | Kitten, Basket and Corner output +30% |
 | Lola | 5,000 current cats | Crew prices −5%, applied before rounding |
-| Biscocho | 5 completed restarts AND 5,000 lifetime touches | Triple-touch chance +5 percentage points |
+| Biscuit | 5 completed restarts AND 5,000 lifetime touches | Triple-touch chance +5 percentage points |
 
 Unlocks survive resets, even if the current population falls. The first unlocked companion is selected automatically; later unlocks never replace an existing selection. Roman's bonus applies only to future absences after selection, not retroactively to the absence that unlocks him. Offline time remains capped at eight hours.
 
@@ -73,7 +73,7 @@ Legacy v1/v2 saves default music to 20% and language to English. Other settings 
 | Silky Threads | 500,000 | Manual base ×2 |
 | Moonlit Shift | 1,000,000 | Automatic ×2 |
 
-Chapter chance bonuses add to a maximum of 20% (25% while Biscocho is selected). A successful roll multiplies the **whole manual reward**, including Helping Paw, by three. Other multipliers stack multiplicatively. All chapter upgrades reset on prestige; permanent talents do not. These prices are authored starting values, not validated commercial balance.
+Chapter chance bonuses add to a maximum of 20% (25% while Biscuit is selected). A successful roll multiplies the **whole manual reward**, including Helping Paw, by three. Other multipliers stack multiplicatively. All chapter upgrades reset on prestige; permanent talents do not. These prices are authored starting values, not validated commercial balance.
 
 ## Controls and progression
 

@@ -48,5 +48,5 @@ export const COATS = [
   { id: 'roman', name: 'Roman', color: '#716b78', accent: '#e6deeb', personality: 'A sleepy, chubby sweetheart.', buff: 'Offline production earns 65%.', challenge: 'Earn 100,000 yarn while offline.' },
   { id: 'luigi', name: 'Luigi', color: '#e8b1a1', accent: '#fff0dc', personality: 'Fluffy, feisty, and always pestering someone.', buff: 'Kitten, Basket, and Corner output +30%.', challenge: 'Complete 3 chapters.' },
   { id: 'lola', name: 'Lola', color: '#a9b5a0', accent: '#e5eed6', personality: 'Tiny paws. The sweetest heart.', buff: 'Crew prices 5% lower.', challenge: 'Reach a population of 5,000 cats.' },
-  { id: 'biscocho', name: 'Biscocho', color: '#b5a3cc', accent: '#efe8ff', personality: 'A lovable klutz. Trouble follows every step.', buff: 'Triple-touch chance +5 percentage points.', challenge: 'Complete 5 chapters and make 5,000 lifetime taps.' },
+  { id: 'biscocho', name: 'Biscuit', color: '#b5a3cc', accent: '#efe8ff', personality: 'A lovable klutz. Trouble follows every step.', buff: 'Triple-touch chance +5 percentage points.', challenge: 'Complete 5 chapters and make 5,000 lifetime taps.' },
 ] as const;

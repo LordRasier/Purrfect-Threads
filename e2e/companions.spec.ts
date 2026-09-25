@@ -64,11 +64,15 @@ test('touch challenge unlock is announced and immediately places Kira on the cus
 });
 
 test('Spanish collection preserves pet names and explains the selected-only bonus', async ({ page }) => {
-  const game = createGame(Date.now()); game.settings.language = 'es';
+  const game = createGame(Date.now()); game.settings.language = 'es'; game.collection = [5]; game.coat = 5;
   await seed(page, game);
+  await expect(page.locator('#world')).toHaveAttribute('data-companion', 'biscocho');
+  await expect(page.locator('#world')).toHaveAttribute('data-companion-ready', 'true');
   await page.getByRole('button', { name: 'Colección de gatos', exact: true }).click();
   await expect(page.locator('.companion-rule')).toContainText('seleccionado');
-  for (const name of ['Kira','Mario','Roman','Luigi','Lola','Biscocho']) await expect(page.getByRole('heading', {name, exact:true})).toBeVisible();
+  for (const name of ['Kira','Mario','Roman','Luigi','Lola','Biscuit']) await expect(page.getByRole('heading', {name, exact:true})).toBeVisible();
+  await expect(page.locator('#companion-summary')).toContainText('Biscuit');
+  await expect(page.locator('#select-companion-5')).toHaveAttribute('aria-pressed', 'true');
 });
 
 test('imported companions are restored without false unlock announcements', async ({ page }) => {

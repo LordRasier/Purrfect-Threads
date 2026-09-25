@@ -8,7 +8,7 @@ import { decode, encode } from '../src/game/storage';
 describe('home companions', () => {
   it('keeps the six legacy indexes while exposing the named companion catalog', () => {
     expect(COATS.map(cat => cat.id)).toEqual(['kira', 'mario', 'roman', 'luigi', 'lola', 'biscocho']);
-    expect(COATS.map(cat => cat.name)).toEqual(['Kira', 'Mario', 'Roman', 'Luigi', 'Lola', 'Biscocho']);
+    expect(COATS.map(cat => cat.name)).toEqual(['Kira', 'Mario', 'Roman', 'Luigi', 'Lola', 'Biscuit']);
     expect(COATS.map(cat => cat.personality)).toEqual([
       'The grumpy boss. Always has a complaint.',
       'All cuddles, not a single clever thought.',
@@ -89,6 +89,16 @@ describe('home companions', () => {
     expect(game.collection).toContain(3); expect(game.coat).toBe(3);
     const restored = decode(encode(game));
     expect(restored.collection).toContain(3); expect(restored.coat).toBe(3);
+  });
+
+  it('loads an already selected legacy-index Biscuit without changing its buff or save identity', () => {
+    const game = createGame(0); game.collection = [5]; game.coat = 5;
+    const restored = decode(encode(game));
+    expect(restored.collection).toEqual([5]);
+    expect(restored.coat).toBe(5);
+    expect(activeCompanion(restored)?.id).toBe('biscocho');
+    expect(activeCompanion(restored)?.name).toBe('Biscuit');
+    expect(criticalChance(restored)).toBe(0.05);
   });
 
   it('reports a bounded progress ratio for companion UI', () => {

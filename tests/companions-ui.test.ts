@@ -15,7 +15,8 @@ it('shows six named pet illustrations, their buffs, challenges and an empty acti
   expect(html).toContain('Reach 250 cats and 1,000 lifetime taps.');
   expect(html).toContain('All passive production +10%.');
   expect(html.match(/data-companion-progress/g)).toHaveLength(6);
-  expect(html).not.toContain('Biscuit');
+  expect(html).toContain('Biscuit');
+  expect(html).not.toContain('Biscocho');
 });
 it('marks exactly one unlocked selected cat active and keeps other bonuses inactive', () => {
   const game = createGame(); game.collection = [0,1]; game.coat = 1;
@@ -28,6 +29,7 @@ it('marks exactly one unlocked selected cat active and keeps other bonuses inact
 it('localizes companion explanations but preserves the real cats names', () => {
   setLanguage('es'); const html = collectionPanel(createGame());
   expect(html).toContain('Solo el acompañante seleccionado aporta una bonificación.');
-  expect(html).toContain('Kira'); expect(html).toContain('Biscocho');
+  expect(html).toContain('Kira'); expect(html).toContain('Biscuit');
+  expect(html).not.toContain('Biscocho');
   expect(html).not.toContain('All passive production');
 });
