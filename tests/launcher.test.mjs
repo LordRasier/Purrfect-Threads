@@ -8,12 +8,14 @@ import { createGameServer } from '../tools/serve.mjs';
 test('launcher serves compiled assets locally and rejects traversal', async () => {
   const root = await mkdtemp(join(tmpdir(), 'purrfect-server-'));
   await writeFile(join(root, 'index.html'), '<h1>Purrfect Threads</h1>');
+  await writeFile(join(root, 'music.ogg'), 'OggS');
   const server = createGameServer(root);
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const address = server.address();
   const url = `http://127.0.0.1:${address.port}`;
   try {
     assert.equal(await (await fetch(url)).text(), '<h1>Purrfect Threads</h1>');
+    assert.equal((await fetch(`${url}/music.ogg`)).headers.get('Content-Type'), 'audio/ogg');
     assert.equal((await fetch(`${url}/missing.js`)).status, 404);
     assert.equal((await fetch(`${url}/..%2fpackage.json`)).status, 403);
     assert.equal((await fetch(url, { method: 'POST' })).status, 405);
