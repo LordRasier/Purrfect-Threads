@@ -89,3 +89,16 @@ test('imported companions are restored without false unlock announcements', asyn
   await expect(page.locator('#toast')).toHaveText('Your workshop is ready. Welcome back!');
   await expect(page.locator('#world')).toHaveAttribute('data-companion', 'mario');
 });
+
+test('reclining companions sit on the cushion when switched from upright portraits',async({page},info)=>{
+ const game=createGame();game.collection=[0,1,2,3,4,5];game.settings.reducedMotion=true;
+ await seed(page,game);
+ for(const [index,id] of [[1,'mario'],[2,'roman'],[0,'kira']] as const){
+  await page.getByRole('button',{name:'Cat collection',exact:true}).click();
+  await page.locator(`#select-companion-${index}`).click();
+  await page.getByRole('button',{name:'Workshop',exact:true}).click();
+  await expect(page.locator('#world')).toHaveAttribute('data-companion',id);
+  await expect(page.locator('#world')).toHaveAttribute('data-companion-ready','true');
+  await page.locator('#world').screenshot({path:info.outputPath(`${id}-grounded.png`)});
+ }
+});

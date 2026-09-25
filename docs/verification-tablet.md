@@ -54,3 +54,9 @@ The underlying header and play surface are inert until entry. Held Space cannot 
 Existing browser scenarios enter through the real welcome button using a shared test helper; recovery and duplicate-tab screens are not bypassed. Dedicated launch cases cover delayed availability, blocked input, keyboard entry, reload, reduced motion, and phone/desktop layouts.
 
 Validation: 116 unit tests and 80 browser tests passed; production build passed with the existing Three.js chunk warning. Launch screenshots were inspected on [desktop](screenshots/app-launch-desktop.png) and [mobile emulation](screenshots/app-launch-mobile.png). RDD remained off; no remote operations or release ZIP changes.
+
+## Reclining companion alignment — September 25, 2026
+
+Mario and Roman previously shared the upright portrait's bottom-canvas pivot, leaving their actual resting surfaces above the cushion. Their sprite pivots now match their poses (Mario's belly at 0.43, Roman's resting paws/tail at 0.20), and reclining cats no longer bob vertically. Mario receives a 0.85-unit camera-ray depth offset so his hanging paws render in front of the cushion without shifting the image on screen or disabling foreground occlusion. Switching to another cat restores its normal pivot/depth.
+
+Validation: 119 unit tests, 12 companion browser tests (desktop/mobile emulation), and production build passed. Desktop and mobile captures of Mario, Roman and the switch back to Kira were generated; Mario and Roman captures were visually checked for cushion contact. No art assets, buffs, saves, or economic rules changed. Existing Three.js bundle-size warning remains.

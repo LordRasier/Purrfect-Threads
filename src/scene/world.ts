@@ -43,7 +43,7 @@ export class WorkshopWorld {
     this.buildDiorama();
     this.companion = new CompanionPortrait(host, this.companionLayer, {
       load: (url, loaded, failed) => { new THREE.ImageLoader().load(url, loaded, undefined, failed); },
-    });
+    }, this.camera.getWorldDirection(new THREE.Vector3()).negate());
     this.scene.add(this.crew, this.growth, this.companionLayer);
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(this.particlePositions, 3));

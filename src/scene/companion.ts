@@ -1,4 +1,4 @@
-import { Group, Sprite, SpriteMaterial, SRGBColorSpace, Texture } from 'three';
+import { Group, Sprite, SpriteMaterial, SRGBColorSpace, Texture, Vector3 } from 'three';
 export const COMPANION_IDS = ['kira', 'mario', 'roman', 'luigi', 'lola', 'biscocho'] as const;
 export type CompanionId = typeof COMPANION_IDS[number];
 
@@ -8,14 +8,15 @@ export interface CompanionImageLoader {
 
 export class CompanionPortrait {
   readonly sprite: Sprite;
-  readonly baseY = 0.37;
+  private readonly depthOffset = new Vector3();
+  get baseY(): number { return 0.37 + this.depthOffset.y; }
   private readonly material: SpriteMaterial;
   private texture: Texture | null = null;
   private selected: CompanionId | null = null;
   private revision = 0;
   private disposed = false;
 
-  constructor(private readonly host: HTMLElement, private readonly parent: Group, private readonly loader: CompanionImageLoader) {
+  constructor(private readonly host: HTMLElement, private readonly parent: Group, private readonly loader: CompanionImageLoader, private readonly towardCamera: Vector3) {
     this.material = new SpriteMaterial({ transparent: true, depthWrite: false, toneMapped: false });
     this.sprite = new Sprite(this.material);
     this.sprite.name = 'selected-companion';
@@ -30,6 +31,12 @@ export class CompanionPortrait {
   sync(id: CompanionId | null): void {
     if (this.disposed || id === this.selected) return;
     this.selected = id;
+    // Reclining portraits rest on their belly/paws, not their transparent canvas edge.
+    this.sprite.center.y = id === 'mario' ? 0.43 : id === 'roman' ? 0.20 : 0;
+    // Move along the view ray: preserve screen placement while letting hanging paws
+    // render in front of the cushion, without disabling scene occlusion.
+    this.depthOffset.copy(this.towardCamera).normalize().multiplyScalar(id === 'mario' ? 0.85 : 0);
+    this.sprite.position.set(1.55, 0.37, 0.42).add(this.depthOffset);
     const revision = ++this.revision;
     this.releaseTexture();
     this.sprite.visible = false;
@@ -57,7 +64,7 @@ export class CompanionPortrait {
   }
 
   animate(now: number, reducedMotion: boolean): void {
-    this.sprite.position.y = reducedMotion ? this.baseY : this.baseY + Math.sin(now * 0.0012) * 0.018;
+    this.sprite.position.y = (reducedMotion || this.selected === 'mario' || this.selected === 'roman') ? this.baseY : this.baseY + Math.sin(now * 0.0012) * 0.018;
   }
 
   dispose(): void {

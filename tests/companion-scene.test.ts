@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { Group } from 'three';
+import { Group, Vector3 } from 'three';
 import { COMPANION_IDS, CompanionPortrait } from '../src/scene/companion';
 import { activeCompanion, createGame } from '../src/game/engine';
 
@@ -10,7 +10,7 @@ function fixture() {
   const host = { dataset: {} } as unknown as HTMLElement;
   const portrait = new CompanionPortrait(host, new Group(), {
     load: (url, loaded, failed) => { requests.push({ url, loaded, failed }); },
-  });
+  }, new Vector3(8, 7.2, 12).normalize());
   return { host, portrait, requests };
 }
 
@@ -59,4 +59,21 @@ describe('workshop companion selection', () => {
     requests[0].failed();
     expect(portrait.sprite.visible).toBe(false);
   });
+});
+
+it.each([['mario',0.43],['roman',0.20]] as const)('grounds %s at its illustrated resting surface instead of the canvas edge', (id,contact) => {
+ const {portrait}=fixture();portrait.sync(id);
+ expect(portrait.sprite.center.y).toBe(contact);
+ portrait.animate(1200,false);const first=portrait.sprite.position.y;
+ portrait.animate(3500,false);
+ expect(portrait.sprite.position.y).toBe(first);
+ portrait.sync('kira');expect(portrait.sprite.center.y).toBe(0);
+});
+
+it('keeps Mario hanging paws in front of the cushion depth plane',()=>{
+ const {portrait}=fixture();portrait.sync('mario');
+ expect(portrait.sprite.position.z).toBeGreaterThan(0.42);
+ const offset=portrait.sprite.position.clone().sub(new Vector3(1.55,0.37,0.42));
+ expect(offset.cross(new Vector3(8,7.2,12).normalize()).length()).toBeLessThan(1e-10);
+ portrait.sync('roman');expect(portrait.sprite.position.z).toBe(0.42);
 });
