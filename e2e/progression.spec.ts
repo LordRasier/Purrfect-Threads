@@ -34,7 +34,7 @@ test('prestige, permanent talents, collection and imports survive reload', async
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'Back to workshop', exact: true }).click();
   await page.getByRole('button', { name: 'Cat collection', exact: true }).click();
-  await page.getByRole('button', { name: 'Choose companion', exact: true }).click();
+  await page.getByRole('button', { name: 'Choose companion · Mario', exact: true }).click();
   await page.reload();
   await page.getByRole('button', { name: 'Cat collection', exact: true }).click();
   await expect(page.getByText('Your companion', { exact: true })).toHaveCount(1);

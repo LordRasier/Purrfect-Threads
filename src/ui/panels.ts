@@ -1,4 +1,4 @@
-import { COATS, PRODUCERS, UPGRADES, TALENTS } from '../game/catalog';
+import { PRODUCERS, UPGRADES, TALENTS } from '../game/catalog';
 import { ACHIEVEMENTS } from '../game/achievements';
 import type { GameState } from '../game/engine';
 import { text } from './copy';
@@ -24,12 +24,7 @@ export function chapterPanel(): string {
     <div class="olympus"><div class="talent-list">${TALENTS.map(item => `<button class="talent statue-card" id="talent-${item.id}" data-action="talent-info" data-id="${item.id}" aria-label="${text.inspect} ${tr(item.god)} · ${tr(item.name)}"><span class="statue-viewport" data-statue-id="${item.id}" aria-hidden="true"><span class="statue-fallback">${icon(item.icon)}</span></span><span class="statue-label"><strong>${tr(item.god)}</strong><span class="blessing-name">${tr(item.name)}</span><span class="talent-price" id="talent-price-${item.id}">${text.spendPoints(item.cost)}</span></span></button>`).join('')}</div></div>
     <section class="chapter-card"><div class="chapter-summary"><span class="tiny-label">${text.resetRewardLabel}</span><strong id="prestige-reward"></strong><p>${text.fixedRewardHint}</p></div><div class="chapter-action"><p id="prestige-remaining"></p><div class="chapter-progress" role="progressbar" aria-label="${text.chapterGoal}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div><button class="primary-button" data-action="prestige" id="prestige-button">${text.prestigeButton}${icon('arrow')}</button></div></section>`;
 }
-export function collectionPanel(game: GameState): string {
-  return `<div class="panel-intro"><span class="eyebrow">${text.collectionEyebrow}</span><h2>${text.collectionTitle}</h2><p>${text.collectionSubtitle}</p></div><p class="collection-goal" id="goal-title"></p><div class="collection-grid">${COATS.map((coat,i) => {
-    const unlocked = game.collection.includes(i);
-    return `<article class="coat-card ${unlocked ? '' : 'locked-coat'}"><div class="coat-avatar" style="--coat:${coat.color};--accent:${coat.accent}">${icon('cat')}</div><h3>${coat.name}</h3><p>${tr(coat.personality)}</p><button class="soft-button" data-action="coat" data-id="${i}" ${!unlocked ? 'disabled' : ''}>${unlocked ? (game.coat === i ? text.selected : text.select) : icon('lock') + text.unlockCats(coat.milestone)}</button></article>`;
-  }).join('')}</div>`;
-}
+export { collectionPanel } from './companions';
 export function achievementsPanel(game: GameState, category: string): string {
   const categories = [...new Set(ACHIEVEMENTS.map(item => item.category))];
   return `<div class="panel-intro"><span class="eyebrow">${text.achievementsTab}</span><h2>${text.achievementsTitle}</h2><p>${text.patchHint}</p></div><div class="achievement-toolbar"><strong id="achievement-count">${text.achievementsCount(game.achievements.length, ACHIEVEMENTS.length)}</strong><label class="sr-only" for="achievement-filter">${text.achievementCategory}</label><select id="achievement-filter"><option value="all">${text.allCategories}</option>${categories.map(name => `<option value="${name}" ${name === category ? 'selected' : ''}>${tr(name)}</option>`).join('')}</select></div><div class="achievement-grid patch-blanket">${ACHIEVEMENTS.filter(item => category === 'all' || item.category === category).map((item, index) => `<button class="achievement-card achievement-patch patch-${index % 5}" id="achievement-${item.id}" data-action="achievement-info" data-id="${item.id}" aria-label="${tr(item.name)}" style="--tilt:${[-7,5,-3,8,-5,2][index % 6]}deg;--offset:${[0,7,2,8,0,5][index % 6]}px"><span class="badge-art" aria-hidden="true">${icon(item.icon)}</span><strong>${tr(item.name)}</strong><span class="badge-progress"><i id="badge-bar-${item.id}"></i></span><small id="badge-status-${item.id}"></small></button>`).join('')}</div>`;

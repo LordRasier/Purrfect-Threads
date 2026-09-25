@@ -133,8 +133,9 @@ export function makeYarn(): THREE.Group {
   return yarnTemplate.clone(true);
 }
 
-export function visibleCatCount(workers: number, low = false): number {
-  return Math.min(low ? 12 : 24, Math.max(1, Math.floor(workers) + 1));
+export function visibleCatCount(workers: number, low = false, hasCompanion = false): number {
+  const limit = (low ? 12 : 24) - (hasCompanion ? 1 : 0);
+  return Math.min(limit, Math.max(0, Math.floor(workers)));
 }
 
 export function makePlant(x: number, z: number, scale = 1): THREE.Group {

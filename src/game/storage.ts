@@ -1,7 +1,7 @@
 import Decimal from 'break_infinity.js';
 import { ACHIEVEMENTS, updateAchievements } from './achievements';
 import { PRODUCERS, UPGRADES, TALENTS } from './catalog';
-import { createGame, MAX_CHAPTERS, MAX_OWNED, type GameState } from './engine';
+import { createGame, MAX_CHAPTERS, MAX_OWNED, updateCollection, type GameState } from './engine';
 import { applyOffline } from './progression';
 
 export const SAVE_KEY = 'purrfect-threads.save.v1';
@@ -83,6 +83,7 @@ export function decode(raw: string): GameState {
   if (typeof settings.volume !== 'number' || !Number.isFinite(settings.volume) || settings.volume < 0 || settings.volume > 1 || typeof settings.reducedMotion !== 'boolean' || !['auto', 'low', 'high'].includes(String(settings.quality))) throw new Error('Invalid settings.');
   if (data.version >= 3 && (typeof settings.musicVolume !== 'number' || !Number.isFinite(settings.musicVolume) || settings.musicVolume < 0 || settings.musicVolume > 1 || !['en', 'es'].includes(String(settings.language)))) throw new Error('Invalid music or language settings.');
   game.settings = { ...game.settings, volume: settings.volume, reducedMotion: settings.reducedMotion, quality: settings.quality as GameState['settings']['quality'], ...(data.version >= 3 ? { musicVolume: settings.musicVolume as number, language: settings.language as 'en' | 'es' } : {}) };
+  updateCollection(game);
   updateAchievements(game);
   return game;
 }

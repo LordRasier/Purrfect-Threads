@@ -38,7 +38,7 @@ test('losing pointer capture does not cancel a keyboard hold', async ({ page }) 
 
 test('active and offline credit remain disjoint when storage writes fail', async ({ page }) => {
   const game = createGame(Date.now());
-  game.owned.kitten = 10; game.collection = [0];
+  game.owned.kitten = 10; game.collection = [];
   game.yarn = game.runEarned = game.lifetime = new Decimal(0);
   await page.addInitScript(({ key, raw }) => localStorage.setItem(key, raw), { key: SAVE_KEY, raw: encode(game) });
   await page.goto('/');

@@ -1,7 +1,7 @@
 import Decimal from 'break_infinity.js';
 import { updateAchievements } from './achievements';
 import { TALENTS, type TalentId } from './catalog';
-import { MAX_CHAPTERS, createGame, production, updateCollection, type GameState } from './engine';
+import { MAX_CHAPTERS, activeCompanion, createGame, production, updateCollection, type GameState } from './engine';
 
 export function prestigeGoal(game: GameState): Decimal {
   return new Decimal(100000).mul(Decimal.pow(2, game.chapters));
@@ -50,12 +50,13 @@ export function selectCoat(game: GameState, index: number): boolean {
 export function applyOffline(game: GameState, now: number): Decimal {
   if (!Number.isFinite(now)) return new Decimal(0);
   const elapsed = Math.min(8 * 3600, Math.max(0, (now - game.savedAt) / 1000));
-  const amount = production(game).mul(elapsed * 0.5);
+  const amount = production(game).mul(elapsed * (activeCompanion(game)?.id === 'roman' ? 0.65 : 0.5));
   game.yarn = game.yarn.add(amount);
   game.lifetime = game.lifetime.add(amount);
   game.runEarned = game.runEarned.add(amount);
   game.savedAt = Math.max(game.savedAt, now);
   game.stats.offlineYarn = game.stats.offlineYarn.add(amount);
+  updateCollection(game);
   updateAchievements(game);
   return amount;
 }

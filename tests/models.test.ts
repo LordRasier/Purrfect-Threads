@@ -17,10 +17,10 @@ describe('bounded original scene assets', () => {
     const bounds = new Box3().setFromObject(yarn);
     expect(bounds.max.x - bounds.min.x).toBeGreaterThan(2);
   });
-  it('shows a mascot even at zero production and never more than 24 cats', () => {
-    expect(visibleCatCount(0)).toBe(1);
-    expect(visibleCatCount(10000)).toBe(24);
-    expect(visibleCatCount(10000, true)).toBeLessThanOrEqual(12);
+  it('keeps a fresh workshop empty and reserves space for a selected companion', () => {
+    expect(visibleCatCount(0)).toBe(0);
+    expect(visibleCatCount(10000, false, true)).toBe(23);
+    expect(visibleCatCount(10000, true, true)).toBe(11);
   });
   it('merges workshop details without BufferGeometry index warnings', () => {
     const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);

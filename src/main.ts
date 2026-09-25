@@ -4,6 +4,7 @@ import './ui/responsive.css';
 import './ui/expansion.css';
 import './ui/experience.css';
 import './ui/olympus.css';
+import './ui/companions.css';
 import { PRODUCERS, UPGRADES, TALENTS, COATS } from './game/catalog';
 import { advance, buyProducer, buyUpgrade, createGame, tap, tapValue, criticalChance, type GameState } from './game/engine';
 import { applyOffline, buyTalent, prestige, prestigeReward, selectCoat } from './game/progression';
@@ -97,6 +98,7 @@ async function start(session: Session): Promise<void> {
   let lastSave = previous, lastUI = -1000;
   let importPending = false;
   let seenAchievements = new Set(game.achievements);
+  let seenCompanions = new Set(game.collection);
   const ui = new GameUI(root, () => game, action);
   const reduced = () => game.settings.reducedMotion || motionPreference.matches;
   const held = new HoldInput(pull);
@@ -118,7 +120,11 @@ async function start(session: Session): Promise<void> {
   function refresh(message?: string): void {
     const fresh = game.achievements.filter(id => !seenAchievements.has(id));
     const achievementMessage = fresh.length === 1 ? text.achievementUnlocked(tr(ACHIEVEMENTS.find(item => item.id === fresh[0])!.name)) : fresh.length > 1 ? text.achievementsUnlocked(fresh.length) : '';
-    if (message || achievementMessage) ui.toast([message, achievementMessage].filter(Boolean).join(' · '));
+    const newCompanions = game.collection.filter(id => !seenCompanions.has(id));
+    const companionMessage = newCompanions.map(id => text.milestone(COATS[id].name)).join(' · ');
+    if (message || achievementMessage || companionMessage) ui.toast([message, companionMessage, achievementMessage].filter(Boolean).join(' · '));
+    seenCompanions = new Set(game.collection);
+    if (newCompanions.length) persist();
     seenAchievements = new Set(game.achievements);
     document.body.classList.toggle('reduced-motion', reduced());
     world?.sync(game); ui.refresh();
@@ -142,9 +148,8 @@ async function start(session: Session): Promise<void> {
     settle();
     if (kind === 'buy') {
       const producer = PRODUCERS.find(item => item.id === id); if (!producer) return;
-      const oldCollection = game.collection.length;
       const count = buyProducer(game, producer.id, ui.quantity);
-      if (count) changed(game.collection.length > oldCollection ? text.milestone(COATS[game.collection[game.collection.length - 1]].name) : text.crewJoined(format(count * producer.cats)));
+      if (count) changed(text.crewJoined(format(count * producer.cats)));
     } else if (kind === 'upgrade') {
       const upgrade = UPGRADES.find(item => item.id === id);
       if (upgrade && buyUpgrade(game, upgrade.id)) { ui.dialog.close(); changed(text.upgradeBought); document.getElementById(`upgrade-${id}`)?.focus({preventScroll:true}); }
@@ -226,6 +231,7 @@ async function start(session: Session): Promise<void> {
       applyOffline(incoming, Date.now());
       if (storage) saveGame(storage, incoming, Date.now());
       game = incoming; previous = performance.now();
+      seenCompanions = new Set(game.collection); seenAchievements = new Set(game.achievements);
       setLanguage(game.settings.language); ui.localizeShell(); music.setVolume(game.settings.musicVolume);
       ui.dialog.close(); changed(text.imported);
     } catch { ui.toast(text.invalidImport); }
@@ -243,8 +249,7 @@ async function start(session: Session): Promise<void> {
     else if (session.active) {
       music.setVisible(true);
       const amount = applyOffline(game, Date.now());
-      previous = performance.now(); suspended = false; persist(); refresh();
-      if (amount.gte(1)) ui.toast(text.offline(format(amount)));
+      previous = performance.now(); suspended = false; persist(); refresh(amount.gte(1) ? text.offline(format(amount)) : undefined);
     }
   });
   session.onHide = hide;

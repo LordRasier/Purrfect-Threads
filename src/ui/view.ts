@@ -1,3 +1,4 @@
+import { refreshCompanions } from './companions';
 import Decimal from 'break_infinity.js';
 import { COATS, PRODUCERS, UPGRADES, TALENTS, type ProducerId } from '../game/catalog';
 import { population, production, producerOutput, quote, tapValue, MAX_OWNED, type GameState, type Quantity } from '../game/engine';
@@ -125,6 +126,7 @@ export class GameUI {
         buy.title = capped ? text.cap : text.catsAdded(format(item.cats * next.count));
       });
     }
+    if (this.screen === 'collection') refreshCompanions(this.panel, game);
     if (this.screen === 'upgrades') {
       for (const upgrade of UPGRADES) {
         const button = document.getElementById(`upgrade-${upgrade.id}`) as HTMLButtonElement | null;

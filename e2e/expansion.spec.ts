@@ -44,10 +44,10 @@ test('compact ten-crew shop and separate cozy progression spaces', async ({ page
 
 
 test('simultaneous badges are announced without losing the purchase feedback', async ({ page }) => {
-  const game = createGame(Date.now()); game.yarn = game.runEarned = game.lifetime = new Decimal(75); game.stats.taps = 75;
+  const game = createGame(Date.now()); game.yarn = game.runEarned = game.lifetime = new Decimal('1e10'); game.stats.taps = 1000; game.owned.corner = 4; game.owned.kitten = 49;
   await page.addInitScript(({key, raw}) => localStorage.setItem(key,raw), {key:SAVE_KEY,raw:encode(game)});
   await page.goto('/');
   await page.getByRole('button', {name:'Adopt Kitten',exact:true}).click();
-  await expect(page.locator('#toast')).toContainText('2 achievements');
-  await expect(page.locator('#toast')).toContainText('Biscuit');
+  await expect(page.locator('#toast')).toContainText('Achievement unlocked');
+  await expect(page.locator('#toast')).toContainText('Kira');
 });

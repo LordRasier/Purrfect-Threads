@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { ball, block, makeCat, makePlant, makeWorkshop, makeYarn, material, shape, tube, visibleCatCount, type CatModel } from './models';
-import { population, type GameState } from '../game/engine';
+import { activeCompanion, population, type GameState } from '../game/engine';
+import { CompanionPortrait } from './companion';
 
 export class WorkshopWorld {
   private renderer: THREE.WebGLRenderer;
@@ -9,12 +10,13 @@ export class WorkshopWorld {
   private yarn = makeYarn();
   private cats: CatModel[] = [];
   private crew = new THREE.Group();
+  private companionLayer = new THREE.Group();
+  private companion: CompanionPortrait;
   private growth = new THREE.Group();
   private structures: THREE.Object3D[] = [];
   private resizeObserver: ResizeObserver;
   private pulseTime = -100;
   private count = -1;
-  private coat = -1;
   private quality = '';
   private particles: THREE.Points;
   private particlePositions = new Float32Array(40 * 3);
@@ -39,7 +41,10 @@ export class WorkshopWorld {
     const fill = new THREE.DirectionalLight('#f0ecff', 0.65);
     fill.position.set(5, 3, -4); this.scene.add(fill);
     this.buildDiorama();
-    this.scene.add(this.crew, this.growth);
+    this.companion = new CompanionPortrait(host, this.companionLayer, {
+      load: (url, loaded, failed) => { new THREE.ImageLoader().load(url, loaded, undefined, failed); },
+    });
+    this.scene.add(this.crew, this.growth, this.companionLayer);
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(this.particlePositions, 3));
     this.particles = new THREE.Points(geometry, new THREE.PointsMaterial({ color: '#fff2d7', size: 0.09, transparent: true, opacity: 0, depthWrite: false }));
@@ -104,26 +109,24 @@ export class WorkshopWorld {
       this.renderer.setPixelRatio(low ? 1 : Math.min(window.devicePixelRatio, this.quality === 'high' ? 2 : 1.5));
       this.resize();
     }
-    const count = visibleCatCount(population(game).toNumber(), low);
-    if (count !== this.count || game.coat !== this.coat) {
-      this.count = count; this.coat = game.coat;
+    const selected = activeCompanion(game);
+    const selectedId = selected?.id ?? null;
+    const count = visibleCatCount(population(game).toNumber(), low, selectedId !== null);
+    this.companion.sync(selectedId);
+    if (count !== this.count) {
+      this.count = count;
       this.crew.clear(); this.cats = [];
       for (let i = 0; i < count; i++) {
-        const cat = makeCat(i === 0 ? game.coat : i % 6);
-        if (i === 0) {
-          cat.root.position.set(1.48, 0.32, 0.42);
-          cat.root.scale.setScalar(0.95); cat.root.rotation.y = 0.15;
-        } else {
-          const angle = 0.95 + i * 2.39996;
-          const radius = 2.55 + i % 3 * 0.32;
-          cat.root.position.set(Math.sin(angle) * radius, 0.10, Math.cos(angle) * radius);
-          cat.root.scale.setScalar(i < 5 ? 0.45 : 0.30);
-          cat.root.rotation.y = Math.sin(angle) * 0.7;
-        }
+        const cat = makeCat(i % 6);
+        const angle = 0.95 + i * 2.39996;
+        const radius = 2.55 + i % 3 * 0.32;
+        cat.root.position.set(Math.sin(angle) * radius, 0.10, Math.cos(angle) * radius);
+        cat.root.scale.setScalar(i < 5 ? 0.45 : 0.30);
+        cat.root.rotation.y = Math.sin(angle) * 0.7;
         this.cats.push(cat); this.crew.add(cat.root);
       }
-      this.stats.cats = count;
     }
+    this.stats.cats = count + (selectedId ? 1 : 0);
     ['basket', 'corner', 'workshop', 'factory'].forEach((id, index) => {
       this.structures[index].visible = game.owned[id as keyof typeof game.owned] > 0;
     });
@@ -157,10 +160,11 @@ export class WorkshopWorld {
     const bounce = reduced ? 0 : Math.sin(age * 22) * Math.exp(-age * 7) * 0.11;
     this.yarn.scale.set(1 + bounce * 0.5, 1 - bounce, 1 + bounce * 0.5);
     this.yarn.rotation.y = reduced ? 0 : Math.sin(time * 0.35) * 0.018;
+    this.companion.animate(now, reduced);
     this.cats.forEach((cat, i) => {
       cat.head.rotation.z = reduced ? 0 : Math.sin(time * 1.15 + i) * 0.025;
       cat.tail.rotation.y = reduced ? 0 : Math.sin(time * 1.7 + i) * 0.12;
-      cat.paws.forEach((paw, p) => { paw.rotation.x = reduced ? 0 : Math.sin(time * 3 + i + p * Math.PI) * 0.17 + (i === 0 && age < 0.3 ? -0.4 : 0); });
+      cat.paws.forEach((paw, p) => { paw.rotation.x = reduced ? 0 : Math.sin(time * 3 + i + p * Math.PI) * 0.17; });
     });
     this.puff += delta;
     (this.particles.material as THREE.PointsMaterial).opacity = reduced ? 0 : Math.max(0, 1 - this.puff / 0.7);
@@ -181,6 +185,7 @@ export class WorkshopWorld {
 
   dispose(): void {
     this.resizeObserver.disconnect();
+    this.companion.dispose();
     this.renderer.dispose();
     this.renderer.domElement.remove();
   }
