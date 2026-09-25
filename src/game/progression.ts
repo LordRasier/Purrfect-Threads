@@ -1,4 +1,5 @@
 import Decimal from 'break_infinity.js';
+import { updateAchievements } from './achievements';
 import { TALENTS, type TalentId } from './catalog';
 import { createGame, production, updateCollection, type GameState } from './engine';
 
@@ -12,6 +13,7 @@ export function prestige(game: GameState): boolean {
   game.points = game.points.add(reward);
   game.claimed = game.claimed.add(reward);
   game.chapters++;
+  updateAchievements(game);
   game.yarn = new Decimal(0);
   game.runEarned = new Decimal(0);
   game.owned = createGame().owned;
@@ -19,6 +21,7 @@ export function prestige(game: GameState): boolean {
   game.starterCats = game.talents.includes('welcome') ? 3 : 0;
   // Do not reset lastTap: a chapter transition must not bypass the rate limit.
   updateCollection(game);
+  updateAchievements(game);
   return true;
 }
 
@@ -27,12 +30,15 @@ export function buyTalent(game: GameState, id: TalentId): boolean {
   if (game.talents.includes(id) || game.points.lt(talent.cost)) return false;
   game.points = game.points.sub(talent.cost);
   game.talents.push(id);
+  updateAchievements(game);
   return true;
 }
 
 export function selectCoat(game: GameState, index: number): boolean {
   if (!game.collection.includes(index)) return false;
+  if (game.coat !== index) game.stats.coatChanges = Math.min(Number.MAX_SAFE_INTEGER, game.stats.coatChanges + 1);
   game.coat = index;
+  updateAchievements(game);
   return true;
 }
 
@@ -44,5 +50,7 @@ export function applyOffline(game: GameState, now: number): Decimal {
   game.lifetime = game.lifetime.add(amount);
   game.runEarned = game.runEarned.add(amount);
   game.savedAt = Math.max(game.savedAt, now);
+  game.stats.offlineYarn = game.stats.offlineYarn.add(amount);
+  updateAchievements(game);
   return amount;
 }

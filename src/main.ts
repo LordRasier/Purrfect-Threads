@@ -1,6 +1,7 @@
 import Decimal from 'break_infinity.js';
 import './ui/style.css';
 import './ui/responsive.css';
+import './ui/expansion.css';
 import { PRODUCERS, UPGRADES, TALENTS, COATS } from './game/catalog';
 import { advance, buyProducer, buyUpgrade, createGame, tap, type GameState } from './game/engine';
 import { applyOffline, buyTalent, prestige, prestigeReward, selectCoat } from './game/progression';
@@ -10,6 +11,7 @@ import { GameUI } from './ui/view';
 import { text } from './ui/copy';
 import { icon } from './ui/icons';
 import { format } from './ui/format';
+import { ACHIEVEMENTS } from './game/achievements';
 import { HoldInput } from './game/input';
 import type { WorkshopWorld } from './scene/world';
 
@@ -63,6 +65,7 @@ async function start(session: Session): Promise<void> {
   let previous = performance.now(), suspended = document.hidden;
   let lastSave = previous, lastUI = -1000;
   let importPending = false;
+  let seenAchievements = new Set(game.achievements);
   const ui = new GameUI(root, () => game, action);
   const reduced = () => game.settings.reducedMotion || motionPreference.matches;
   const held = new HoldInput(pull);
@@ -81,7 +84,11 @@ async function start(session: Session): Promise<void> {
     if (!suspended) advance(game, Math.max(0, (now - previous) / 1000));
     previous = now;
   }
-  function refresh(): void {
+  function refresh(message?: string): void {
+    const fresh = game.achievements.filter(id => !seenAchievements.has(id));
+    const achievementMessage = fresh.length === 1 ? text.achievementUnlocked(ACHIEVEMENTS.find(item => item.id === fresh[0])!.name) : fresh.length > 1 ? text.achievementsUnlocked(fresh.length) : '';
+    if (message || achievementMessage) ui.toast([message, achievementMessage].filter(Boolean).join(' · '));
+    seenAchievements = new Set(game.achievements);
     document.body.classList.toggle('reduced-motion', reduced());
     world?.sync(game); ui.refresh();
     const sound = document.getElementById('sound-button')!;
@@ -95,8 +102,8 @@ async function start(session: Session): Promise<void> {
     if (amount.gt(0)) { world?.pulse(now); ui.floating(format(amount), reduced()); audio.play(game.settings.volume); ui.refresh(); }
   }
   function changed(message?: string): void {
-    persist(); ui.renderPanel(); refresh();
-    if (message) { ui.toast(message); audio.play(game.settings.volume, true); }
+    persist(); ui.renderPanel(); refresh(message);
+    if (message) audio.play(game.settings.volume, true);
   }
   function action(kind: string, id?: string): void {
     if (!session.active) return;
@@ -152,7 +159,7 @@ async function start(session: Session): Promise<void> {
     if (target.id === 'quality' && ['auto', 'low', 'high'].includes(target.value)) game.settings.quality = target.value as GameState['settings']['quality'];
     persist(); refresh();
   });
-  motionPreference.addEventListener('change', refresh);
+  motionPreference.addEventListener('change', () => refresh());
   document.getElementById('import-file')!.addEventListener('change', async event => {
     const input = event.target as HTMLInputElement, file = input.files?.[0];
     if (!file) return;

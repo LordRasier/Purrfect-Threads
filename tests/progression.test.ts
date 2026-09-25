@@ -52,7 +52,7 @@ describe('chapters, talents and collection', () => {
   });
   it('progresses through three chapters by accelerated production without rewarding twice', () => {
     const game = createGame(0);
-    game.yarn = new Decimal(15);
+    game.yarn = new Decimal(75);
     buyProducer(game, 'kitten', 1);
     for (let chapter = 0; chapter < 3; chapter++) {
       if (!population(game).gt(0)) game.owned.kitten = 1;

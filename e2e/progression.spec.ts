@@ -8,6 +8,7 @@ test('collection milestones do not relock after a chapter reset', async ({ page 
   game.owned.kitten = 3; game.collection = [0, 1, 2, 3, 4, 5];
   await page.addInitScript(({ key, raw }) => localStorage.setItem(key, raw), { key: SAVE_KEY, raw: encode(game) });
   await page.goto('/');
+  await page.getByRole('button', { name: 'Cat collection', exact: true }).click();
   await expect(page.locator('#goal-title')).toHaveText('A family worth purring about.');
 });
 

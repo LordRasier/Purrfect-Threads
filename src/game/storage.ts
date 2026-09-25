@@ -1,4 +1,5 @@
 import Decimal from 'break_infinity.js';
+import { ACHIEVEMENTS, updateAchievements } from './achievements';
 import { PRODUCERS, UPGRADES, TALENTS } from './catalog';
 import { createGame, MAX_OWNED, type GameState } from './engine';
 import { applyOffline } from './progression';
@@ -39,11 +40,11 @@ function knownList<T extends string | number>(value: unknown, known: readonly T[
 export function decode(raw: string): GameState {
   if (raw.length > 100000) throw new Error('Save file is too large.');
   const data = record(JSON.parse(raw));
-  if (data.version !== 1) throw new Error('This save version is not supported.');
+  if (data.version !== 1 && data.version !== 2) throw new Error('This save version is not supported.');
   const game = createGame(integer(data.savedAt));
   for (const key of ['yarn', 'lifetime', 'runEarned', 'points', 'claimed'] as const) game[key] = decimal(data[key]);
   const owned = record(data.owned);
-  for (const item of PRODUCERS) game.owned[item.id] = integer(owned[item.id], MAX_OWNED);
+  for (const item of PRODUCERS) game.owned[item.id] = integer(data.version === 1 && !['kitten','basket','corner','workshop','factory'].includes(item.id) ? 0 : owned[item.id], MAX_OWNED);
   game.upgrades = knownList(data.upgrades, UPGRADES.map(item => item.id));
   game.talents = knownList(data.talents, TALENTS.map(item => item.id));
   game.collection = knownList(data.collection, [0, 1, 2, 3, 4, 5]);
@@ -59,9 +60,19 @@ export function decode(raw: string): GameState {
   game.stats.taps = integer(stats.taps);
   if (typeof stats.playSeconds !== 'number' || !Number.isFinite(stats.playSeconds) || stats.playSeconds < 0) throw new Error('Invalid play time.');
   game.stats.playSeconds = stats.playSeconds;
+  if (data.version === 2) {
+    game.achievements = knownList(data.achievements, ACHIEVEMENTS.map(item => item.id));
+    for (const key of ['upgradePurchases', 'bulkPurchases', 'maxPurchases', 'coatChanges'] as const) game.stats[key] = integer(stats[key]);
+    game.stats.offlineYarn = decimal(stats.offlineYarn);
+    if (game.stats.offlineYarn.gt(game.lifetime)) throw new Error('Invalid offline total.');
+  } else {
+    // Legacy saves did not track these counters. Infer only facts still present.
+    game.stats.upgradePurchases = game.upgrades.length;
+  }
   const settings = record(data.settings);
   if (typeof settings.volume !== 'number' || !Number.isFinite(settings.volume) || settings.volume < 0 || settings.volume > 1 || typeof settings.reducedMotion !== 'boolean' || !['auto', 'low', 'high'].includes(String(settings.quality))) throw new Error('Invalid settings.');
   game.settings = { volume: settings.volume, reducedMotion: settings.reducedMotion, quality: settings.quality as GameState['settings']['quality'] };
+  updateAchievements(game);
   return game;
 }
 

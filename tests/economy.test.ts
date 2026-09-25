@@ -13,12 +13,12 @@ describe('yarn economy', () => {
   });
   it('spends yarn but preserves lifetime and adds workers exactly once', () => {
     const game = createGame(0);
-    for (let i = 0; i < 15; i++) tap(game, i * 200);
+    for (let i = 0; i < 75; i++) tap(game, i * 200);
     expect(buyProducer(game, 'kitten', 1)).toBe(1);
     expect(game.yarn.toNumber()).toBe(0);
-    expect(game.lifetime.toNumber()).toBe(15);
+    expect(game.lifetime.toNumber()).toBe(75);
     expect(population(game).toNumber()).toBe(1);
-    expect(quote(game, 'kitten', 1).cost.toNumber()).toBe(18);
+    expect(quote(game, 'kitten', 1).cost.toNumber()).toBe(87);
     expect(buyProducer(game, 'kitten', 1)).toBe(0);
   });
   it('produces the same amount at different frame rates without manual clicks', () => {
@@ -33,7 +33,7 @@ describe('yarn economy', () => {
   });
   it('bulk purchases match sequential purchases including individual rounding', () => {
     const bulk = createGame(0), single = createGame(0);
-    bulk.yarn = single.yarn = new Decimal(10000);
+    bulk.yarn = single.yarn = new Decimal(100000);
     expect(buyProducer(bulk, 'basket', 10)).toBe(10);
     for (let n = 0; n < 10; n++) buyProducer(single, 'basket', 1);
     expect(bulk.yarn.eq(single.yarn)).toBe(true);
@@ -72,7 +72,7 @@ describe('yarn economy', () => {
   it('max quotes agree with the individually rounded next-unit boundary', () => {
     const game = createGame(0);
     game.owned.kitten = 255;
-    game.yarn = Decimal.pow(1.15, 255).mul(15).ceil();
+    game.yarn = Decimal.pow(1.15, 255).mul(75).ceil();
     expect(quote(game, 'kitten', 'max').count).toBe(1);
     expect(buyProducer(game, 'kitten', 'max')).toBe(1);
     expect(game.yarn.eq(0)).toBe(true);

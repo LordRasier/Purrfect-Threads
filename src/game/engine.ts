@@ -1,11 +1,12 @@
 import Decimal from 'break_infinity.js';
+import { updateAchievements } from './achievements';
 import { COATS, PRODUCERS, UPGRADES, type ProducerId, type UpgradeId, type TalentId } from './catalog';
 
 export type Quantity = 1 | 10 | 'max';
 // Beyond the authored prototype content, bound transactions and imported teams.
 export const MAX_OWNED = 10000;
 export interface GameState {
-  version: 1;
+  version: 2;
   yarn: Decimal;
   lifetime: Decimal;
   runEarned: Decimal;
@@ -18,7 +19,8 @@ export interface GameState {
   starterCats: number;
   collection: number[];
   coat: number;
-  stats: { taps: number; playSeconds: number };
+  achievements: string[];
+  stats: { taps: number; playSeconds: number; upgradePurchases: number; bulkPurchases: number; maxPurchases: number; coatChanges: number; offlineYarn: Decimal };
   settings: { volume: number; reducedMotion: boolean; quality: 'auto' | 'low' | 'high' };
   savedAt: number;
   lastTap: number;
@@ -26,10 +28,10 @@ export interface GameState {
 
 export function createGame(now = Date.now()): GameState {
   return {
-    version: 1, yarn: new Decimal(0), lifetime: new Decimal(0), runEarned: new Decimal(0),
-    owned: { kitten: 0, basket: 0, corner: 0, workshop: 0, factory: 0 },
+    version: 2, yarn: new Decimal(0), lifetime: new Decimal(0), runEarned: new Decimal(0),
+    owned: Object.fromEntries(PRODUCERS.map(item => [item.id, 0])) as Record<ProducerId, number>,
     upgrades: [], talents: [], points: new Decimal(0), claimed: new Decimal(0), chapters: 0,
-    starterCats: 0, collection: [], coat: 0, stats: { taps: 0, playSeconds: 0 },
+    starterCats: 0, collection: [], coat: 0, achievements: [], stats: { taps: 0, playSeconds: 0, upgradePurchases: 0, bulkPurchases: 0, maxPurchases: 0, coatChanges: 0, offlineYarn: new Decimal(0) },
     settings: { volume: 0.35, reducedMotion: false, quality: 'auto' }, savedAt: now, lastTap: -Infinity,
   };
 }
@@ -69,6 +71,7 @@ export function tap(game: GameState, now: number): Decimal {
   const amount = tapValue(game);
   earn(game, amount);
   game.stats.taps = Math.min(Number.MAX_SAFE_INTEGER, game.stats.taps + 1);
+  updateAchievements(game);
   return amount;
 }
 
@@ -76,6 +79,7 @@ export function advance(game: GameState, seconds: number): void {
   if (!Number.isFinite(seconds) || seconds <= 0) return;
   earn(game, production(game).mul(seconds));
   game.stats.playSeconds = Math.min(Number.MAX_SAFE_INTEGER, game.stats.playSeconds + seconds);
+  updateAchievements(game);
 }
 
 export function updateCollection(game: GameState): void {
@@ -110,7 +114,10 @@ export function buyProducer(game: GameState, id: ProducerId, quantity: Quantity)
   if (!purchase.affordable) return 0;
   game.yarn = purchase.remaining;
   game.owned[id] += purchase.count;
+  if (quantity === 10 && purchase.count === 10) game.stats.bulkPurchases = Math.min(Number.MAX_SAFE_INTEGER, game.stats.bulkPurchases + 1);
+  if (quantity === 'max') game.stats.maxPurchases = Math.min(Number.MAX_SAFE_INTEGER, game.stats.maxPurchases + 1);
   updateCollection(game);
+  updateAchievements(game);
   return purchase.count;
 }
 
@@ -120,5 +127,7 @@ export function buyUpgrade(game: GameState, id: UpgradeId): boolean {
   if (id === 'master' && !game.talents.includes('knitters')) return false;
   game.yarn = game.yarn.sub(upgrade.cost);
   game.upgrades.push(id);
+  game.stats.upgradePurchases = Math.min(Number.MAX_SAFE_INTEGER, game.stats.upgradePurchases + 1);
+  updateAchievements(game);
   return true;
 }

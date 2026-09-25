@@ -5,11 +5,14 @@ import { prestigeReward } from '../game/progression';
 import { text } from './copy';
 import { format } from './format';
 import { icon } from './icons';
+import { ACHIEVEMENTS, achievementProgress } from '../game/achievements';
+import { crewPanel, upgradePanel, chapterPanel, collectionPanel, achievementsPanel } from './panels';
 
-export type Screen = 'workshop' | 'collection' | 'chapter';
+export type Screen = 'workshop' | 'upgrades' | 'achievements' | 'collection' | 'chapter';
 export class GameUI {
   screen: Screen = 'workshop';
   quantity: Quantity = 1;
+  private achievementCategory = 'all';
   readonly dialog: HTMLDialogElement;
   readonly pull: HTMLButtonElement;
   readonly worldHost: HTMLElement;
@@ -22,8 +25,10 @@ export class GameUI {
         <a class="brand" href="#" aria-label="${text.brand}"><span class="brand-mark">${icon('cat')}</span><span>${text.brandFirst}<span class="brand-second">${text.brandSecond}<span class="brand-dot">.</span></span></span></a>
         <nav class="navigation" aria-label="${text.sectionsLabel}">
           <button data-screen="workshop" aria-pressed="true">${icon('house')}<span>${text.workshop}</span></button>
-          <button data-screen="collection" aria-label="${text.collection}" aria-pressed="false">${icon('cat')}<span>${text.collection}</span><span class="nav-count" id="collection-count">0/6</span></button>
-          <button data-screen="chapter" aria-label="${text.chapter}" aria-pressed="false">${icon('star')}<span>${text.chapter}</span></button>
+          <button data-screen="upgrades" aria-label="${text.upgradesTab}" aria-pressed="false">${icon('knit')}<span>${text.upgradesTab}</span></button>
+          <button data-screen="achievements" aria-label="${text.achievementsTab}" aria-pressed="false">${icon('heart')}<span>${text.achievementsTab}</span></button>
+          <button data-screen="collection" aria-label="${text.collection}" aria-pressed="false">${icon('cat')}<span>${text.collectionShort}</span><span class="nav-count" id="collection-count">0/6</span></button>
+          <button data-screen="chapter" aria-label="${text.chapter}" aria-pressed="false">${icon('star')}<span>${text.olympusShort}</span></button>
         </nav>
         <div class="header-actions"><span class="save-status" id="save-status" role="status">${text.saving}</span><button class="icon-button" data-action="sound" aria-label="${text.mute}" id="sound-button">${icon('sound')}</button><button class="icon-button" data-action="settings" aria-label="${text.settings}">${icon('settings')}</button></div>
       </header>
@@ -33,7 +38,6 @@ export class GameUI {
           <div class="stash"><span class="stash-label">${text.yarn}</span><div class="stash-value">${icon('yarn')}<span data-testid="yarn" id="yarn-count">0</span></div><div class="stats-line"><span><i class="status-dot"></i><strong data-testid="rate" id="rate">0</strong> ${text.perSecond}</span><span class="stat-divider"></span><span>${icon('paw')}<strong data-testid="population" id="population">0</strong> ${text.workingCats}</span></div></div>
           <div class="world" id="world"><div class="scene-halo"></div><span class="room-label" id="room-label">${text.chapterLabel(0)}</span><button id="pull" class="yarn-target" aria-label="${text.pull}"><span class="sr-only">${text.pull}</span></button><div class="float-layer" id="float-layer" aria-hidden="true"></div><span class="scene-sparkle sparkle-one">✦</span><span class="scene-sparkle sparkle-two">✧</span></div>
           <div class="pull-hint"><span class="hint-icon">${icon('paw')}</span><span><strong>${text.holdHint}</strong><small id="tap-hint">${text.keyboardHint}</small></span><span class="per-tap" id="per-tap">+1</span></div>
-          <div class="milestone"><div class="milestone-icon">${icon('heart')}</div><div class="milestone-body"><div class="milestone-heading"><strong id="goal-title">${text.firstGoal}</strong><span id="goal-count">0 / 15</span></div><div class="progress-track"><div id="goal-progress"></div></div><small id="goal-detail">${text.firstGoalDetail}</small></div></div>
         </section>
         <aside class="management" id="management" aria-label="${text.managementLabel}"></aside>
       </main>
@@ -51,6 +55,7 @@ export class GameUI {
       if (button.dataset.quantity) { this.quantity = button.dataset.quantity === 'max' ? 'max' : Number(button.dataset.quantity) as 1 | 10; this.refresh(); return; }
       if (button.dataset.action) onAction(button.dataset.action, button.dataset.id);
     });
+    root.addEventListener('change', event => { const target = event.target as HTMLSelectElement; if (target.id === 'achievement-filter') { this.achievementCategory = target.value; this.renderPanel(); this.refresh(); document.getElementById('achievement-filter')?.focus(); } });
     this.dialog.addEventListener('click', event => { if (event.target === this.dialog) { const rect = this.dialog.getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) this.dialog.close(); } });
     this.renderPanel(); this.refresh();
   }
@@ -58,20 +63,9 @@ export class GameUI {
   renderPanel(): void {
     const game = this.game();
     const focused = document.activeElement?.id;
-    if (this.screen === 'workshop') {
-      this.panel.innerHTML = `<div class="panel-intro"><span class="eyebrow">${text.shopEyebrow}</span><h2>${text.shopTitle}</h2><p>${text.shopSubtitle}</p></div>
-        <div class="section-heading"><h3>${icon('paw')}${text.team}</h3><div class="quantity" aria-label="${text.quantityLabel}"><button data-quantity="1">×1</button><button data-quantity="10">×10</button><button data-quantity="max">${text.max}</button></div></div>
-        <div class="producer-list">${PRODUCERS.map(item => `<article class="producer" id="card-${item.id}"><div class="producer-icon ${item.color}">${icon(item.icon)}</div><div class="producer-info"><div class="producer-title"><h4>${item.name}</h4><span class="owned" id="owned-${item.id}">0</span></div><p>${item.detail}</p><span class="yield" id="yield-${item.id}"></span></div><button class="buy-button" id="buy-${item.id}" data-action="buy" data-id="${item.id}" aria-label="${text.adopt(item.name)}">${icon('yarn')}<span id="cost-${item.id}"></span>${icon('plus', 'buy-plus')}</button><div class="locked-overlay" id="locked-${item.id}">${icon('lock')}<span>${text.next} · ${text.cost(format(item.cost))}</span></div></article>`).join('')}</div>
-        <div class="section-heading upgrades-heading"><h3>${icon('leaf')}${text.upgrades}</h3><span class="tiny-label">${text.thisChapter}</span></div>
-        <div class="upgrade-list">${UPGRADES.filter(item => item.id !== 'master' || game.talents.includes('knitters')).map(item => `<button class="upgrade" id="upgrade-${item.id}" data-action="upgrade" data-id="${item.id}" aria-label="${text.buy(item.name)}"><span class="upgrade-icon">${icon(item.icon)}</span><span class="upgrade-info"><strong>${item.name}</strong><small>${item.detail}</small></span><span class="upgrade-price" id="upgrade-price-${item.id}">${format(item.cost)}</span></button>`).join('')}</div><p class="panel-note">${icon('heart')}${text.breakHint}</p>`;
-    } else if (this.screen === 'collection') {
-      this.panel.innerHTML = `<div class="panel-intro"><span class="eyebrow">${text.collectionEyebrow}</span><h2>${text.collectionTitle}</h2><p>${text.collectionSubtitle}</p></div><div class="collection-grid">${COATS.map((coat, i) => {
-        const unlocked = game.collection.includes(i);
-        return `<article class="coat-card ${unlocked ? '' : 'locked-coat'}"><div class="coat-avatar" style="--coat:${coat.color};--accent:${coat.accent}">${icon('cat')}</div><h3>${coat.name}</h3><p>${coat.personality}</p><button class="soft-button" data-action="coat" data-id="${i}" ${!unlocked ? 'disabled' : ''}>${unlocked ? (game.coat === i ? text.selected : text.select) : icon('lock') + text.unlockCats(coat.milestone)}</button></article>`;
-      }).join('')}</div>`;
-    } else {
-      this.panel.innerHTML = `<div class="panel-intro"><span class="eyebrow">${text.prestigeEyebrow}</span><h2>${text.prestigeTitle}</h2><p>${text.prestigeSubtitle}</p></div><div class="chapter-card"><span class="golden-icon">${icon('paw')}</span><span class="tiny-label">${text.chapterBrings}</span><strong id="prestige-reward"></strong><p id="prestige-remaining"></p><button class="primary-button" data-action="prestige" id="prestige-button">${text.prestigeButton}${icon('arrow')}</button></div><div class="section-heading"><h3>${text.talents}</h3><span id="points-label"></span></div><div class="talent-list">${TALENTS.map(item => `<button class="talent" id="talent-${item.id}" data-action="talent" data-id="${item.id}"><span class="upgrade-icon">${icon(item.icon)}</span><span class="upgrade-info"><strong>${item.name}</strong><small>${item.detail}</small></span><span class="talent-price" id="talent-price-${item.id}">${item.cost}${icon('paw')}</span></button>`).join('')}</div>`;
-    }
+    this.panel.dataset.screen = this.screen;
+    const panels = { workshop: () => crewPanel(), upgrades: () => upgradePanel(game), achievements: () => achievementsPanel(game, this.achievementCategory), collection: () => collectionPanel(game), chapter: () => chapterPanel() };
+    this.panel.innerHTML = panels[this.screen]();
     if (focused) document.getElementById(focused)?.focus({ preventScroll: true });
   }
 
@@ -87,20 +81,15 @@ export class GameUI {
     this.root.querySelectorAll<HTMLButtonElement>('[data-screen]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.screen === this.screen)));
     this.root.querySelectorAll<HTMLButtonElement>('[data-quantity]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.quantity === String(this.quantity))));
     const nextCat = COATS.find((_, index) => !game.collection.includes(index));
-    const goal = population(game).eq(0) ? { title: text.firstGoal, count: `${format(game.yarn.floor(), 0)} / 15`, progress: Math.min(1, game.yarn.div(15).toNumber()), detail: text.firstGoalDetail } : { title: nextCat ? text.nextGoal(nextCat.name) : text.familyTitle, count: nextCat ? `${format(population(game), 0)} / ${format(nextCat.milestone, 0)}` : text.familyCount, progress: nextCat ? population(game).div(nextCat.milestone).toNumber() : 1, detail: nextCat ? text.unlockCats(nextCat.milestone) : text.familyDetail };
-    set('goal-title', goal.title); set('goal-count', goal.count); set('goal-detail', goal.detail);
-    (document.getElementById('goal-progress') as HTMLElement).style.width = `${goal.progress * 100}%`;
+    set('goal-title', nextCat ? text.nextGoal(nextCat.name) : text.familyTitle);
+    set('tap-hint', population(game).eq(0) ? text.firstGoalDetail : text.keyboardHint);
     if (this.screen === 'workshop') {
-      let lastRevealed = 0;
-      PRODUCERS.forEach((item, i) => { if (game.runEarned.gte(item.cost) || game.owned[item.id] > 0) lastRevealed = i; });
       PRODUCERS.forEach((item, i) => {
         const q = quote(game, item.id, this.quantity);
         const next = q.count ? q : quote(game, item.id, 1);
         const capped = game.owned[item.id] >= MAX_OWNED;
         const card = document.getElementById(`card-${item.id}`)!;
-        card.hidden = i > lastRevealed + 1;
-        card.classList.toggle('teaser', i > lastRevealed);
-        document.getElementById(`locked-${item.id}`)!.hidden = i <= lastRevealed;
+        card.classList.toggle('unaffordable', !q.affordable);
         set(`owned-${item.id}`, text.owned(format(game.owned[item.id], 0)));
         set(`cost-${item.id}`, capped ? text.maxed : format(next.cost, 0));
         set(`yield-${item.id}`, text.productionAdded(format(producerOutput(game, item.id, next.count || 1))));
@@ -108,13 +97,25 @@ export class GameUI {
         buy.disabled = !q.affordable || capped;
         buy.title = capped ? text.cap : text.catsAdded(format(item.cats * next.count));
       });
+    }
+    if (this.screen === 'upgrades') {
       for (const upgrade of UPGRADES) {
         const button = document.getElementById(`upgrade-${upgrade.id}`) as HTMLButtonElement | null;
         if (!button) continue;
         const bought = game.upgrades.includes(upgrade.id);
-        button.disabled = bought || game.yarn.lt(upgrade.cost);
+        button.disabled = bought || game.yarn.lt(upgrade.cost) || (upgrade.id === 'master' && !game.talents.includes('knitters'));
         button.classList.toggle('purchased', bought);
         set(`upgrade-price-${upgrade.id}`, bought ? text.bought : format(upgrade.cost, 0));
+      }
+    }
+    if (this.screen === 'achievements') {
+      set('achievement-count', text.achievementsCount(game.achievements.length, ACHIEVEMENTS.length));
+      for (const item of ACHIEVEMENTS) {
+        const card = document.getElementById(`achievement-${item.id}`); if (!card) continue;
+        const earned = game.achievements.includes(item.id), progress = achievementProgress(game, item);
+        card.classList.toggle('earned', earned);
+        set(`badge-status-${item.id}`, earned ? text.unlocked : `${format(progress.value, 0)} / ${format(item.target, 0)}`);
+        (document.getElementById(`badge-bar-${item.id}`) as HTMLElement).style.width = `${progress.ratio * 100}%`;
       }
     }
     if (this.screen === 'chapter') {

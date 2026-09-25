@@ -1,0 +1,136 @@
+/* Compact crew roster and three handcrafted progression spaces. */
+.layout { grid-template-columns: minmax(0, 1fr) 430px; gap: 36px; }
+.management { padding: 25px 22px; min-width: 0; }
+.compact-intro { margin-bottom: 18px; }
+.compact-intro h2 { font-size: 29px; }
+.compact-intro p { font-size: 12px; }
+.navigation { gap: 4px; margin-left: 0; }
+.navigation button { gap: 6px; padding: 10px 12px; }
+.navigation .nav-count { display: none; }
+.producer-list { gap: 8px; }
+.producer { display: grid; grid-template-columns: 44px minmax(0,1fr) 96px; grid-template-rows: auto; align-items: center; gap: 10px; min-height: 72px; padding: 10px; border-radius: 13px; }
+.producer .producer-icon { position: relative; width: 44px; height: 44px; grid-row: 1; }
+.producer .producer-icon > .icon { width: 29px; height: 29px; }
+.role-badge { position: absolute; right: -3px; bottom: -3px; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: #fffaf1; border: 1px solid #ddd3c2; }
+.role-badge .icon { width: 13px; height: 13px; }
+.producer-info { min-width: 0; }
+.producer-title { display: flex; align-items: center; gap: 5px; justify-content: space-between; }
+.producer-title h4 { font-size: 12px; line-height: 1.25; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.producer-title .owned { padding: 2px 4px; font-size: 9px; flex-shrink: 0; }
+.producer .yield { display: block; margin-top: 5px; font-size: 11px; white-space: nowrap; }
+.producer .buy-button { grid-column: 3; grid-row: 1; display: flex; align-items: center; justify-content: center; gap: 5px; width: 96px; min-width: 0; height: 46px; min-height: 44px; margin: 0; padding: 5px; font-size: 12px; }
+.producer .buy-button .icon { width: 15px; height: 15px; }
+.producer .buy-plus { display: none; }
+.producer.unaffordable { background: #f8f5ee; }
+.producer.unaffordable .buy-button { opacity: 1; background: #eee9de; color: #746c5e; }
+.producer:hover { border-color: #b9c6ae; }
+.collection-goal { font-size: 12px; margin: 0 0 18px; padding: 12px; background: #edf0e6; border-radius: 10px; }
+
+.upgrade-board { position: relative; margin: 24px 0 16px; padding: 24px 15px 28px; background: radial-gradient(ellipse at 40% 30%, #446556, #2e4b3d); border: 10px solid #b78b60; border-radius: 12px; box-shadow: inset 0 0 0 3px #745438, inset 0 0 25px #18302566, 0 6px 0 #876040; }
+.board-heading { display: flex; align-items: center; justify-content: center; gap: 9px; color: #f8f2d9; font-family: Georgia, serif; font-style: italic; font-size: 20px; margin: 0 0 24px; }
+.board-heading .icon { width: 24px; height: 24px; }
+.board-notes { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 12px; }
+.upgrade.sticky-note { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; justify-content: flex-start; gap: 10px; min-height: 215px; border: 0; border-radius: 2px 2px 16px 2px; padding: 17px 12px 13px; box-shadow: 2px 5px 6px #10251844; color: #493f32; transform: rotate(-2deg); opacity: 1; background: #f8e8ad; }
+.upgrade.sticky-note:nth-child(even) { transform: rotate(2deg); }
+.upgrade.sticky-note.note-1 { background: #d8e8c7; }
+.upgrade.sticky-note.note-2 { background: #f1cfc0; }
+.upgrade.sticky-note.note-3 { background: #e1d5ec; }
+.upgrade.sticky-note:not(:disabled):hover { transform: rotate(0) translateY(-3px); box-shadow: 3px 8px 12px #10251866; }
+.sticky-note .note-pin { position: absolute; width: 10px; height: 10px; left: calc(50% - 5px); top: -5px; background: #cb7568; border-radius: 50%; box-shadow: 1px 2px 2px #57453266; }
+.note-cat { display: flex; justify-content: center; align-items: end; height: 47px; }
+.note-cat .icon:first-child { width: 42px; height: 42px; stroke-width: 1.2; }
+.note-cat .icon:last-child { width: 22px; height: 22px; margin-left: -8px; }
+.sticky-note strong { font-size: 15px; font-family: Georgia, serif; }
+.sticky-note small { font-size: 12px; line-height: 1.4; }
+.sticky-note .upgrade-price { display: block; margin-top: auto; padding: 7px 11px; border: 1px dashed #786c52; border-radius: 20px; font-size: 12px; }
+.sticky-note.purchased { background: #dce7ca; }
+.sticky-note.purchased .upgrade-price { background: #526b45; border-color: #526b45; color: #fff; }
+.sticky-note .talent-required { font-size: 10px; color: #625075; }
+.chalk-note { color: #f1f0db; text-align: center; margin-top: 22px; font: italic 13px Georgia, serif; }
+.board-ledge { position: absolute; height: 13px; background: #cfaa7b; bottom: -13px; left: -15px; right: -15px; border-radius: 3px; box-shadow: 0 3px 0 #987147; }
+.board-ledge i { position: absolute; bottom: 12px; right: 30px; width: 31px; height: 6px; background: #f6e9c7; border-radius: 3px; transform: rotate(-5deg); }
+.board-ledge i + i { right: 63px; background: #deb3bd; transform: rotate(5deg); }
+
+.olympus { position: relative; overflow: hidden; padding: 25px 12px 35px; border-radius: 70px 70px 18px 18px; border: 1px solid #ddd2e9; background: radial-gradient(ellipse at 50% 10%, #fffbef, #ebe3f3 55%, #d4daea); }
+.olympus:before, .olympus:after { content: ''; position: absolute; width: 220px; height: 120px; border-radius: 50%; background: #fffdf7aa; bottom: -52px; left: -40px; }
+.olympus:after { left: auto; right: -55px; bottom: -45px; }
+.olympus-heading { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; position: relative; font-size: 12px; color: #655476; margin-bottom: 20px; }
+.olympus-heading strong { color: #8c6b30; }
+.olympus-sky { display: flex; justify-content: space-around; color: #b89957; height: 26px; font-size: 20px; }
+.olympus .talent-list { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
+.talent.statue-card { display: flex; align-items: center; flex-direction: column; text-align: center; gap: 8px; padding: 8px 5px 12px; border-radius: 45px 45px 13px 13px; background: #fffcf188; border: 1px solid #d3c7df; color: #50475a; opacity: 1; min-width: 0; }
+.statue-card .talent-statue { width: 100%; height: 136px; display: block; }
+.statue-card .statue-caption { font: italic 10px Georgia, serif; color: #766780; min-height: 24px; }
+.statue-card strong { font-size: 12px; line-height: 1.3; }
+.statue-card small { font-size: 11px; line-height: 1.35; min-height: 60px; }
+.statue-card .talent-price { margin: auto 0 0; color: #6d572d; background: #ead8a8; padding: 8px 5px; font-size: 10px; border-radius: 20px; }
+.statue-card:disabled:not(.purchased) .talent-statue { filter: saturate(.3); }
+.statue-card.purchased { box-shadow: inset 0 0 0 2px #c6a453, 0 0 15px #e3c57755; background: #fff8e5; }
+.statue-card:not(:disabled):hover { background: #fff8e5; transform: translateY(-3px); }
+.chapter-card { padding: 22px 16px; margin-top: 22px; }
+.chapter-card > strong { font-size: 26px; }
+.chapter-card p { font-size: 12px; }
+
+.achievement-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin: 23px 0 17px; }
+.achievement-toolbar strong { color: #687956; font-size: 13px; }
+.achievement-toolbar select { min-height: 44px; max-width: 100%; background: #fffcf6; color: #514b40; border: 1px solid #d8cebd; border-radius: 9px; padding: 10px; font-size: 12px; }
+.achievement-grid { display: grid; gap: 10px; }
+.achievement-card { display: grid; grid-template-columns: 48px minmax(0,1fr); gap: 13px; padding: 15px; border: 1px dashed #d9cfbf; border-radius: 14px; background: #f6f1e8; }
+.badge-art { display: grid; place-items: center; align-self: center; width: 48px; height: 52px; border-radius: 50% 50% 40% 40%; background: #e7e1d6; color: #847a69; border: 3px double #cec4b2; }
+.badge-art .icon { width: 26px; height: 26px; }
+.badge-category { font-size: 9px; text-transform: uppercase; letter-spacing: 1.2px; color: #796f61; }
+.achievement-card h3 { font-size: 14px; line-height: 1.3; margin: 3px 0 5px; }
+.achievement-card p { font-size: 12px; line-height: 1.4; color: #756d60; }
+.achievement-card small { display: block; font-size: 10px; color: #686c54; margin-top: 5px; }
+.badge-progress { height: 4px; background: #e1d9cc; margin-top: 9px; overflow: hidden; border-radius: 8px; }
+.badge-progress i { height: 100%; display: block; background: #a3b290; }
+.achievement-card.earned { border-style: solid; border-color: #c0cfb1; background: #f4f7ed; }
+.achievement-card.earned .badge-art { background: #ecd89e; border-color: #ba9b50; color: #806329; }
+.achievement-card.earned .badge-progress i { background: #8ba173; }
+.reduced-motion .sticky-note, .reduced-motion .statue-card { transition: none; }
+
+@media(max-width:1200px) {
+  .topbar { flex-wrap: wrap; }
+  .header-actions { margin-left: auto; }
+  .navigation { order: 3; width: 100%; justify-content: center; padding-top: 8px; border-top: 1px solid var(--line); }
+  .layout { grid-template-columns: minmax(0,1fr) 400px; gap: 25px; padding: 28px 25px; }
+}
+@media(max-width:850px) {
+  .layout { display: block; padding: 24px; }
+  .management { padding: 24px; }
+  .navigation { gap: 4px; }
+  .navigation button { flex: 1; padding: 8px 5px; flex-direction: column; gap: 4px; font-size: 10px; min-width: 44px; min-height: 48px; }
+  .producer { min-height: 70px; }
+  .world { height: 350px; }
+}
+@media(max-width:480px) {
+  .layout { padding: 20px 12px; }
+  .management { padding: 20px 12px; }
+  .topbar { padding: 12px 12px 8px; }
+  .navigation button { font-size: 9px; }
+  .navigation .icon { width: 18px; height: 18px; }
+  .producer { grid-template-columns: 36px minmax(0,1fr) 76px; gap: 7px; padding: 9px 7px; min-height: 66px; }
+  .producer .producer-icon { width: 36px; height: 40px; }
+  .producer .producer-icon > .icon { width: 26px; height: 26px; }
+  .producer .buy-button { width: 76px; font-size: 11px; }
+  .producer-title h4 { font-size: 11px; }
+  .producer-title { gap: 3px; }
+  .producer-title .owned { font-size: 8px; background: transparent; padding: 0; }
+  .producer .yield { font-size: 10px; }
+  .compact-intro h2 { font-size: 25px; }
+  .world { height: 285px; margin: 3px -12px 0; }
+  .board-heading { font-size: 17px; gap: 7px; }
+  .upgrade-board { padding: 20px 10px 25px; border-width: 8px; }
+  .board-notes { gap: 20px 10px; }
+  .upgrade.sticky-note { padding: 17px 9px 12px; min-height: 225px; }
+  .sticky-note strong { font-size: 14px; }
+  .sticky-note small { font-size: 11px; }
+  .olympus { padding: 20px 7px 28px; }
+  .olympus .talent-list { gap: 5px; }
+  .statue-card .talent-statue { height: 107px; }
+  .statue-card strong { font-size: 11px; }
+  .statue-card small { font-size: 10px; min-height: 67px; }
+  .statue-card .talent-price { font-size: 9px; }
+}
+
+.mountain-base { position: absolute; left: 0; right: 0; bottom: 0; height: 85px; background: #a9a8c94d; clip-path: polygon(0 100%, 15% 55%, 28% 72%, 48% 5%, 65% 64%, 82% 45%, 100% 100%); }
