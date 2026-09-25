@@ -10,7 +10,7 @@ import { ACHIEVEMENTS, achievementProgress } from '../src/game/achievements';
 describe('expanded workshop', () => {
   it('keeps UTF-8 copy and the current release label intact', () => {
     expect(text.chapterLabel(0)).toContain(' · ');
-    expect(text.prototype).toBe('PLAYABLE PROTOTYPE · 0.4');
+    expect(text.prototype).toBe('PLAYABLE PROTOTYPE · 0.4.1');
   });
   it('requires 75 valid pulls for the first kitten', () => {
     const game = createGame(0);

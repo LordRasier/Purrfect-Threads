@@ -17,7 +17,7 @@
 .statue-viewport { display:block; flex:1; min-height:60px; position:relative; }
 .statue-fallback { position:absolute; inset:0; display:grid; place-items:center; color:#a4895a; }
 .statue-fallback .icon { width:50px; height:50px; }
-.olympus[data-ready="true"] .statue-fallback { display:none; }
+.statue-viewport[data-art-ready="true"] .statue-fallback { display:none; }
 .statue-label { position:relative; z-index:2; display:grid; justify-items:center; gap:2px; flex:none; }
 .olympus-open .statue-card .statue-label strong { font:700 17px/1.1 Georgia,serif; color:#5f486e; }
 .blessing-name { font-size:11px; line-height:1.25; color:#62584a; }

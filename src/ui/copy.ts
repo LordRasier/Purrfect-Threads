@@ -43,7 +43,7 @@ export const englishText = {
   duplicateTitle: 'Your cats are busy in another tab.', duplicateBody: 'Close the other game tab, then reload this one to keep one safe copy of your progress.',
   webgl: 'The 3D workshop could not load. You can still play with the Pull yarn button. Try enabling browser graphics acceleration.',
   footer: 'Made for slow afternoons & big little dreams.',
-  prototype: 'PLAYABLE PROTOTYPE · 0.4',
+  prototype: 'PLAYABLE PROTOTYPE · 0.4.1',
   language: 'Language', musicVolume: 'Music volume', inspect: 'Inspect', buyUpgrade: 'Buy upgrade', backWorkshop: 'Back to workshop', critical: 'Critical!', patchHint: 'Tap a patch to discover its story.', upgradeHint: 'Inspect an upgrade, then buy it when ready.', olympusEyebrow: 'PERMANENT BLESSINGS', criticalOdds: (chance: number = 0) => `Current chance: ${chance}% for ×3 yarn. Bonuses add.`,
   adopt: (name: string) => `Adopt ${name}`,
   owned: (count: string) => `${count} owned`,

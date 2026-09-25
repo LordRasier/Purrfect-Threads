@@ -5,7 +5,7 @@ import { text } from '../src/ui/copy';
 
 afterEach(() => setLanguage('en'));
 
-it('provides twelve real 3D viewports and an accessible icon-only back control', () => {
+it('provides twelve hybrid illustration viewports and an accessible icon-only back control', () => {
   const html = chapterPanel();
   expect(html.match(/class="statue-viewport"/g)).toHaveLength(12);
   expect(html).toContain('data-action="talent-info"');

@@ -1,23 +1,8 @@
 import {
-  AmbientLight,
-  BoxGeometry,
-  CapsuleGeometry,
-  CircleGeometry,
-  Color,
-  ConeGeometry,
-  CylinderGeometry,
-  DirectionalLight,
-  Group,
-  Mesh,
-  MeshStandardMaterial,
-  PerspectiveCamera,
-  RingGeometry,
-  Scene,
-  SphereGeometry,
-  TorusGeometry,
-  WebGLRenderer,
-  type BufferGeometry,
-  type Material,
+  AmbientLight, Color, CylinderGeometry, DirectionalLight, Group, ImageLoader,
+  Mesh, MeshStandardMaterial, PerspectiveCamera, RingGeometry, Scene,
+  Sprite, SpriteMaterial, SRGBColorSpace, Texture, WebGLRenderer,
+  type BufferGeometry, type Material,
 } from 'three';
 
 export const OLYMPIAN_IDS = ['welcome', 'helping', 'knitters', 'zeus', 'poseidon', 'demeter', 'apollo', 'artemis', 'ares', 'aphrodite', 'hephaestus', 'dionysus'] as const;
@@ -26,155 +11,63 @@ type Quality = 'auto' | 'low' | 'high';
 
 export interface OlympianStatue {
   id: OlympianId;
-  accessory: string;
   root: Group;
+  portrait: Sprite;
   glowMaterial: MeshStandardMaterial;
   halo: Mesh;
   owned: boolean;
 }
-
 interface OlympusResources {
   geometries: BufferGeometry[];
   materials: Material[];
+  textures: Texture[];
   ivory: MeshStandardMaterial;
   gold: MeshStandardMaterial;
-  accent: MeshStandardMaterial;
-  dark: MeshStandardMaterial;
-  pink: MeshStandardMaterial;
-  leaf: MeshStandardMaterial;
 }
+export interface OlympianAssets { statues: OlympianStatue[]; resources: OlympusResources; }
 
-export interface OlympianAssets {
-  statues: OlympianStatue[];
-  resources: OlympusResources;
-}
-
-/** Small seam for deterministic lifecycle tests; production always creates a real WebGL renderer. */
+/** A single renderer serves all twelve viewports. */
 export const olympusRendererFactory = {
   create: () => new WebGLRenderer({ alpha: true, antialias: true, premultipliedAlpha: false }),
 };
 
-const GODS: ReadonlyArray<{ id: OlympianId; accessory: string }> = [
-  { id: 'welcome', accessory: 'crown' }, { id: 'helping', accessory: 'winged-feet' },
-  { id: 'knitters', accessory: 'owl-shield' }, { id: 'zeus', accessory: 'lightning' },
-  { id: 'poseidon', accessory: 'trident' }, { id: 'demeter', accessory: 'wheat' },
-  { id: 'apollo', accessory: 'lyre' }, { id: 'artemis', accessory: 'bow' },
-  { id: 'ares', accessory: 'spear' }, { id: 'aphrodite', accessory: 'heart' },
-  { id: 'hephaestus', accessory: 'hammer' }, { id: 'dionysus', accessory: 'grapes' },
-];
-
-function resources(): OlympusResources {
-  const geometries = [
-    new SphereGeometry(1, 16, 12), new SphereGeometry(1, 12, 8), new CylinderGeometry(1, 1, 1, 12),
-    new ConeGeometry(1, 1, 12), new BoxGeometry(1, 1, 1), new TorusGeometry(1, .13, 8, 16),
-    new RingGeometry(.55, .75, 16), new CircleGeometry(1, 16), new CapsuleGeometry(.35, .8, 4, 10),
-  ];
+export function createOlympianStatues(ownedIds: ReadonlySet<string> = new Set()): OlympianAssets {
+  const cylinder = new CylinderGeometry(1, 1, 1, 32);
+  const ring = new RingGeometry(.55, .75, 32);
   const ivory = new MeshStandardMaterial({ color: 0xe7dac4, roughness: .72, metalness: .02 });
   const gold = new MeshStandardMaterial({ color: 0xf0b93e, emissive: 0x5d3206, emissiveIntensity: .14, roughness: .38, metalness: .55 });
-  const accent = new MeshStandardMaterial({ color: 0xd7902b, roughness: .46, metalness: .38 });
-  const dark = new MeshStandardMaterial({ color: 0x463525, roughness: .65 });
-  const pink = new MeshStandardMaterial({ color: 0xb65e6a, roughness: .55 });
-  const leaf = new MeshStandardMaterial({ color: 0x546539, roughness: .65 });
-  const materials = [ivory, gold, accent, dark, pink, leaf];
-  return { geometries, materials, ivory, gold, accent, dark, pink, leaf };
-}
-
-function mesh(geometry: BufferGeometry, material: Material, x: number, y: number, z: number, scale: [number, number, number] = [1, 1, 1]): Mesh {
-  const item = new Mesh(geometry, material);
-  item.position.set(x, y, z); item.scale.set(...scale); item.castShadow = false; item.receiveShadow = false;
-  return item;
-}
-
-function makeCat(res: OlympusResources, id: OlympianId): Group {
-  const [round, lowRound, cylinder, cone, , torus] = res.geometries;
-  const cat = new Group(); cat.name = `cat-${id}`;
-  const body = mesh(round, res.ivory, 0, 1.02, 0, [.68, .76, .55]); body.name = 'cat-body'; cat.add(body);
-  cat.add(mesh(round, res.ivory, 0, 2.05, .05, [.88, .72, .7]));
-  cat.add(mesh(cone, res.ivory, -.43, 2.66, .03, [.3, .42, .24]));
-  cat.add(mesh(cone, res.ivory, .43, 2.66, .03, [.3, .42, .24]));
-  cat.add(mesh(cone, res.pink, -.43, 2.67, .22, [.17, .27, .08]));
-  cat.add(mesh(cone, res.pink, .43, 2.67, .22, [.17, .27, .08]));
-  cat.add(mesh(lowRound, res.dark, -.28, 2.13, .68, [.105, .14, .055]));
-  cat.add(mesh(lowRound, res.dark, .28, 2.13, .68, [.105, .14, .055]));
-  cat.add(mesh(lowRound, res.pink, 0, 1.91, .73, [.105, .07, .045]));
-  const mouthLeft = mesh(lowRound, res.dark, -.065, 1.82, .72, [.055, .025, .02]); mouthLeft.rotation.z = -.3; cat.add(mouthLeft);
-  const mouthRight = mesh(lowRound, res.dark, .065, 1.82, .72, [.055, .025, .02]); mouthRight.rotation.z = .3; cat.add(mouthRight);
-  // Forward paws make the silhouette read as a seated cat rather than a rounded figurine.
-  cat.add(mesh(cylinder, res.ivory, -.36, .58, .39, [.18, .34, .18]));
-  cat.add(mesh(cylinder, res.ivory, .36, .58, .39, [.18, .34, .18]));
-  const tail = mesh(torus, res.ivory, .76, 1.12, -.12, [.54, .66, .54]); tail.rotation.x = Math.PI / 2; tail.rotation.z = -.72; cat.add(tail);
-  cat.add(mesh(cylinder, res.ivory, 0, -.04, 0, [1.05, .2, 1.05]));
-  cat.add(mesh(cylinder, res.accent, 0, -.24, 0, [1.18, .12, 1.18]));
-  return cat;
-}
-
-function addAccessory(statue: Group, accessory: string, res: OlympusResources): void {
-  const root = new Group();
-  root.name = `accessory-${accessory}`;
-  statue.add(root);
-  const [round, lowRound, cylinder, cone, box, torus] = res.geometries;
-  const gold = res.accent;
-  const stick = (x: number, y: number, rotation = 0, length = 1.2) => { const part = mesh(cylinder, gold, x, y, .14, [.055, length, .055]); part.rotation.z = rotation; root.add(part); return part; };
-  if (accessory === 'crown') {
-    root.add(mesh(torus, gold, 0, 2.72, .02, [.43, .43, .43]));
-    for (const x of [-.29, 0, .29]) root.add(mesh(cone, gold, x, 3.0 - Math.abs(x) * .25, .02, [.13, .28, .13]));
-  } else if (accessory === 'winged-feet') {
-    for (const x of [-.45, .45]) {
-      root.add(mesh(cone, res.ivory, x, .42, .25, [.22, .32, .08]));
-      for (const [offset, rise] of [[-.2, .56], [-.28, .66], [-.34, .76]]) {
-        const direction = x < 0 ? -1 : 1; const wing = mesh(cone, gold, x + offset * direction, rise, .22, [.12, .3, .05]); wing.rotation.z = direction * .82; root.add(wing);
-      }
-    }
-  } else if (accessory === 'owl-shield') {
-    const shield = mesh(round, gold, -.7, 1.35, .45, [.38, .52, .1]); root.add(shield);
-    const owl = mesh(lowRound, res.ivory, .6, 1.5, .46, [.25, .32, .12]); root.add(owl);
-    for (const x of [.5, .7]) root.add(mesh(lowRound, res.dark, x, 1.58, .57, [.04, .05, .02]));
-  } else if (accessory === 'lightning') {
-    const bolt = mesh(box, gold, .63, 1.65, .38, [.18, .54, .06]); bolt.rotation.z = .42; root.add(bolt);
-    const bolt2 = mesh(box, gold, .52, 1.27, .38, [.18, .42, .06]); bolt2.rotation.z = -.42; root.add(bolt2);
-  } else if (accessory === 'trident') {
-    stick(.68, 1.32, 0, 1.45);
-    root.add(mesh(box, gold, .68, 2.08, .2, [.68, .07, .07]));
-    for (const x of [.4, .68, .96]) { root.add(mesh(cylinder, gold, x, 2.31, .2, [.05, .28, .05])); root.add(mesh(cone, gold, x, 2.66, .2, [.105, .28, .06])); }
-  } else if (accessory === 'wheat') {
-    stick(.58, 1.25, -.35, 1.05); for (let n = 0; n < 5; n++) { const grain = mesh(lowRound, gold, .43 + n * .1, 1.35 + n * .17, .24, [.09, .18, .05]); grain.rotation.z = -.35; root.add(grain); }
-  } else if (accessory === 'lyre') {
-    const ring = mesh(torus, gold, .58, 1.4, .36, [.34, .52, .08]); root.add(ring); root.add(mesh(box, gold, .58, 1.4, .42, [.15, .78, .04]));
-    for (const x of [.48, .58, .68]) root.add(mesh(box, res.dark, x, 1.42, .48, [.014, .36, .01]));
-  } else if (accessory === 'bow') {
-    const bow = mesh(torus, gold, .65, 1.45, .32, [.35, .68, .06]); root.add(bow); root.add(mesh(box, res.dark, .65, 1.45, .43, [.014, .72, .01]));
-  } else if (accessory === 'spear') {
-    stick(.65, 1.28, -.08, 1.35); root.add(mesh(cone, gold, .77, 2.35, .18, [.16, .38, .08]));
-  } else if (accessory === 'heart') {
-    const left = mesh(round, res.pink, .48, 1.56, .42, [.2, .22, .07]); const right = mesh(round, res.pink, .72, 1.56, .42, [.2, .22, .07]); root.add(left, right); const point = mesh(cone, res.pink, .6, 1.34, .42, [.28, .35, .07]); point.rotation.z = Math.PI; root.add(point);
-  } else if (accessory === 'hammer') {
-    stick(.58, 1.26, -.55, 1.05); const head = mesh(box, gold, .78, 1.88, .23, [.52, .16, .16]); head.rotation.z = -.55; root.add(head);
-  } else if (accessory === 'grapes') {
-    stick(.53, 1.25, -.4, .9); for (const [x, y] of [[.45, 1.85], [.65, 1.85], [.55, 1.67], [.45, 1.5], [.65, 1.5]]) root.add(mesh(lowRound, res.leaf, x, y, .35, [.13, .13, .08]));
-  }
-}
-
-export function createOlympianStatues(ownedIds: ReadonlySet<string> = new Set()): OlympianAssets {
-  const shared = resources();
-  const statues = GODS.map(({ id, accessory }) => {
-    const root = makeCat(shared, id); addAccessory(root, accessory, shared);
+  const trim = new MeshStandardMaterial({ color: 0xb88337, roughness: .46, metalness: .38 });
+  const shared: OlympusResources = { geometries: [cylinder, ring], materials: [ivory, gold, trim], textures: [], ivory, gold };
+  const statues = OLYMPIAN_IDS.map(id => {
+    const root = new Group(); root.name = `cat-${id}`;
+    const top = new Mesh(cylinder, ivory); top.name = 'pedestal-top';
+    top.position.y = -.04; top.scale.set(1.05, .2, 1.05);
+    const base = new Mesh(cylinder, trim); base.position.y = -.21; base.scale.set(1.18, .14, 1.18);
+    // Billboard art stays frontal while the illuminated pedestal remains genuinely three-dimensional.
+    const texture = new Texture(); texture.colorSpace = SRGBColorSpace; shared.textures.push(texture);
+    const ink = new SpriteMaterial({ map: texture, transparent: true, depthWrite: false, toneMapped: false });
+    shared.materials.push(ink);
+    const portrait = new Sprite(ink); portrait.name = `portrait-${id}`;
+    portrait.center.set(.5, 0); portrait.position.set(0, -.10, .08); portrait.scale.set(3.25, 3.25, 1); portrait.visible = false;
     const glowMaterial = new MeshStandardMaterial({ color: new Color(0xf7c85b), emissive: 0xd98b20, emissiveIntensity: 0, transparent: true, opacity: 0, depthWrite: false });
     shared.materials.push(glowMaterial);
-    const halo = mesh(shared.geometries[6], glowMaterial, 0, -.27, 0, [1.45, 1.45, 1.45]); halo.rotation.x = -Math.PI / 2; root.add(halo);
-    const statue: OlympianStatue = { id, accessory, root, glowMaterial, halo, owned: false };
-    setOlympianOwned(statue, ownedIds.has(id), shared); return statue;
+    const halo = new Mesh(ring, glowMaterial); halo.position.y = -.29; halo.scale.setScalar(1.8); halo.rotation.x = -Math.PI / 2;
+    root.add(top, base, portrait, halo);
+    const statue = { id, root, portrait, glowMaterial, halo, owned: false };
+    setOlympianOwned(statue, ownedIds.has(id), shared);
+    return statue;
   });
   return { statues, resources: shared };
 }
 
 export function setOlympianOwned(statue: OlympianStatue, owned: boolean, shared: OlympusResources): void {
-  statue.owned = owned; statue.glowMaterial.opacity = owned ? .28 : 0; statue.glowMaterial.emissiveIntensity = owned ? 1.1 : 0; statue.glowMaterial.needsUpdate = true;
-  statue.root.traverse(item => {
-    if (item instanceof Mesh && (item.name === 'cat-body' || item.material === shared.ivory || item.material === shared.gold)) item.material = owned ? shared.gold : shared.ivory;
-  });
+  statue.owned = owned; statue.glowMaterial.opacity = owned ? .28 : 0; statue.glowMaterial.emissiveIntensity = owned ? 1.1 : 0;
+  const top = statue.root.getObjectByName('pedestal-top') as Mesh;
+  top.material = owned ? shared.gold : shared.ivory;
 }
 
 export function disposeOlympusAssets(assets: OlympianAssets): void {
+  for (const texture of assets.resources.textures) texture.dispose();
   for (const material of assets.resources.materials) material.dispose();
   for (const geometry of assets.resources.geometries) geometry.dispose();
   for (const statue of assets.statues) statue.root.clear();
@@ -200,7 +93,7 @@ export class OlympusWorld {
     for (const statue of this.assets.statues) { statue.root.visible = false; this.scene.add(statue.root); }
     this.scene.add(new AmbientLight(0xfff6df, 1.1));
     const key = new DirectionalLight(0xffe5ac, 2.1); key.position.set(3, 5, 6); this.scene.add(key);
-    this.camera.position.set(1.65, 1.62, 7); this.camera.lookAt(0, 1.28, 0);
+    this.camera.position.set(0, 2.05, 7); this.camera.lookAt(0, 1.35, 0);
     let renderer: WebGLRenderer | null = null;
     try {
       renderer = olympusRendererFactory.create();
@@ -215,6 +108,7 @@ export class OlympusWorld {
       renderer?.dispose();
       this.renderer = null;
     }
+    if (this.renderer) this.loadPortraits();
     if (typeof ResizeObserver !== 'undefined') { this.observer = new ResizeObserver(() => { this.dirty = true; }); this.observer.observe(host); }
     window.addEventListener('scroll', this.onScroll, true); host.addEventListener('scroll', this.onScroll, { passive: true });
   }
@@ -253,6 +147,24 @@ export class OlympusWorld {
     this.observer?.disconnect(); window.removeEventListener('scroll', this.onScroll, true); this.host.removeEventListener('scroll', this.onScroll);
     if (this.renderer) { this.renderer.domElement.remove(); this.renderer.forceContextLoss(); this.renderer.dispose(); }
     disposeOlympusAssets(this.assets); this.positions.clear();
+  }
+
+  private loadPortraits(): void {
+    const loader = new ImageLoader();
+    for (const statue of this.assets.statues) {
+      loader.load(`${import.meta.env.BASE_URL}art/olympians/${statue.id}.webp`, image => {
+        // Navigation may dispose this world while an image is still decoding.
+        if (this.disposed) return;
+        const texture = statue.portrait.material.map!;
+        texture.image = image; texture.needsUpdate = true; statue.portrait.visible = true;
+        const viewport = this.host.querySelector<HTMLElement>(`[data-statue-id="${statue.id}"]`);
+        if (viewport) viewport.dataset.artReady = 'true';
+      }, undefined, () => {
+        if (this.disposed) return;
+        const viewport = this.host.querySelector<HTMLElement>(`[data-statue-id="${statue.id}"]`);
+        if (viewport) viewport.dataset.artReady = 'error';
+      });
+    }
   }
 
   private resize(width: number, height: number): void {

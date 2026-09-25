@@ -20,7 +20,7 @@ describe('localization', () => {
     expect(text.upgradesTab).toBe('Mejoras');
     expect(text.criticalOdds(15)).toContain('15%');
     setLanguage('en');
-    expect(text.prototype).toBe('PLAYABLE PROTOTYPE · 0.4');
+    expect(text.prototype).toBe('PLAYABLE PROTOTYPE · 0.4.1');
   });
 
   it('translates every catalog and achievement display source in Spanish', () => {

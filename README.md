@@ -1,4 +1,4 @@
-# Purrfect Threads — 0.4
+# Purrfect Threads — 0.4.1
 
 A browser-first, single-player yarn clicker: pull a coral yarn ball, adopt a crew of cats, build a miniature textile workshop, and begin new chapters with permanent talents.
 
@@ -10,10 +10,17 @@ A browser-first, single-player yarn clicker: pull a coral yarn ball, adopt a cre
 
 No package installation or internet connection is needed to play the included build. Do not open `dist/index.html` directly: browsers restrict module loading from `file://`. The launcher binds only to the local computer; it does not publish the game. Use a modern browser with WebGL2 and Web Locks support. The HTML clicker remains playable if 3D initialization fails.
 
-## What changed in 0.4
+## What changed in 0.4.1
+
+- Twelve original, funny 2D cat illustrations stand on real-time 3D pedestals. Each god has distinct expressions and myth-themed accessories.
+- Owned pedestals retain their golden glow; inspection, purchases, saves, and progression are unchanged.
+- Locally bundled transparent WebP artwork totals 763 KB and loads only when Olympus opens. No new dependencies or online requests are required.
+- See [art provenance and prompts](docs/assets-v041.md) and [verification](docs/verification-v041.md).
+
+### Retained from 0.4
 
 - Exactly **one golden paw per completed restart**, never more for hoarding yarn. Produce `100,000 × 2^completed chapters` yarn in the current run to unlock a restart. Spending does not reduce this run goal; resetting clears it.
-- Twelve Greek cat gods with original real-time 3D statues. Select a statue to inspect its permanent effect, then confirm purchase. Owned statues turn gold and glow.
+- Twelve Greek cat gods with permanent talents. Select a god to inspect its effect, then confirm purchase. Owned pedestals turn gold and glow.
 - Compact Olympus header, icon-only back control, balance in the header, and restart controls beside the playable workshop dock. Twelve statues fit tested desktop sizes without scrolling; phones scroll.
 - Existing v1–v3 saves migrate to v4 with earned paws, talents, achievements, collection, and settings preserved. Hoarded unclaimed rewards are not carried over. **v4 saves cannot be opened by older releases.** Export a backup before changing versions.
 
@@ -82,14 +89,14 @@ Browser tests use installed **Google Chrome** through Playwright's `chrome` chan
 | `src/ui/` | HTML controls, responsive styles, English/Spanish copy, SVG icons |
 | `src/main.ts` | Single-writer lifecycle, audio/input/render integration |
 | `tests/`, `e2e/` | Unit, local-launcher, and browser regression tests |
-| `docs/verification-v04.md` | Exact checks, measurements, and limitations |
+| `docs/verification-v041.md` | Exact checks, measurements, and limitations |
 
 English copy is collected in `src/ui/copy.ts`, Spanish translations in `src/ui/localization.ts`, and the content catalog in `src/game/catalog.ts`. Original models share geometry/materials; only 24 cats render at once (12 in Battery saver mode). Additional workers are represented by teams, buildings, and counters. Bundled music and Olympus artwork work offline; see [asset provenance](docs/assets-v03.md).
 
 ## Prototype boundaries
 
-This is version 0.4, not a storefront release. Three prestige cycles are tested, but pacing, retention, and willingness to pay are **not validated**. Content is finite; production continues afterward. A defensive ceiling of 10,000 purchases per team type bounds bulk-buy work and imported saves. `break_infinity.js` supports very large approximate numbers, not arbitrary exact arithmetic.
+This is version 0.4.1, not a storefront release. Three prestige cycles are tested, but pacing, retention, and willingness to pay are **not validated**. Content is finite; production continues afterward. A defensive ceiling of 10,000 purchases per team type bounds bulk-buy work and imported saves. `break_infinity.js` supports very large approximate numbers, not arbitrary exact arithmetic.
 
 No ads, microtransactions, analytics, accounts, servers, cloud saves, installers, store signing, or publishing are included. Capacitor for Android/iOS and Electron for Windows/Steam are the planned next packaging routes, not implemented features. Real-phone performance testing and player playtests remain release gates.
 
-Third-party runtime notices are in `THIRD-PARTY-NOTICES.txt`. See [the architecture decision](docs/decisions/001-browser-first.md) and [verification results](docs/verification-v04.md).
+Third-party runtime notices are in `THIRD-PARTY-NOTICES.txt`. See [the architecture decision](docs/decisions/001-browser-first.md) and [verification results](docs/verification-v041.md).

@@ -11,13 +11,14 @@ test.beforeEach(async ({ page }) => {
   }, { key: SAVE_KEY, raw: encode(game) });
 });
 
-test('twelve 3D gods fit desktop and open inspect-before-buy dialogs', async ({ page }, info) => {
+test('twelve illustrated gods fit desktop and open inspect-before-buy dialogs', async ({ page }, info) => {
   await page.goto('/');
   if (info.project.name === 'desktop') await page.setViewportSize({width:961,height:854});
   await page.getByRole('button', {name:'New chapter', exact:true}).click();
   await expect(page.locator('.statue-viewport')).toHaveCount(12);
   await expect(page.locator('.olympus')).toHaveAttribute('data-ready', 'true');
   await expect(page.locator('.olympus canvas')).toHaveCount(1);
+  await expect(page.locator('.statue-viewport[data-art-ready="true"]')).toHaveCount(12);
   const back = page.getByRole('button', {name:'Back to workshop',exact:true});
   expect((await back.textContent())!.trim()).toBe('');
   if (info.project.name === 'desktop') {
@@ -51,7 +52,9 @@ test('twelve 3D gods fit desktop and open inspect-before-buy dialogs', async ({ 
   await expect(page.locator('#talent-welcome')).toHaveClass(/purchased/);
   await expect(page.locator('.olympus')).toHaveAttribute('data-ready','true');
   await expect(page.locator('#pull')).toBeInViewport();
-  if (info.project.name === 'desktop') await page.screenshot({path:'docs/screenshots/v04-pantheon.png'});
+  await expect(page.locator('.statue-viewport[data-art-ready="true"]')).toHaveCount(12);
+  if (info.project.name === 'desktop') await page.screenshot({path:'docs/screenshots/v041-illustrated-pantheon.png'});
+  else await page.screenshot({path:'docs/screenshots/v041-illustrated-mobile.png'});
 });
 
 test('compact pantheon survives short desktop, mobile scrolling and repeated navigation', async ({ page }, info) => {
@@ -103,4 +106,16 @@ test('a Spanish v3 workshop retains earned paws and blessings after migration', 
   expect(saved.version).toBe(4);
   expect(saved.legacyClaimed).toBe('2');
   expect(saved.settings.reducedMotion).toBe(true);
+});
+
+
+test('a failed portrait keeps an inspectable fallback and does not block other gods', async ({page}) => {
+  await page.route('**/art/olympians/helping.webp', route => route.abort());
+  await page.goto('/');
+  await page.getByRole('button', {name:'New chapter',exact:true}).click();
+  await expect(page.locator('[data-statue-id="helping"]')).toHaveAttribute('data-art-ready','error');
+  await expect(page.locator('.statue-viewport[data-art-ready="true"]')).toHaveCount(11);
+  await expect(page.locator('#talent-helping .statue-fallback')).toBeVisible();
+  await page.locator('#talent-helping').click();
+  await expect(page.getByRole('dialog')).toContainText('Helping Paw');
 });

@@ -1,0 +1,77 @@
+{
+  "tool": "Built-in image_gen",
+  "assets": [
+    {
+      "id": "welcome",
+      "god": "Hera",
+      "prompt": "Use case: illustration-story. Asset type: transparent character sprite for a cozy cat game, Hera. Create ONE isolated original hand-drawn 2D cartoon of a smug plump cream cat in a tiny gold crown and lavender royal cape, holding a tiny house cushion. Front-facing FULL BODY, sitting or standing with feet touching the same flat baseline at 88% image height. Chunky chibi silhouette, very large expressive face, funny little paws, warm dark-brown ink outlines, flat pastel gouache colors with subtle paper texture inside the character only. Charming storybook sticker art, NOT a 3D render. Centered on a square canvas; character and accessories fill 80% of canvas height, all contained inside 10% margins. Actual transparent alpha background. No pedestal, no floor, no cast shadow, no scene, no typography, no letters, no watermark, no border. This sprite will be displayed standing on a separate real 3D pedestal.",
+      "path": "public/art/olympians/welcome.webp"
+    },
+    {
+      "id": "helping",
+      "god": "Hermes",
+      "prompt": "Use case: illustration-story. Asset type: transparent character sprite for a cozy cat game, Hermes. Create ONE isolated original hand-drawn 2D cartoon of a cheeky orange tabby cat with little winged sandals and a winged cap, tongue sticking out, hugging an oversized yarn parcel. Front-facing FULL BODY, sitting or standing with feet touching the same flat baseline at 88% image height. Chunky chibi silhouette, very large expressive face, funny little paws, warm dark-brown ink outlines, flat pastel gouache colors with subtle paper texture inside the character only. Charming storybook sticker art, NOT a 3D render. Centered on a square canvas; character and accessories fill 80% of canvas height, all contained inside 10% margins. Actual transparent alpha background. No pedestal, no floor, no cast shadow, no scene, no typography, no letters, no watermark, no border. This sprite will be displayed standing on a separate real 3D pedestal.",
+      "path": "public/art/olympians/helping.webp"
+    },
+    {
+      "id": "knitters",
+      "god": "Athena",
+      "prompt": "Use case: illustration-story. Asset type: transparent character sprite for a cozy cat game, Athena. Create ONE isolated original hand-drawn 2D cartoon of a round grey tabby cat wearing an oversized Greek helmet with lavender plume, holding knitting needles and an owl-shaped shield, adorably serious. Front-facing FULL BODY, sitting or standing with feet touching the same flat baseline at 88% image height. Chunky chibi silhouette, very large expressive face, funny little paws, warm dark-brown ink outlines, flat pastel gouache colors with subtle paper texture inside the character only. Charming storybook sticker art, NOT a 3D render. Centered on a square canvas; character and accessories fill 80% of canvas height, all contained inside 10% margins. Actual transparent alpha background. No pedestal, no floor, no cast shadow, no scene, no typography, no letters, no watermark, no border. This sprite will be displayed standing on a separate real 3D pedestal.",
+      "path": "public/art/olympians/knitters.webp"
+    },
+    {
+      "id": "zeus",
+      "god": "Zeus",
+      "prompt": "Use case: illustration-story. Asset type: transparent character sprite for a cozy cat game, Zeus. Create ONE isolated original hand-drawn 2D cartoon of a fluffy white cat with huge bushy eyebrows and a golden laurel crown, holding a zigzag lightning bolt toy, comically grumpy. Front-facing FULL BODY, sitting or standing with feet touching the same flat baseline at 88% image height. Chunky chibi silhouette, very large expressive face, funny little paws, warm dark-brown ink outlines, flat pastel gouache colors with subtle paper texture inside the character only. Charming storybook sticker art, NOT a 3D render. Centered on a square canvas; character and accessories fill 80% of canvas height, all contained inside 10% margins. Actual transparent alpha background. No pedestal, no floor, no cast shadow, no scene, no typography, no letters, no watermark, no border. This sprite will be displayed standing on a separate real 3D pedestal.",
+      "path": "public/art/olympians/zeus.webp"
+    },
+    {
+      "id": "poseidon",
+      "god": "Poseidon",
+      "prompt": "Use case: illustration-story. Asset type: transparent character sprite for a cozy cat game, Poseidon. Create ONE isolated original hand-drawn 2D cartoon of a chubby teal-grey cat holding a small golden trident, a fish perched on its head, surprised expression. Front-facing FULL BODY, sitting or standing with feet touching the same flat baseline at 88% image height. Chunky chibi silhouette, very large expressive face, funny little paws, warm dark-brown ink outlines, flat pastel gouache colors with subtle paper texture inside the character only. Charming storybook sticker art, NOT a 3D render. Centered on a square canvas; character and accessories fill 80% of canvas height, all contained inside 10% margins. Actual transparent alpha background. No pedestal, no floor, no cast shadow, no scene, no typography, no letters, no watermark, no border. This sprite will be displayed standing on a separate real 3D pedestal.",
+      "path": "public/art/olympians/poseidon.webp"
+    },
+    {
+      "id": "demeter",
+      "god": "Demeter",
+      "prompt": "Use case: illustration-story. Asset type: transparent character sprite for a cozy cat game, Demeter. Create ONE isolated original hand-drawn 2D cartoon of a plump ginger cat in a wheat crown holding a basket of yarn and wheat, eyes closed delighted smile. Front-facing FULL BODY, sitting or standing with feet touching the same flat baseline at 88% image height. Chunky chibi silhouette, very large expressive face, funny little paws, warm dark-brown ink outlines, flat pastel gouache colors with subtle paper texture inside the character only. Charming storybook sticker art, NOT a 3D render. Centered on a square canvas; character and accessories fill 80% of canvas height, all contained inside 10% margins. Actual transparent alpha background. No pedestal, no floor, no cast shadow, no scene, no typography, no letters, no watermark, no border. This sprite will be displayed standing on a separate real 3D pedestal.",
+      "path": "public/art/olympians/demeter.webp"
+    },
+    {
+      "id": "apollo",
+      "god": "Apollo",
+      "prompt": "Use case: illustration-story. Asset type: transparent character sprite for a cozy cat game, Apollo. Create ONE isolated original hand-drawn 2D cartoon of a cream and apricot cat with a golden sun halo playing a tiny lyre like a rock star, comically enthusiastic face. Front-facing FULL BODY, sitting or standing with feet touching the same flat baseline at 88% image height. Chunky chibi silhouette, very large expressive face, funny little paws, warm dark-brown ink outlines, flat pastel gouache colors with subtle paper texture inside the character only. Charming storybook sticker art, NOT a 3D render. Centered on a square canvas; character and accessories fill 80% of canvas height, all contained inside 10% margins. Actual transparent alpha background. No pedestal, no floor, no cast shadow, no scene, no typography, no letters, no watermark, no border. This sprite will be displayed standing on a separate real 3D pedestal.",
+      "path": "public/art/olympians/apollo.webp"
+    },
+    {
+      "id": "artemis",
+      "god": "Artemis",
+      "prompt": "Use case: illustration-story. Asset type: transparent character sprite for a cozy cat game, Artemis. Create ONE isolated original hand-drawn 2D cartoon of a lavender-grey cat with a crescent moon forehead ornament, holding a bow strung with yarn, one eye squinting mischievously. Front-facing FULL BODY, sitting or standing with feet touching the same flat baseline at 88% image height. Chunky chibi silhouette, very large expressive face, funny little paws, warm dark-brown ink outlines, flat pastel gouache colors with subtle paper texture inside the character only. Charming storybook sticker art, NOT a 3D render. Centered on a square canvas; character and accessories fill 80% of canvas height, all contained inside 10% margins. Actual transparent alpha background. No pedestal, no floor, no cast shadow, no scene, no typography, no letters, no watermark, no border. This sprite will be displayed standing on a separate real 3D pedestal.",
+      "path": "public/art/olympians/artemis.webp"
+    },
+    {
+      "id": "ares",
+      "god": "Ares",
+      "prompt": "Use case: illustration-story. Asset type: transparent character sprite for a cozy cat game, Ares. Create ONE isolated original hand-drawn 2D cartoon of a tiny plump red tabby in a much-too-large bronze warrior helmet with coral plume, hugging a soft round shield and blunt toy spear, grumpy cute face. Front-facing FULL BODY, sitting or standing with feet touching the same flat baseline at 88% image height. Chunky chibi silhouette, very large expressive face, funny little paws, warm dark-brown ink outlines, flat pastel gouache colors with subtle paper texture inside the character only. Charming storybook sticker art, NOT a 3D render. Centered on a square canvas; character and accessories fill 80% of canvas height, all contained inside 10% margins. Actual transparent alpha background. No pedestal, no floor, no cast shadow, no scene, no typography, no letters, no watermark, no border. This sprite will be displayed standing on a separate real 3D pedestal.",
+      "path": "public/art/olympians/ares.webp"
+    },
+    {
+      "id": "aphrodite",
+      "god": "Aphrodite",
+      "prompt": "Use case: illustration-story. Asset type: transparent character sprite for a cozy cat game, Aphrodite. Create ONE isolated original hand-drawn 2D cartoon of a fluffy blush-pink and cream cat with a rose flower crown, hugging a huge coral heart pillow, bashful silly smile. Front-facing FULL BODY, sitting or standing with feet touching the same flat baseline at 88% image height. Chunky chibi silhouette, very large expressive face, funny little paws, warm dark-brown ink outlines, flat pastel gouache colors with subtle paper texture inside the character only. Charming storybook sticker art, NOT a 3D render. Centered on a square canvas; character and accessories fill 80% of canvas height, all contained inside 10% margins. Actual transparent alpha background. No pedestal, no floor, no cast shadow, no scene, no typography, no letters, no watermark, no border. This sprite will be displayed standing on a separate real 3D pedestal.",
+      "path": "public/art/olympians/aphrodite.webp"
+    },
+    {
+      "id": "hephaestus",
+      "god": "Hephaestus",
+      "prompt": "Use case: illustration-story. Asset type: transparent character sprite for a cozy cat game, Hephaestus. Create ONE isolated original hand-drawn 2D cartoon of a round charcoal cat in a leather apron with soot on its cheeks, holding a big toy hammer and gold yarn spool, goofy proud grin. Front-facing FULL BODY, sitting or standing with feet touching the same flat baseline at 88% image height. Chunky chibi silhouette, very large expressive face, funny little paws, warm dark-brown ink outlines, flat pastel gouache colors with subtle paper texture inside the character only. Charming storybook sticker art, NOT a 3D render. Centered on a square canvas; character and accessories fill 80% of canvas height, all contained inside 10% margins. Actual transparent alpha background. No pedestal, no floor, no cast shadow, no scene, no typography, no letters, no watermark, no border. This sprite will be displayed standing on a separate real 3D pedestal.",
+      "path": "public/art/olympians/hephaestus.webp"
+    },
+    {
+      "id": "dionysus",
+      "god": "Dionysus",
+      "prompt": "Use case: illustration-story. Asset type: transparent character sprite for a cozy cat game, Dionysus. Create ONE isolated original hand-drawn 2D cartoon of a plump tuxedo cat with a grape-leaf wreath, tangled in purple yarn like a party streamer, laughing with eyes closed. Front-facing FULL BODY, sitting or standing with feet touching the same flat baseline at 88% image height. Chunky chibi silhouette, very large expressive face, funny little paws, warm dark-brown ink outlines, flat pastel gouache colors with subtle paper texture inside the character only. Charming storybook sticker art, NOT a 3D render. Centered on a square canvas; character and accessories fill 80% of canvas height, all contained inside 10% margins. Actual transparent alpha background. No pedestal, no floor, no cast shadow, no scene, no typography, no letters, no watermark, no border. This sprite will be displayed standing on a separate real 3D pedestal.",
+      "path": "public/art/olympians/dionysus.webp"
+    }
+  ]
+}

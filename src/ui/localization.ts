@@ -21,7 +21,7 @@ const sourceCatalog: Record<string, string> = {
   'Forge of Paws': 'Forja de patas', '+10% automatic production per purchased chapter upgrade.': '+10% de producción automática por cada mejora de capítulo comprada.',
   'Joyful Pull': 'Toque alegre', '+10% yarn from every touch.': '+10% de lana con cada toque.',
   'Buy all twelve permanent Olympus talents.': 'Compra los doce talentos permanentes del Olimpo.',
-  'PLAYABLE PROTOTYPE · 0.4': 'PROTOTIPO JUGABLE · 0.4',
+  'PLAYABLE PROTOTYPE · 0.4.1': 'PROTOTIPO JUGABLE · 0.4.1',
   'Prototype safety limit: 10,000 purchases per team type.': 'Límite de seguridad del prototipo: 10.000 compras por tipo de equipo.',
   'A lot of cats.': 'Un montón de gatos.',
   'Upgrades': 'Mejoras', 'Achievements': 'Logros', 'Cats': 'Gatos', 'Olympus': 'Olimpo',

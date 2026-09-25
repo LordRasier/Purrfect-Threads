@@ -1,16 +1,20 @@
 import { describe, expect, it, vi } from 'vitest';
-import { Box3 } from 'three';
+import { Box3, ImageLoader, Sprite, Mesh } from 'three';
 import { OLYMPIAN_IDS, createOlympianStatues, disposeOlympusAssets, olympusRendererFactory, OlympusWorld, setOlympianOwned } from '../src/scene/olympus';
 
 describe('Olympian statue factory', () => {
-  it('constructs twelve bounded 3D cat gods with distinct named accessories', () => {
+  it('constructs twelve illustrated cat sprites on real 3D pedestals', () => {
     const assets = createOlympianStatues(new Set(['welcome', 'zeus']));
     expect(OLYMPIAN_IDS).toEqual(['welcome', 'helping', 'knitters', 'zeus', 'poseidon', 'demeter', 'apollo', 'artemis', 'ares', 'aphrodite', 'hephaestus', 'dionysus']);
     expect(assets.statues).toHaveLength(12);
-    expect(new Set(assets.statues.map(statue => statue.accessory))).toEqual(new Set(['crown', 'winged-feet', 'owl-shield', 'lightning', 'trident', 'wheat', 'lyre', 'bow', 'spear', 'heart', 'hammer', 'grapes']));
     for (const statue of assets.statues) {
-      const accessory = statue.root.getObjectByName(`accessory-${statue.accessory}`);
-      expect(accessory?.children.length).toBeGreaterThan(0);
+      const portrait = statue.root.getObjectByName(`portrait-${statue.id}`) as Sprite;
+      expect(portrait).toBeInstanceOf(Sprite);
+      expect(portrait.material.transparent).toBe(true);
+      expect(portrait.material.toneMapped).toBe(false);
+      expect(portrait.material.map).toBeTruthy();
+      expect(statue.root.getObjectByName('pedestal-top')).toBeInstanceOf(Mesh);
+      expect(statue.root.getObjectByName('cat-body')).toBeUndefined();
       const box = new Box3().setFromObject(statue.root);
       expect(box.min.toArray().every(Number.isFinite)).toBe(true);
       expect(box.max.toArray().every(Number.isFinite)).toBe(true);
@@ -41,11 +45,10 @@ describe('Olympian statue factory', () => {
 
   it('disposes all shared geometry and material resources', () => {
     const assets = createOlympianStatues(new Set());
-    const geometryDispose = vi.spyOn(assets.resources.geometries[0], 'dispose');
-    const materialDispose = vi.spyOn(assets.resources.materials[0], 'dispose');
+    const disposals = [...assets.resources.geometries, ...assets.resources.materials, ...assets.resources.textures]
+      .map(resource => vi.spyOn(resource, 'dispose'));
     disposeOlympusAssets(assets);
-    expect(geometryDispose).toHaveBeenCalledOnce();
-    expect(materialDispose).toHaveBeenCalledOnce();
+    for (const dispose of disposals) expect(dispose).toHaveBeenCalledOnce();
   });
 });
 
@@ -85,17 +88,30 @@ describe('OlympusWorld lifecycle', () => {
       append: vi.fn(), addEventListener: vi.fn(), removeEventListener: vi.fn(),
       getBoundingClientRect: () => ({ left: 0, top: 0, width: 320, height: 180, right: 320, bottom: 180 }),
       querySelectorAll: () => [],
+      querySelector: vi.fn(() => ({dataset:{}})),
     } as unknown as HTMLElement;
     const factory = vi.spyOn(olympusRendererFactory, 'create').mockReturnValue(renderer as never);
+    const callbacks: Array<{loaded:(image:HTMLImageElement) => void; failed:(error:unknown) => void}> = [];
+    const load = vi.spyOn(ImageLoader.prototype, 'load').mockImplementation((_url, loaded, _progress, failed) => {
+      callbacks.push({loaded:loaded!, failed:failed!}); return {} as HTMLImageElement;
+    });
     try {
       const world = new OlympusWorld(host);
+      expect(load).toHaveBeenCalledTimes(12);
+      callbacks[0].loaded({} as HTMLImageElement);
+      expect(host.querySelector).toHaveBeenCalledOnce();
+      callbacks[1].failed(new Error('Missing image'));
+      expect(host.querySelector).toHaveBeenCalledTimes(2);
       world.render(0, true);
       expect(renderer.setSize).toHaveBeenCalledWith(320, 180, false);
       world.dispose();
       expect(renderer.dispose).toHaveBeenCalledOnce();
       expect(renderer.forceContextLoss).toHaveBeenCalledOnce();
+      callbacks[2].loaded({} as HTMLImageElement);
+      callbacks[3].failed(new Error('Late missing image'));
+      expect(host.querySelector).toHaveBeenCalledTimes(2);
     } finally {
-      factory.mockRestore();
+      factory.mockRestore(); load.mockRestore();
       Object.assign(globalThis, { window: restoreWindow, DOMRect: restoreRect, ResizeObserver: restoreObserver });
     }
   });
@@ -105,12 +121,12 @@ describe('Olympian ownership state', () => {
   it('restores ivory meshes and removes the halo when an owned statue is revoked', () => {
     const assets = createOlympianStatues(new Set(['welcome']));
     const statue = assets.statues[0];
-    expect((statue.root.getObjectByName('cat-body') as import('three').Mesh).material).toBe(assets.resources.gold);
+    expect((statue.root.getObjectByName('pedestal-top') as import('three').Mesh).material).toBe(assets.resources.gold);
     setOlympianOwned(statue, false, assets.resources);
     expect(statue.owned).toBe(false);
     expect(statue.glowMaterial.opacity).toBe(0);
     expect(statue.glowMaterial.emissiveIntensity).toBe(0);
-    expect((statue.root.getObjectByName('cat-body') as import('three').Mesh).material).toBe(assets.resources.ivory);
+    expect((statue.root.getObjectByName('pedestal-top') as import('three').Mesh).material).toBe(assets.resources.ivory);
     disposeOlympusAssets(assets);
   });
 });
