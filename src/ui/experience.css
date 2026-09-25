@@ -1,0 +1,127 @@
+/* Viewport-bound workshop. Only the tablet's screen scrolls. */
+html, body { height:100%; overflow:hidden; }
+#app { height:100dvh; display:flex; flex-direction:column; }
+.yarn-target { min-width:44px; min-height:44px; }
+.topbar { flex:none; width:100%; min-height:78px; padding:12px 28px; }
+.layout { flex:1; min-height:0; width:100%; grid-template-columns:minmax(0,1fr) minmax(350px,430px); gap:30px; padding:20px 28px 24px; align-items:stretch; }
+.play-area { min-height:0; display:flex; flex-direction:column; justify-content:center; }
+.intro { margin:0 0 12px; flex:none; }
+.intro h1 { font-size:clamp(30px,3.3vw,44px); margin:7px 0; }
+.intro p { margin-top:7px; }
+.stash { flex:none; }
+.world { flex:1; min-height:150px; max-height:510px; height:auto; margin:0 -8px; }
+.pull-hint { flex:none; margin:4px 0 10px; }
+footer { display:none; }
+.tablet-shell { position:relative; min-width:0; min-height:0; padding:24px 10px 23px; background:#e9d9c4; border:2px solid #bda58b; border-radius:30px; box-shadow:inset 0 0 0 3px #f4e9d7, 5px 7px 0 #c9b497, 0 13px 28px #77614a17; }
+.tablet-camera { position:absolute; top:8px; left:calc(50% - 4px); width:8px; height:8px; border-radius:50%; background:#776955; box-shadow:inset 0 0 0 2px #a19580; }
+.tablet-home { position:absolute; bottom:9px; left:calc(50% - 24px); height:4px; width:48px; background:#b5a085; border-radius:5px; }
+.management { height:100%; min-height:0; padding:20px 16px; margin:0; border-radius:16px; border:1px solid #cbbb9f; overflow:auto; overscroll-behavior:contain; scrollbar-gutter:stable; scrollbar-width:thin; scrollbar-color:#b3bd9f #f3eee3; }
+.management:focus-visible { outline:3px solid #648474; outline-offset:2px; }
+.panel-intro h2 { font-size:25px; }
+.panel-intro p { font-size:12px; }
+.producer { isolation:isolate; }
+.crew-pattern { position:absolute; inset:0; z-index:-1; pointer-events:none; opacity:.22; color:#829973; }
+.crew-motif { position:absolute; display:block; }
+.crew-motif .icon { width:27px; height:27px; }
+.producer-info { background:linear-gradient(90deg,#fffdf8ed,#fffdf895); border-radius:6px; padding:3px 0; }
+.producer-title { flex-wrap:wrap; row-gap:2px; }
+.producer-title h4 { white-space:normal; }
+.producer-title .owned { font-size:9px; color:#665d50; }
+/* Small pinned ideas; details and the purchase are deliberately a second step. */
+.board-notes { grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px 10px; }
+.upgrade-board { margin-top:18px; padding:20px 12px 24px; }
+.board-heading { font-size:18px; margin-bottom:20px; }
+.upgrade.sticky-note { min-height:126px; padding:12px 4px 8px; gap:6px; }
+.note-cat { height:29px; }
+.note-cat .icon:first-child,.note-cat .icon:last-child { width:27px; height:27px; margin:0; }
+.sticky-note strong { font-size:12px; line-height:1.2; }
+.sticky-note .upgrade-price { padding:4px 7px; font-size:10px; }
+.note-lock { position:absolute; right:4px; top:5px; }
+.note-lock .icon { width:12px; height:12px; }
+.detail-art { display:grid; place-items:center; width:82px; height:82px; background:#f6e6b4; color:#867046; border-radius:19px; margin:4px 0 20px; transform:rotate(-4deg); }
+.detail-art .icon { width:46px; height:46px; }
+.detail-cost { font:24px Georgia,serif; }
+.music-credit { font-size:10px; color:#716555; margin-top:16px; }
+/* The patches keep stable, slightly imperfect positions rather than shuffling. */
+.patch-blanket { grid-template-columns:repeat(3,minmax(0,1fr)); gap:23px 16px; padding:23px 14px 32px; border:8px solid #c7d1be; border-radius:20px; background:repeating-linear-gradient(0deg,#e6ecde 0px,#e6ecde 2px,#dfe6d7 2px,#dfe6d7 4px); box-shadow:inset 0 0 0 2px #f6f5e9; }
+.achievement-card.achievement-patch { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; padding:10px 5px; width:100%; min-height:124px; border:2px dashed #a9a08e; border-radius:35% 35% 22% 22%; background:#ece8df; transform:translateY(var(--offset)) rotate(var(--tilt)); box-shadow:0 2px 0 3px #cec8b8, 2px 5px 5px #63665322; text-align:center; color:#625d52; }
+.achievement-patch strong { font-size:11px; line-height:1.25; }
+.achievement-patch .badge-art { width:36px; height:36px; border:0; background:none; }
+.achievement-patch .badge-art .icon { width:29px; height:29px; }
+.achievement-patch small { font-size:9px; margin:0; }
+.achievement-patch .badge-progress { width:70%; height:3px; margin:2px 0; }
+.achievement-patch.earned { border-color:#a07841; background:#f2dba2; box-shadow:0 2px 0 3px #d6be87,2px 5px 5px #63665322; color:#635334; }
+.achievement-patch.earned.patch-1 { background:#d4e2c2; border-color:#758c59; }
+.achievement-patch.earned.patch-2 { background:#ebc8b8; border-color:#b48570; }
+.achievement-patch.earned.patch-3 { background:#d9d0e7; border-color:#9d84af; }
+.achievement-patch.earned.patch-4 { background:#c9dfe2; border-color:#739ca2; }
+.achievement-patch:hover { transform:translateY(var(--offset)) rotate(0deg) scale(1.03); }
+.embroidery,.embroidered { border:3px dashed #b69a64; outline:4px solid #eee0bb; }
+/* An entirely separate realm, with the real workshop retained in a small dock. */
+.realm-toolbar { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.olympus-open .topbar { display:none; }
+.olympus-open .layout { padding:0; display:block; max-width:none; }
+.olympus-open .tablet-shell { position:fixed; inset:0; padding:0; border:0; border-radius:0; background:#d9c4d8 url('/art/pawlympus.png') center center / cover; box-shadow:none; }
+.olympus-open .tablet-camera,.olympus-open .tablet-home { display:none; }
+.olympus-open .management { height:100dvh; border:0; border-radius:0; padding:22px 5vw 210px; background:linear-gradient(180deg,#fdf7edce 0%,#fdf7ed00 28%,#fdf7ed00 65%,#fdf7ed99 100%); }
+.olympus-open .panel-intro { text-align:center; max-width:600px; margin:0 auto 16px; padding:12px; background:#fffcf2e6; border:1px solid #d4be83; border-radius:25px; }
+.olympus-open .panel-intro .eyebrow { justify-content:center; }
+.olympus-open .panel-intro h2 { font-size:42px; color:#72608a; }
+.olympus-open .olympus { max-width:760px; margin:0 auto; padding:12px 25px 18px; background:none; border:0; border-radius:0; overflow:visible; }
+.olympus-open .olympus:before,.olympus-open .olympus:after,.olympus-open .olympus-sky,.olympus-open .mountain-base { display:none; }
+.olympus-open .olympus-heading { width:max-content; max-width:100%; margin:0 auto 22px; padding:10px 20px; background:#fffae9; border:1px solid #c6ad6d; border-radius:30px; font-size:13px; }
+.olympus-open #points-label { font-size:13px; color:#715c25; }
+.olympus-open .talent-list { gap:24px; }
+.olympus-open .statue-card { border-radius:100px 100px 16px 16px; padding:12px 15px 20px; border:2px solid #d2b985; background:linear-gradient(#fffcf1e6,#efe2cbeF); box-shadow:0 10px 0 #cbb691,0 15px 30px #75557a55; }
+.olympus-open .statue-card .talent-statue { height:180px; }
+.olympus-open .statue-card .statue-caption { font-size:12px; }
+.olympus-open .statue-card strong { font-size:17px; }
+.olympus-open .statue-card small { font-size:12px; min-height:44px; }
+.olympus-open .talent-price { max-width:none; font-size:12px; padding:9px 14px; }
+.olympus-open .chapter-card { max-width:460px; margin:34px auto 0; padding:16px 25px; background:#fff9ebed; box-shadow:0 8px 30px #76605e33; }
+.olympus-open .play-area { position:fixed; z-index:12; left:14px; bottom:14px; width:220px; height:180px; background:#fffaf0ed; border:2px solid #d3bc92; border-radius:24px; box-shadow:0 6px 25px #6a4c6633; padding:4px; }
+.olympus-open .play-area .intro,.olympus-open .stash-label,.olympus-open .stats-line,.olympus-open .pull-hint,.olympus-open .room-label { display:none; }
+.olympus-open .stash-value { height:30px; gap:5px; }
+.olympus-open .stash-value>span { font-size:24px; }
+.olympus-open .stash-value>.icon { width:20px; }
+.olympus-open .world { min-height:0; margin:0; }
+@media(max-width:1200px) and (min-width:851px) {
+  .topbar { padding:10px 22px 7px; min-height:0; gap:6px; }
+  .navigation { padding-top:5px; }
+  .layout { gap:18px; padding:16px 20px 20px; grid-template-columns:minmax(0,1fr) 390px; }
+  .intro .eyebrow,.intro p { display:none; }
+}
+@media(max-width:850px) {
+  .topbar { min-height:0; padding:8px 12px 4px; gap:4px; }
+  .brand { font-size:16px; gap:7px; }.brand-second { font-size:17px; }.brand-mark { width:32px; height:34px; }.brand-mark .icon { width:25px; }
+  .navigation { padding-top:2px; gap:0; }
+  .navigation button { min-height:44px; padding:3px; gap:2px; }
+  .layout { display:grid; grid-template-columns:1fr; grid-template-rows:minmax(195px,37%) minmax(0,1fr); gap:8px; padding:4px 10px 12px; }
+  .intro { margin:0; }.intro .eyebrow,.intro p { display:none; }.intro h1 { font-size:16px; margin:0; letter-spacing:-.3px; }.intro h1 br { display:none; }.intro h1 em { margin-left:5px; }
+  .stash-label { display:none; }.stash-value { height:34px; }.stash-value>span { font-size:29px; }.stash-value>.icon { width:20px; height:20px; }
+  .stats-line { font-size:10px; gap:10px; }.stats-line strong { font-size:10px; }
+  .world { min-height:90px; margin:0; }.room-label,.pull-hint { display:none; }
+  .tablet-shell { padding:17px 6px 14px; border-radius:23px; box-shadow:inset 0 0 0 2px #f4e9d7,3px 4px 0 #c9b497; }
+  .tablet-camera { top:5px; width:6px; height:6px; }.tablet-home { bottom:5px; height:3px; }
+  .management { padding:14px 12px; border-radius:12px; }
+  .panel-intro h2 { font-size:23px; margin:5px 0; }.panel-intro .eyebrow { font-size:7px; }.panel-intro p { font-size:11px; }
+  .section-heading { margin:15px 0 10px; }.compact-intro { margin-bottom:8px; }
+  .olympus-open .management { padding:10px 12px 188px; }
+  .olympus-open .panel-intro { margin-top:12px; }.olympus-open .panel-intro h2 { font-size:30px; }
+  .olympus-open .olympus { padding:10px 0; }.olympus-open .talent-list { gap:9px; }
+  .olympus-open .statue-card { padding:10px 6px; }.olympus-open .statue-card .talent-statue { height:110px; }
+  .olympus-open .statue-card strong { font-size:12px; }.olympus-open .statue-card small { font-size:10px; min-height:65px; }.olympus-open .statue-card .statue-caption { font-size:9px; }
+  .olympus-open .talent-price { font-size:10px; padding:6px; }.olympus-open .play-area { width:200px; height:160px; bottom:8px; left:8px; }
+}
+@media(max-width:360px) {
+  .board-notes { grid-template-columns:repeat(2,minmax(0,1fr)); }.patch-blanket { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .producer { grid-template-columns:30px minmax(0,1fr) 68px; gap:5px; padding:7px 5px; }.producer .producer-icon { width:30px; }.producer .buy-button { width:68px; }
+  .producer-title h4 { font-size:10px; }.producer .yield { font-size:9px; }
+}
+@media(max-height:540px) and (min-width:600px) {
+  .topbar { min-height:52px; flex-wrap:nowrap; padding:4px 12px; }.brand { font-size:14px; }.brand-second { font-size:14px; }.brand-mark { display:none; }
+  .navigation { width:auto; order:0; border:0; padding:0; }.navigation button { flex-direction:row; padding:6px; }.navigation .icon { display:none; }
+  .layout { grid-template-columns:minmax(0,1fr) minmax(320px,48%); grid-template-rows:minmax(0,1fr); padding:6px 12px 12px; gap:12px; }
+  .intro,.pull-hint,.room-label,.stash-label { display:none; }.stash-value { height:35px; }.stash-value>span { font-size:30px; }.world { min-height:100px; }
+  .olympus-open .play-area { width:200px; height:160px; }.olympus-open .management { padding-bottom:180px; }
+}

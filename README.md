@@ -1,4 +1,4 @@
-# Purrfect Threads — 0.2
+# Purrfect Threads — 0.3
 
 A browser-first, single-player yarn clicker: pull a coral yarn ball, adopt a crew of cats, build a miniature textile workshop, and begin new chapters with permanent talents.
 
@@ -10,15 +10,35 @@ A browser-first, single-player yarn clicker: pull a coral yarn ball, adopt a cre
 
 No package installation or internet connection is needed to play the included build. Do not open `dist/index.html` directly: browsers restrict module loading from `file://`. The launcher binds only to the local computer; it does not publish the game. Use a modern browser with WebGL2 and Web Locks support. The HTML clicker remains playable if 3D initialization fails.
 
-## What changed in 0.2
+## What changed in 0.3
 
-- Ten specialized cat crews in compact, single-row cards. All ten targets remain visible.
-- The first kitten now costs 75 yarn: 75 valid initial pulls, about 15 seconds of held input at five actions per second. The original five base prices were scaled by five to preserve their relative price progression; the five additional late-game crews extend that curve. This is initial tuning, not validated retention balance.
-- Chapter improvements have their own cozy chalkboard tab. Permanent talents have an illustrated Mount Pawlympus with three cat statuettes.
-- A dedicated, filterable scrapbook contains 36 permanent achievements covering pulls, production, crews, upgrades, chapters, talents, companions, offline production, time, and bulk purchases. Badges are cosmetic; they do not grant hidden economic bonuses.
-- The workshop has original shingles, chimney details, bunting, a yarn sign, a workbench, spools, and flowers. No third-party art download was needed.
+- A cozy tablet scrolls independently. The yarn stays visible on desktop and phones; Olympus keeps a playable miniature workshop dock.
+- Every crew card gains thematic background motifs with purchases (up to 18 decorations per row to bound rendering cost).
+- All 36 achievements are now embroidered, tilted patches. Tap one for its condition and progress; category filters remain available.
+- Twelve small sticky-note upgrades open a detail sheet before purchase. Triple-yarn bonuses have explicit odds, never affect passive production, and use no paid randomness.
+- Mount Pawlympus is a separate full-screen realm with original generated temple artwork, three permanent cat statuettes, and a back button / Escape navigation.
+- Cozy background music, independent music/effects sliders, master mute, and English/Spanish language selection. Audio begins after interaction and pauses while the game is hidden.
 
-Existing v1 saves migrate automatically without resetting balances, teams, talents, collection, or settings. New crews start at zero. Historic achievement counters not recorded in v1 cannot be reconstructed; migration awards only milestones supported by existing data and counts current upgrades as the known minimum. Newly earned badges and counters then persist through every chapter. Keep an export before moving between releases; **v2 exports are not backwards-compatible with v0.1**.
+Existing v1/v2 saves migrate automatically to v3 without resetting progress. Music defaults to 20% and language to English. Existing effects volume and other settings remain unchanged. Keep an export before changing releases: **v3 exports cannot be opened by older versions**. Legacy v1 achievement counters can only recover facts still present in the save.
+
+### Chapter upgrades
+
+| Upgrade | Yarn cost | Effect |
+| --- | ---: | --- |
+| Soft Paws | 100 | Manual base ×2 |
+| Lucky Bell | 300 | +5 percentage points of triple-touch chance |
+| Happy Workers | 1,000 | Automatic ×1.5 |
+| Four-leaf Paw | 1,500 | +5 percentage points of triple-touch chance |
+| Velvet Mittens | 5,000 | Manual base ×1.5 |
+| Tea Break | 8,000 | Automatic ×1.25 |
+| Better Tools | 10,000 | Automatic ×2 |
+| Master Tools | 25,000 | Artisan and Cloud output ×2; needs Master Knitters |
+| Golden Whiskers | 50,000 | +10 percentage points of triple-touch chance |
+| Purring Engine | 100,000 | Automatic ×1.5 |
+| Silky Threads | 500,000 | Manual base ×2 |
+| Moonlit Shift | 1,000,000 | Automatic ×2 |
+
+Chance bonuses add to a maximum of 20%. A successful roll multiplies the **whole manual reward**, including Helping Paw, by three. Other multipliers stack multiplicatively. All chapter upgrades reset on prestige; permanent talents do not. These prices are authored starting values, not validated commercial balance.
 
 ## Controls and progression
 
@@ -27,7 +47,7 @@ Existing v1 saves migrate automatically without resetting balances, teams, talen
 - Buy chapter upgrades, meet six collectible companions, and choose a new protagonist.
 - At 100,000 lifetime yarn, a new chapter can award the first golden paw. The confirmation explains what resets and what remains.
 - Golden paws buy one-time permanent talents. **Welcome Home applies on your next chapter reset**, not immediately. Master Knitters unlocks a separate chapter upgrade that must be purchased again after resetting.
-- Settings include sound volume, reduced motion, visual quality, and save import/export. Tab navigation and visible focus support keyboard play.
+- Settings include language, separate music/effects volumes, reduced motion, visual quality, and save import/export. Tab navigation and visible focus support keyboard play.
 
 ## Protect your workshop
 
@@ -52,17 +72,17 @@ Browser tests use installed **Google Chrome** through Playwright's `chrome` chan
 | --- | --- |
 | `src/game/` | Pure economy, catalog, progression, input scheduling, save validation |
 | `src/scene/` | Original procedural Three.js cats, yarn, scenery, animation |
-| `src/ui/` | HTML controls, responsive styles, English copy, SVG icons |
+| `src/ui/` | HTML controls, responsive styles, English/Spanish copy, SVG icons |
 | `src/main.ts` | Single-writer lifecycle, audio/input/render integration |
 | `tests/`, `e2e/` | Unit, local-launcher, and browser regression tests |
-| `docs/verification-v02.md` | Exact checks, measurements, and limitations |
+| `docs/verification-v03.md` | Exact checks, measurements, and limitations |
 
-English copy is collected in `src/ui/copy.ts` and the content catalog in `src/game/catalog.ts`. Original models share geometry/materials; only 24 cats render at once (12 in Battery saver mode). Additional workers are represented by teams, buildings, and counters. No downloaded art, font, or sound packs are needed.
+English copy is collected in `src/ui/copy.ts`, Spanish translations in `src/ui/localization.ts`, and the content catalog in `src/game/catalog.ts`. Original models share geometry/materials; only 24 cats render at once (12 in Battery saver mode). Additional workers are represented by teams, buildings, and counters. Bundled music and Olympus artwork work offline; see [asset provenance](docs/assets-v03.md).
 
 ## Prototype boundaries
 
-This is version 0.2, not a storefront release. Three prestige cycles are tested, but pacing, retention, and willingness to pay are **not validated**. Content is finite; production continues afterward. A defensive ceiling of 10,000 purchases per team type bounds bulk-buy work and imported saves. `break_infinity.js` supports very large approximate numbers, not arbitrary exact arithmetic.
+This is version 0.3, not a storefront release. Three prestige cycles are tested, but pacing, retention, and willingness to pay are **not validated**. Content is finite; production continues afterward. A defensive ceiling of 10,000 purchases per team type bounds bulk-buy work and imported saves. `break_infinity.js` supports very large approximate numbers, not arbitrary exact arithmetic.
 
 No ads, microtransactions, analytics, accounts, servers, cloud saves, installers, store signing, or publishing are included. Capacitor for Android/iOS and Electron for Windows/Steam are the planned next packaging routes, not implemented features. Real-phone performance testing and player playtests remain release gates.
 
-Third-party runtime notices are in `THIRD-PARTY-NOTICES.txt`. See [the architecture decision](docs/decisions/001-browser-first.md) and [verification results](docs/verification-v02.md).
+Third-party runtime notices are in `THIRD-PARTY-NOTICES.txt`. See [the architecture decision](docs/decisions/001-browser-first.md) and [verification results](docs/verification-v03.md).

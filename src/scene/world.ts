@@ -142,7 +142,7 @@ export class WorkshopWorld {
     this.renderer.setSize(width, height, false);
     this.camera.updateMatrixWorld();
     const point = this.yarn.position.clone().project(this.camera);
-    const diameter = 2.65 / span * height;
+    const diameter = Math.max(44, 2.65 / span * height);
     const target = this.host.querySelector<HTMLElement>('#pull');
     if (target) {
       target.style.width = `${diameter}px`; target.style.height = `${diameter}px`;

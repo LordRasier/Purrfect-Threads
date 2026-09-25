@@ -2,16 +2,19 @@ import Decimal from 'break_infinity.js';
 import './ui/style.css';
 import './ui/responsive.css';
 import './ui/expansion.css';
+import './ui/experience.css';
 import { PRODUCERS, UPGRADES, TALENTS, COATS } from './game/catalog';
-import { advance, buyProducer, buyUpgrade, createGame, tap, type GameState } from './game/engine';
+import { advance, buyProducer, buyUpgrade, createGame, tap, tapValue, criticalChance, type GameState } from './game/engine';
 import { applyOffline, buyTalent, prestige, prestigeReward, selectCoat } from './game/progression';
 import { BACKUP_KEY, SAVE_KEY, decode, encode, loadGame, saveGame, type StoragePort } from './game/storage';
 import { CozyAudio } from './audio';
+import { CozyMusic } from './scene/music';
+import { setLanguage, translate as tr } from './ui/localization';
 import { GameUI } from './ui/view';
 import { text } from './ui/copy';
 import { icon } from './ui/icons';
 import { format } from './ui/format';
-import { ACHIEVEMENTS } from './game/achievements';
+import { ACHIEVEMENTS, achievementProgress } from './game/achievements';
 import { HoldInput } from './game/input';
 import type { WorkshopWorld } from './scene/world';
 
@@ -59,8 +62,15 @@ async function start(session: Session): Promise<void> {
   }
 
   let game = loaded.game;
+  setLanguage(game.settings.language);
   let world: WorkshopWorld | undefined;
   const audio = new CozyAudio();
+  const music = new CozyMusic();
+  music.setVolume(game.settings.musicVolume); music.setVisible(!document.hidden);
+  const unlockMusic = () => { if (session.active) music.unlock(); };
+  root.addEventListener('pointerdown', unlockMusic);
+  document.addEventListener('keydown', unlockMusic);
+  window.addEventListener('pagehide', () => music.dispose(), { once: true });
   const motionPreference = matchMedia('(prefers-reduced-motion: reduce)');
   let previous = performance.now(), suspended = document.hidden;
   let lastSave = previous, lastUI = -1000;
@@ -86,20 +96,21 @@ async function start(session: Session): Promise<void> {
   }
   function refresh(message?: string): void {
     const fresh = game.achievements.filter(id => !seenAchievements.has(id));
-    const achievementMessage = fresh.length === 1 ? text.achievementUnlocked(ACHIEVEMENTS.find(item => item.id === fresh[0])!.name) : fresh.length > 1 ? text.achievementsUnlocked(fresh.length) : '';
+    const achievementMessage = fresh.length === 1 ? text.achievementUnlocked(tr(ACHIEVEMENTS.find(item => item.id === fresh[0])!.name)) : fresh.length > 1 ? text.achievementsUnlocked(fresh.length) : '';
     if (message || achievementMessage) ui.toast([message, achievementMessage].filter(Boolean).join(' · '));
     seenAchievements = new Set(game.achievements);
     document.body.classList.toggle('reduced-motion', reduced());
     world?.sync(game); ui.refresh();
     const sound = document.getElementById('sound-button')!;
-    sound.innerHTML = icon(game.settings.volume ? 'sound' : 'muted');
-    sound.setAttribute('aria-label', game.settings.volume ? text.mute : text.unmute);
+    const audible = game.settings.volume > 0 || game.settings.musicVolume > 0;
+    sound.innerHTML = icon(audible ? 'sound' : 'muted');
+    sound.setAttribute('aria-label', audible ? text.mute : text.unmute);
   }
   function pull(scheduledTime = performance.now()): void {
     if (!session.active || ui.dialog.open || suspended || importPending) return;
     const now = performance.now();
     const amount = tap(game, scheduledTime);
-    if (amount.gt(0)) { world?.pulse(now); ui.floating(format(amount), reduced()); audio.play(game.settings.volume); ui.refresh(); }
+    if (amount.gt(0)) { world?.pulse(now); ui.floating(`${format(amount)}${amount.gt(tapValue(game)) ? ' · ' + text.critical : ''}`, reduced()); audio.play(game.settings.volume); ui.refresh(); }
   }
   function changed(message?: string): void {
     persist(); ui.renderPanel(); refresh(message);
@@ -115,7 +126,16 @@ async function start(session: Session): Promise<void> {
       if (count) changed(game.collection.length > oldCollection ? text.milestone(COATS[game.collection[game.collection.length - 1]].name) : text.crewJoined(format(count * producer.cats)));
     } else if (kind === 'upgrade') {
       const upgrade = UPGRADES.find(item => item.id === id);
-      if (upgrade && buyUpgrade(game, upgrade.id)) changed(text.upgradeBought);
+      if (upgrade && buyUpgrade(game, upgrade.id)) { ui.dialog.close(); changed(text.upgradeBought); document.getElementById(`upgrade-${id}`)?.focus({preventScroll:true}); }
+    } else if (kind === 'upgrade-info') {
+      const upgrade = UPGRADES.find(item => item.id === id); if (!upgrade) return;
+      stopHolding();
+      ui.showDialog(`<span class="detail-art">${icon(upgrade.icon)}</span><span class="eyebrow">${text.thisChapter}</span><h2 id="modal-title">${tr(upgrade.name)}</h2><p>${tr(upgrade.detail)}</p><p>${text.boardReset}</p>${['bell','clover','whiskers'].includes(upgrade.id) ? `<p>${text.criticalOdds(criticalChance(game) * 100)}</p>` : ''}${upgrade.id === 'master' && !game.talents.includes('knitters') ? `<p>${text.lockedTalent}</p>` : ''}<p class="detail-cost">${text.cost(format(upgrade.cost))}</p><button class="primary-button" data-action="upgrade" data-id="${upgrade.id}">${game.upgrades.includes(upgrade.id) ? text.bought : text.buy(tr(upgrade.name))}</button>`);
+      ui.refresh();
+    } else if (kind === 'achievement-info') {
+      const item = ACHIEVEMENTS.find(item => item.id === id); if (!item) return;
+      stopHolding(); const progress = achievementProgress(game,item);
+      ui.showDialog(`<span class="detail-art embroidered">${icon(item.icon)}</span><span class="eyebrow">${tr(item.category)}</span><h2 id="modal-title">${tr(item.name)}</h2><p>${tr(item.detail)}</p><p>${game.achievements.includes(item.id) ? text.unlocked : `${format(progress.value,0)} / ${format(item.target,0)}`}</p><div class="badge-progress"><i style="width:${progress.ratio * 100}%"></i></div><p>${text.achievementsSubtitle}</p>`);
     } else if (kind === 'talent') {
       const talent = TALENTS.find(item => item.id === id);
       if (talent && buyTalent(game, talent.id)) changed(text.talentBought);
@@ -129,7 +149,9 @@ async function start(session: Session): Promise<void> {
     } else if (kind === 'settings') {
       stopHolding(); ui.showSettings();
     } else if (kind === 'sound') {
-      game.settings.volume = game.settings.volume ? 0 : 0.35; persist(); refresh();
+      const audible = game.settings.volume > 0 || game.settings.musicVolume > 0;
+      game.settings.volume = audible ? 0 : 0.35; game.settings.musicVolume = audible ? 0 : 0.2;
+      music.setVolume(game.settings.musicVolume); music.unlock(); persist(); refresh();
     } else if (kind === 'close') ui.dialog.close();
     else if (kind === 'export') { persist(); download(encode(game)); }
     else if (kind === 'import') document.getElementById('import-file')!.click();
@@ -155,6 +177,10 @@ async function start(session: Session): Promise<void> {
   ui.dialog.addEventListener('input', event => {
     const target = event.target as HTMLInputElement | HTMLSelectElement;
     if (target.id === 'volume') game.settings.volume = Math.max(0, Math.min(1, Number(target.value)));
+    if (target.id === 'music-volume') { game.settings.musicVolume = Math.max(0, Math.min(1, Number(target.value))); music.setVolume(game.settings.musicVolume); }
+    if (target.id === 'language' && (target.value === 'en' || target.value === 'es')) {
+      game.settings.language = target.value; setLanguage(target.value); ui.localizeShell(); ui.renderPanel(); ui.showSettings(); document.getElementById('language')?.focus();
+    }
     if (target.id === 'motion') game.settings.reducedMotion = (target as HTMLInputElement).checked;
     if (target.id === 'quality' && ['auto', 'low', 'high'].includes(target.value)) game.settings.quality = target.value as GameState['settings']['quality'];
     persist(); refresh();
@@ -174,12 +200,14 @@ async function start(session: Session): Promise<void> {
       applyOffline(incoming, Date.now());
       if (storage) saveGame(storage, incoming, Date.now());
       game = incoming; previous = performance.now();
+      setLanguage(game.settings.language); ui.localizeShell(); music.setVolume(game.settings.musicVolume);
       ui.dialog.close(); changed(text.imported);
     } catch { ui.toast(text.invalidImport); }
     finally { input.value = ''; importPending = false; }
   });
 
   function hide(): void {
+    music.setVisible(false);
     stopHolding();
     if (suspended || !session.active) return;
     settle(); persist(); suspended = true;
@@ -187,6 +215,7 @@ async function start(session: Session): Promise<void> {
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) hide();
     else if (session.active) {
+      music.setVisible(true);
       const amount = applyOffline(game, Date.now());
       previous = performance.now(); suspended = false; persist(); refresh();
       if (amount.gte(1)) ui.toast(text.offline(format(amount)));

@@ -1,4 +1,6 @@
-export const text = {
+import { getLocalizedText } from './localization';
+
+export const englishText = {
   upgradesTab: 'Upgrades', achievementsTab: 'Achievements', collectionShort: 'Cats', olympusShort: 'Olympus',
   boardEyebrow: 'THE VERY SERIOUS CAT COMMITTEE', boardTitle: 'Big ideas. Tiny handwriting.',
   boardSubtitle: 'Chapter improvements, approved by the head of naps.', boardNote: 'Please do not eat the sticky notes.',
@@ -41,7 +43,8 @@ export const text = {
   duplicateTitle: 'Your cats are busy in another tab.', duplicateBody: 'Close the other game tab, then reload this one to keep one safe copy of your progress.',
   webgl: 'The 3D workshop could not load. You can still play with the Pull yarn button. Try enabling browser graphics acceleration.',
   footer: 'Made for slow afternoons & big little dreams.',
-  prototype: 'PLAYABLE PROTOTYPE · 0.2',
+  prototype: 'PLAYABLE PROTOTYPE · 0.3',
+  language: 'Language', musicVolume: 'Music volume', inspect: 'Inspect', buyUpgrade: 'Buy upgrade', backWorkshop: 'Back to workshop', critical: 'Critical!', patchHint: 'Tap a patch to discover its story.', upgradeHint: 'Inspect an upgrade, then buy it when ready.', olympusEyebrow: 'PERMANENT BLESSINGS', criticalOdds: (chance: number = 0) => `Current chance: ${chance}% for ×3 yarn. Bonuses add.`,
   adopt: (name: string) => `Adopt ${name}`,
   owned: (count: string) => `${count} owned`,
   catsAdded: (count: string) => `+${count} cats`,
@@ -74,3 +77,6 @@ export const text = {
   startError: 'The workshop could not start. Reload to try again. Saved data has not been erased.',
   browserBody: 'This workshop needs the Web Locks API to keep your save safe. Use a recent Chrome, Edge, Firefox, or Safari browser.',
 };
+
+export type Copy = typeof englishText;
+export const text = new Proxy({} as Copy, { get: (_target, key) => getLocalizedText(englishText)[key as keyof Copy] }) as Copy;

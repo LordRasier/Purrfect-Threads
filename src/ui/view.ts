@@ -3,6 +3,7 @@ import { COATS, PRODUCERS, UPGRADES, TALENTS, type ProducerId } from '../game/ca
 import { population, production, producerOutput, quote, tapValue, MAX_OWNED, type GameState, type Quantity } from '../game/engine';
 import { prestigeReward } from '../game/progression';
 import { text } from './copy';
+import { getLanguage, setLanguage, translate as tr } from './localization';
 import { format } from './format';
 import { icon } from './icons';
 import { ACHIEVEMENTS, achievementProgress } from '../game/achievements';
@@ -18,8 +19,12 @@ export class GameUI {
   readonly worldHost: HTMLElement;
   private panel: HTMLElement;
   private toastTimer = 0;
+  private shellText: { node: Text; source: string }[] = [];
+  private shellLabels: { node: Element; attribute: string; source: string }[] = [];
 
   constructor(private root: HTMLElement, private game: () => GameState, onAction: (action: string, id?: string) => void) {
+    const language = getLanguage();
+    setLanguage('en');
     root.innerHTML = `
       <header class="topbar">
         <a class="brand" href="#" aria-label="${text.brand}"><span class="brand-mark">${icon('cat')}</span><span>${text.brandFirst}<span class="brand-second">${text.brandSecond}<span class="brand-dot">.</span></span></span></a>
@@ -39,7 +44,7 @@ export class GameUI {
           <div class="world" id="world"><div class="scene-halo"></div><span class="room-label" id="room-label">${text.chapterLabel(0)}</span><button id="pull" class="yarn-target" aria-label="${text.pull}"><span class="sr-only">${text.pull}</span></button><div class="float-layer" id="float-layer" aria-hidden="true"></div><span class="scene-sparkle sparkle-one">✦</span><span class="scene-sparkle sparkle-two">✧</span></div>
           <div class="pull-hint"><span class="hint-icon">${icon('paw')}</span><span><strong>${text.holdHint}</strong><small id="tap-hint">${text.keyboardHint}</small></span><span class="per-tap" id="per-tap">+1</span></div>
         </section>
-        <aside class="management" id="management" aria-label="${text.managementLabel}"></aside>
+        <aside class="tablet-shell"><div class="tablet-camera" aria-hidden="true"></div><div class="management" id="management" role="region" tabindex="0" aria-label="${text.managementLabel}"></div><span class="tablet-home" aria-hidden="true"></span></aside>
       </main>
       <footer><span>${icon('heart')}${text.footer}</span><span>${text.prototype}</span></footer>
       <div class="notice" id="notice" role="status" hidden></div><div class="toast" id="toast" role="status" hidden></div>
@@ -48,23 +53,45 @@ export class GameUI {
     this.dialog = root.querySelector('#modal')!;
     this.pull = root.querySelector('#pull')!;
     this.worldHost = root.querySelector('#world')!;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    let node: Node | null;
+    while ((node = walker.nextNode())) if (node.textContent?.trim()) this.shellText.push({ node: node as Text, source: node.textContent });
+    root.querySelectorAll('[aria-label]').forEach(node => this.shellLabels.push({ node, attribute: 'aria-label', source: node.getAttribute('aria-label')! }));
+    setLanguage(language); this.localizeShell();
     root.addEventListener('click', event => {
       const button = (event.target as HTMLElement).closest<HTMLButtonElement>('button');
       if (!button || button.disabled) return;
-      if (button.dataset.screen) { this.screen = button.dataset.screen as Screen; this.renderPanel(); this.refresh(); return; }
+      if (button.dataset.screen) { this.navigate(button.dataset.screen as Screen); return; }
       if (button.dataset.quantity) { this.quantity = button.dataset.quantity === 'max' ? 'max' : Number(button.dataset.quantity) as 1 | 10; this.refresh(); return; }
       if (button.dataset.action) onAction(button.dataset.action, button.dataset.id);
     });
     root.addEventListener('change', event => { const target = event.target as HTMLSelectElement; if (target.id === 'achievement-filter') { this.achievementCategory = target.value; this.renderPanel(); this.refresh(); document.getElementById('achievement-filter')?.focus(); } });
     this.dialog.addEventListener('click', event => { if (event.target === this.dialog) { const rect = this.dialog.getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) this.dialog.close(); } });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && this.screen === 'chapter' && !this.dialog.open) { event.preventDefault(); this.navigate('workshop'); }
+    });
     this.renderPanel(); this.refresh();
+  }
+
+  private navigate(screen: Screen): void {
+    const previous = this.screen;
+    this.screen = screen; this.renderPanel(); this.refresh(); this.panel.scrollTop = 0;
+    if (screen === 'chapter') this.panel.querySelector<HTMLButtonElement>('[data-screen="workshop"]')?.focus({preventScroll:true});
+    else if (previous === 'chapter') this.root.querySelector<HTMLButtonElement>('.navigation [data-screen="workshop"]')?.focus({preventScroll:true});
+  }
+
+  localizeShell(): void {
+    document.documentElement.lang = getLanguage();
+    for (const { node, source } of this.shellText) if (node.isConnected) node.textContent = source.replace(source.trim(), tr(source.trim()));
+    for (const { node, attribute, source } of this.shellLabels) node.setAttribute(attribute, tr(source));
   }
 
   renderPanel(): void {
     const game = this.game();
     const focused = document.activeElement?.id;
     this.panel.dataset.screen = this.screen;
-    const panels = { workshop: () => crewPanel(), upgrades: () => upgradePanel(game), achievements: () => achievementsPanel(game, this.achievementCategory), collection: () => collectionPanel(game), chapter: () => chapterPanel() };
+    this.root.classList.toggle('olympus-open', this.screen === 'chapter');
+    const panels = { workshop: () => crewPanel(game), upgrades: () => upgradePanel(game), achievements: () => achievementsPanel(game, this.achievementCategory), collection: () => collectionPanel(game), chapter: () => chapterPanel() };
     this.panel.innerHTML = panels[this.screen]();
     if (focused) document.getElementById(focused)?.focus({ preventScroll: true });
   }
@@ -103,10 +130,16 @@ export class GameUI {
         const button = document.getElementById(`upgrade-${upgrade.id}`) as HTMLButtonElement | null;
         if (!button) continue;
         const bought = game.upgrades.includes(upgrade.id);
-        button.disabled = bought || game.yarn.lt(upgrade.cost) || (upgrade.id === 'master' && !game.talents.includes('knitters'));
+        // Notes remain inspectable even when unaffordable or already purchased.
+        button.disabled = false;
         button.classList.toggle('purchased', bought);
         set(`upgrade-price-${upgrade.id}`, bought ? text.bought : format(upgrade.cost, 0));
       }
+    }
+    const confirm = this.dialog.querySelector<HTMLButtonElement>('[data-action="upgrade"]');
+    if (confirm) {
+      const item = UPGRADES.find(item => item.id === confirm.dataset.id);
+      confirm.disabled = !item || game.upgrades.includes(item.id) || game.yarn.lt(item.cost) || (item.id === 'master' && !game.talents.includes('knitters'));
     }
     if (this.screen === 'achievements') {
       set('achievement-count', text.achievementsCount(game.achievements.length, ACHIEVEMENTS.length));
@@ -161,6 +194,6 @@ export class GameUI {
   }
   showSettings(): void {
     const settings = this.game().settings;
-    this.showDialog(`<span class="eyebrow">${text.settings}</span><h2 id="modal-title">${text.settingsTitle}</h2><label class="setting-row" for="volume">${text.volume}<input id="volume" type="range" min="0" max="1" step="0.05" value="${settings.volume}" /></label><label class="setting-row" for="motion">${text.reducedMotion}<input id="motion" type="checkbox" ${settings.reducedMotion ? 'checked' : ''} /></label><label class="setting-row" for="quality">${text.quality}<select id="quality"><option value="auto" ${settings.quality === 'auto' ? 'selected' : ''}>${text.auto}</option><option value="low" ${settings.quality === 'low' ? 'selected' : ''}>${text.low}</option><option value="high" ${settings.quality === 'high' ? 'selected' : ''}>${text.high}</option></select></label><div class="save-actions"><button class="soft-button" data-action="export">${icon('download')}${text.export}</button><button class="soft-button" data-action="import">${text.import}</button></div><p class="dialog-note">${text.saveHint}</p><p class="dialog-note">${text.cap}</p>`);
+    this.showDialog(`<span class="eyebrow">${text.settings}</span><h2 id="modal-title">${text.settingsTitle}</h2><label class="setting-row" for="language">${text.language}<select id="language"><option value="en" ${settings.language === 'en' ? 'selected' : ''}>English</option><option value="es" ${settings.language === 'es' ? 'selected' : ''}>Español</option></select></label><label class="setting-row" for="music-volume">${text.musicVolume}<input id="music-volume" type="range" min="0" max="1" step="0.05" value="${settings.musicVolume}" /></label><label class="setting-row" for="volume">${text.volume}<input id="volume" type="range" min="0" max="1" step="0.05" value="${settings.volume}" /></label><label class="setting-row" for="motion">${text.reducedMotion}<input id="motion" type="checkbox" ${settings.reducedMotion ? 'checked' : ''} /></label><label class="setting-row" for="quality">${text.quality}<select id="quality"><option value="auto" ${settings.quality === 'auto' ? 'selected' : ''}>${text.auto}</option><option value="low" ${settings.quality === 'low' ? 'selected' : ''}>${text.low}</option><option value="high" ${settings.quality === 'high' ? 'selected' : ''}>${text.high}</option></select></label><div class="save-actions"><button class="soft-button" data-action="export">${icon('download')}${text.export}</button><button class="soft-button" data-action="import">${text.import}</button></div><p class="dialog-note">${text.saveHint}</p><p class="dialog-note">${text.cap}</p><p class="music-credit">♫ Apple Cider · Zane Little Music · CC0</p>`);
   }
 }

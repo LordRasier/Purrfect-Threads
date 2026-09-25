@@ -29,6 +29,7 @@ test('prestige, permanent talents, collection and imports survive reload', async
   await page.getByRole('button', { name: /Welcome Home/ }).click();
   await expect(page.getByRole('button', { name: /Welcome Home/ })).toBeDisabled();
   await page.getByRole('button', { name: /Helping Paw/ }).click();
+  await page.getByRole('button', { name: 'Back to workshop', exact: true }).click();
   await page.getByRole('button', { name: 'Cat collection', exact: true }).click();
   await page.getByRole('button', { name: 'Choose companion', exact: true }).click();
   await page.reload();
