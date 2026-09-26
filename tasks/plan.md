@@ -2,18 +2,19 @@
 
 ## Outcome
 
-Prepare the Android SDK/build prerequisites and a server environment handoff while
-keeping purchases unavailable. The user authorized local preparation and will
-deploy the Auraliax backend and run its migration themselves.
+Prepare a native-only, recoverable Google/Firebase identity foundation while
+keeping purchases unavailable. No UI or Capacitor entry point is connected.
+The user will deploy the Auraliax backend and run its migration themselves.
 
 ## Current slice
 
-1. Add opt-in Android Firebase/App Check/Billing prerequisites without enabling
-   purchases, analytics, automatic sign-in, or changing AdMob behavior.
-2. Validate the Purrfect Firebase configuration and compile/test the Android app.
-3. Document exact server variables and safe one-time secret generation. Do not
-   access the server, copy credentials, or activate billing.
-4. Review the changes and report measured results and remaining release gates.
+1. Test pure identity orchestration before implementation: lazy initialization,
+   App Check before Auth, cancellation/retry, mutation serialization, stale tokens.
+2. Add a conditional native Credential Manager/Firebase adapter, with no token
+   exposure to JavaScript, no HTTP client, no startup registration, and no analytics.
+3. Run web tests/build and Android default/opt-in tests/build sequentially; verify
+   Firebase auto-initialization is absent from the default merged manifest.
+4. Independently review and document implementation separately from device proof.
 
 ## Acceptance
 
@@ -25,7 +26,8 @@ deploy the Auraliax backend and run its migration themselves.
 
 ## Deferred release gates
 
-Native recoverable identity, purchase flow, server verification, offline expiry,
+Account UI/lifecycle integration, device Google sign-in and App Check proof,
+SHA-1/Android OAuth signing configuration, purchase flow, server verification, offline expiry,
 Play service-account permissions, store product setup, privacy disclosures, and
 license-tester end-to-end evidence remain separate work. No production deployment
 or real-money purchase is authorized by this local preparation slice.
