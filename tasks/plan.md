@@ -1,33 +1,13 @@
-# Billing preparation plan
+# Account integration plan
 
 ## Outcome
-
-Prepare a native-only, recoverable Google/Firebase identity foundation while
-keeping purchases unavailable. No UI or Capacitor entry point is connected.
-The user will deploy the Auraliax backend and run its migration themselves.
+Connect the shop ACCOUNT card to explicit native Google identity in opt-in Android builds only. Purchases remain unavailable; no identity data or tokens cross into JavaScript.
 
 ## Current slice
+1. RED/GREEN: account controller and localized card; native cancellation/lifecycle policy.
+2. Select native account plugin through conditional source directories (default stub, no reflection or Firebase dependencies).
+3. Add explicit connect/disconnect, safe busy/error/cancel states, and pre-sign-in disclosure. No startup authentication or saved-game cloud sync.
+4. Verify npm tests/build/sync then default and opt-in Android tests/build sequentially. Independent review and browser verification remain parent-owned.
 
-1. Test pure identity orchestration before implementation: lazy initialization,
-   App Check before Auth, cancellation/retry, mutation serialization, stale tokens.
-2. Add a conditional native Credential Manager/Firebase adapter, with no token
-   exposure to JavaScript, no HTTP client, no startup registration, and no analytics.
-3. Run web tests/build and Android default/opt-in tests/build sequentially; verify
-   Firebase auto-initialization is absent from the default merged manifest.
-4. Independently review and document implementation separately from device proof.
-
-## Acceptance
-
-- Default builds preserve existing gameplay and disabled purchase UI.
-- Opt-in prerequisites use the correct Firebase app/package; invalid config fails
-  clearly rather than selecting the other Android client in google-services.json.
-- Secrets stay out of Git, Android assets, screenshots, and command output.
-- Unit tests, web build, and Android debug build have recorded results.
-
-## Deferred release gates
-
-Account UI/lifecycle integration, device Google sign-in and App Check proof,
-SHA-1/Android OAuth signing configuration, purchase flow, server verification, offline expiry,
-Play service-account permissions, store product setup, privacy disclosures, and
-license-tester end-to-end evidence remain separate work. No production deployment
-or real-money purchase is authorized by this local preparation slice.
+## Release gates
+Local Android OAuth/SHA-1 configuration is now supplied and verified separately. Device sign-in, recovery and App Check proof remain unverified. Privacy policy deployment, account-deletion path, store disclosures, purchase verification and license-tester evidence remain release blockers. No remote privacy/backend edits or real-money purchases are in scope.

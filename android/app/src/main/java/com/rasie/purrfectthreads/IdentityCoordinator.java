@@ -12,6 +12,7 @@ final class IdentityCoordinator {
         void initializeAuth();
         String currentGoogleUid();
         void signIn(Completion<Void> completion);
+        default void cancelSignIn() {}
         void signOut(Completion<Void> completion);
         void fetchTokens(Completion<Tokens> completion);
     }
@@ -29,6 +30,8 @@ final class IdentityCoordinator {
     private boolean initialized;
     private boolean busy;
     private long generation;
+    private Completion<Void> pending;
+    private boolean signingIn;
 
     IdentityCoordinator(Driver driver) { this.driver = driver; }
 
@@ -41,42 +44,55 @@ final class IdentityCoordinator {
     void signIn(Completion<Void> completion) {
         if (busy) { completion.complete(null, Failure.BUSY); return; }
         busy = true;
-        generation++;
+        signingIn = true;
+        pending = completion;
+        long operation = ++generation;
         try {
             initialize();
-            if (driver.currentGoogleUid() != null) {
-                busy = false;
-                completion.complete(null, null);
-                return;
-            }
+            if (driver.currentGoogleUid() != null) { finish(null); return; }
             driver.signIn((value, failure) -> {
-                busy = false;
-                completion.complete(null, failure != null ? failure :
-                    driver.currentGoogleUid() == null ? Failure.SIGN_IN_FAILED : null);
+                if (!busy || !signingIn || operation != generation) return;
+                if (pending == null && driver.currentGoogleUid() != null) {
+                    // Firebase exchanges cannot be cancelled. Keep the mutation lock until
+                    // the abandoned exchange has settled and its identity has been cleared.
+                    signingIn = false;
+                    driver.signOut((ignored, clearFailure) -> { if (busy && operation == generation) finish(clearFailure); });
+                } else {
+                    finish(failure != null ? failure :
+                        driver.currentGoogleUid() == null ? Failure.SIGN_IN_FAILED : null);
+                }
             });
-        } catch (RuntimeException unavailable) {
-            busy = false;
-            completion.complete(null, Failure.UNAVAILABLE);
-        }
+        } catch (RuntimeException unavailable) { finish(Failure.UNAVAILABLE); }
     }
 
     void signOut(Completion<Void> completion) {
-        // Do not race an uncancellable Firebase signInWithCredential task.
         if (busy) { completion.complete(null, Failure.BUSY); return; }
-        generation++;
+        long operation = ++generation;
         busy = true;
+        signingIn = false;
+        pending = completion;
         try {
             initialize();
-            driver.signOut((value, failure) -> {
-                busy = false;
-                completion.complete(null, failure);
-            });
-        } catch (RuntimeException unavailable) {
-            busy = false;
-            completion.complete(null, Failure.UNAVAILABLE);
-        }
+            driver.signOut((value, failure) -> { if (busy && operation == generation) finish(failure); });
+        } catch (RuntimeException unavailable) { finish(Failure.UNAVAILABLE); }
     }
 
+    /** Drop the destroyed UI owner now; retain serialization until the SDK operation ends. */
+    void cancelPending() {
+        Completion<Void> abandoned = pending;
+        pending = null;
+        if (abandoned != null) abandoned.complete(null, Failure.CANCELLED);
+        if (busy && signingIn) driver.cancelSignIn();
+    }
+
+    private void finish(Failure failure) {
+        generation++;
+        busy = false;
+        signingIn = false;
+        Completion<Void> completed = pending;
+        pending = null;
+        if (completed != null) completed.complete(null, failure);
+    }
     private void initialize() {
         if (initialized) return;
         driver.initializeFirebase();

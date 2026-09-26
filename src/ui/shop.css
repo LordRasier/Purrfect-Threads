@@ -31,3 +31,13 @@
   .shop-illustration img { max-width:260px; margin:auto; }
   .shop-details h2 { font-size:26px; }
 }
+.account-card { margin:0 0 24px; padding:20px 24px; border:1px solid #dfcba3; border-radius:20px; background:#fffaf0; }
+.account-card h2 { margin:0 0 12px; }
+.account-card p { font-size:13px; line-height:1.6; }
+.account-card #account-status { font-weight:600; }
+.account-actions { display:flex; flex-wrap:wrap; gap:12px; }
+.account-actions button { min-height:48px; white-space:normal; }
+.account-actions button:disabled { opacity:.65; cursor:not-allowed; }
+.account-actions button:focus-visible { outline:3px solid #68513c; outline-offset:3px; }
+.account-card .account-note { font-size:12px; margin-bottom:0; }
+@media(max-width:600px) { .account-card { padding:16px; } }

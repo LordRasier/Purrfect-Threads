@@ -128,6 +128,59 @@ public class IdentityCoordinatorTest {
         assertEquals(IdentityCoordinator.Failure.TOKEN_UNAVAILABLE, result.failure);
     }
 
+    @Test public void destroyedOwnerCompletesImmediatelyAndLateSignInIsClearedBeforeRetry() {
+        Result<Void> result = new Result<>();
+        identity.signIn(result);
+        identity.cancelPending();
+        assertEquals(1, result.calls);
+        assertEquals(IdentityCoordinator.Failure.CANCELLED, result.failure);
+        assertEquals(IdentityCoordinator.Status.BUSY, identity.status());
+        Result<Void> retry = new Result<>();
+        identity.signIn(retry);
+        assertEquals(IdentityCoordinator.Failure.BUSY, retry.failure);
+        driver.uid = "late-user";
+        driver.signIn.complete(null, null);
+        assertNull(driver.uid);
+        assertEquals(IdentityCoordinator.Status.BUSY, identity.status());
+        driver.signOut.complete(null, null);
+        assertEquals(IdentityCoordinator.Status.SIGNED_OUT, identity.status());
+        assertEquals(1, result.calls);
+        identity.signIn(new Result<>());
+        assertEquals(2, driver.events.stream().filter("signin"::equals).count());
+    }
+
+    @Test public void destroyedOwnerDuringDisconnectDoesNotRetainOrCompleteCallbackTwice() {
+        activate();
+        Result<Void> result = new Result<>();
+        identity.signOut(result);
+        identity.cancelPending();
+        assertEquals(1, result.calls);
+        assertEquals(IdentityCoordinator.Failure.CANCELLED, result.failure);
+        driver.signOut.complete(null, null);
+        assertEquals(1, result.calls);
+        assertEquals(IdentityCoordinator.Status.SIGNED_OUT, identity.status());
+    }
+
+    @Test public void cancelledPickerReleasesBusyWithoutChangingAccount() {
+        identity.signIn(new Result<>());
+        identity.cancelPending();
+        driver.signIn.complete(null, IdentityCoordinator.Failure.CANCELLED);
+        assertEquals(IdentityCoordinator.Status.SIGNED_OUT, identity.status());
+        assertTrue(driver.events.contains("cancel"));
+    }
+
+    @Test public void staleDisconnectCallbackCannotFinishANewerSignIn() {
+        activate();
+        identity.signOut(new Result<>());
+        IdentityCoordinator.Completion<Void> old = driver.signOut;
+        old.complete(null, null);
+        Result<Void> next = new Result<>();
+        identity.signIn(next);
+        old.complete(null, null);
+        assertEquals(0, next.calls);
+        assertEquals(IdentityCoordinator.Status.BUSY, identity.status());
+    }
+
     private void activate() {
         driver.uid = "google-user";
         identity.signIn(new Result<>());
@@ -158,6 +211,7 @@ public class IdentityCoordinatorTest {
         public void signIn(IdentityCoordinator.Completion<Void> callback) {
             events.add("signin"); signIn = callback;
         }
+        public void cancelSignIn() { events.add("cancel"); }
         public void signOut(IdentityCoordinator.Completion<Void> callback) {
             uid = null; signOut = callback;
         }

@@ -1,12 +1,15 @@
+import { accountCard, unavailableAccount } from './account';
+import type { AccountState } from '../platform/account';
 import { translate as tr } from './localization';
 import { icon } from './icons';
 import './shop.css';
 
 export const shopUnavailable = () => tr('Purchases and restore are not available in this build. No charge has been made.');
 
-export function shopPanel(): string {
+export function shopPanel(account: AccountState = unavailableAccount): string {
   return `<section class="shop-panel" aria-labelledby="shop-title">
     <header class="shop-header"><span class="eyebrow">${tr('A LITTLE EXTRA HELP')}</span><h1 id="shop-title">${tr('Shop')}</h1><p>${tr('An optional helping paw. Your workshop is always free to play.')}</p></header>
+    ${accountCard(account)}
     <article class="shop-product" aria-labelledby="crew-title">
       <div class="shop-illustration"><span class="shop-tag">${tr('12 REAL HOURS')}</span><img src="${import.meta.env.BASE_URL}art/meowtastic-contractors.png" alt="${tr('Three cat contractors with sunglasses, blueprints and tools')}" width="1536" height="1024" /></div>
       <div class="shop-details"><span class="eyebrow">${tr('MEET YOUR CONTRACTORS')}</span><h2 id="crew-title">${tr('Meowtastic Crew')}</h2>

@@ -1,3 +1,4 @@
+import { AccountController, createAccountPort } from './platform/account';
 import { Capacitor } from '@capacitor/core';
 import { billing } from './platform/billing';
 import { shopUnavailable } from './ui/shop';
@@ -110,6 +111,14 @@ async function start(session: Session): Promise<void> {
   let seenAchievements = new Set(game.achievements);
   let seenCompanions = new Set(game.collection);
   const ui = new GameUI(root, () => game, action);
+  const account = new AccountController(createAccountPort(), () => {
+    if (session.active) ui.setAccountState(account.state);
+  });
+  // Merely opening the shop reads inert status; only its explicit button signs in.
+  root.addEventListener('screenchange', () => queueMicrotask(() => {
+    if (session.active && ui.screen === 'shop') void account.refresh();
+  }));
+  window.addEventListener('pagehide', () => account.dispose(), { once: true });
   const chatHost = document.createElement('div');
   chatHost.className = 'companion-chat-host';
   root.querySelector('.stash')!.append(chatHost);
@@ -223,6 +232,9 @@ async function start(session: Session): Promise<void> {
       }).catch(() => ui.toast(game.settings.language === 'es' ? 'No se pudieron abrir las opciones de privacidad.' : 'Privacy options could not be opened.'));
     } else if (kind === 'settings') {
       stopHolding(); showSettings();
+    } else if (kind === 'account-connect' || kind === 'account-disconnect' || kind === 'account-refresh') {
+      stopHolding();
+      void (kind === 'account-connect' ? account.connect() : kind === 'account-disconnect' ? account.disconnect() : account.refresh());
     } else if (kind === 'shop-purchase' || kind === 'shop-restore') {
       stopHolding();
       void (kind === 'shop-purchase' ? billing.purchase() : billing.restore()).then(() => {

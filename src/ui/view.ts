@@ -1,3 +1,5 @@
+import { unavailableAccount, updateAccountCard } from './account';
+import type { AccountState } from '../platform/account';
 import { privacyContent } from './privacy';
 import { shopPanel } from './shop';
 import { upgradeRequirement } from './upgrade-tree';
@@ -19,6 +21,11 @@ import { crewPanel, upgradePanel, chapterPanel, collectionPanel, achievementsPan
 export type Screen = 'workshop' | 'crew' | 'upgrades' | 'achievements' | 'collection' | 'chapter' | 'shop';
 export class GameUI {
   screen: Screen = 'workshop';
+  private accountState: AccountState = unavailableAccount;
+  setAccountState(state: AccountState): void {
+    this.accountState = state;
+    updateAccountCard(this.root, state);
+  }
   launching = true;
   quantity: Quantity = 1;
   private achievementCategory = 'all';
@@ -157,7 +164,7 @@ export class GameUI {
     this.root.querySelector('.tablet-stage')!.setAttribute('aria-hidden', String(sky));
     this.panel.dataset.screen = this.screen;
     this.root.classList.toggle('olympus-open', this.screen === 'chapter');
-    const panels = { workshop: () => '', crew: () => crewPanel(game), upgrades: () => upgradePanel(game), achievements: () => achievementsPanel(game, this.achievementCategory), collection: () => collectionPanel(game), chapter: () => chapterPanel(), shop: shopPanel };
+    const panels = { workshop: () => '', crew: () => crewPanel(game), upgrades: () => upgradePanel(game), achievements: () => achievementsPanel(game, this.achievementCategory), collection: () => collectionPanel(game), chapter: () => chapterPanel(), shop: () => shopPanel(this.accountState) };
     this.panel.innerHTML = panels[this.screen]();
     if (this.screen === 'upgrades') this.disposeUpgradeBoard = mountUpgradeBoard(this.panel, this.game);
     if (focused) document.getElementById(focused)?.focus({ preventScroll: true });

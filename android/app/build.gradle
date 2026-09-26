@@ -54,6 +54,8 @@ android {
     // SDK-backed identity is absent, not merely dormant, in the default build.
     if (billingFoundationEnabled) {
         sourceSets.main.java.srcDir 'src/billingFoundation/java'
+    } else {
+        sourceSets.main.java.srcDir 'src/accountUnavailable/java'
     }
 }
 
@@ -153,4 +155,3 @@ if (billingFoundationEnabled) {
 tasks.matching { it.name == "preReleaseBuild" }.configureEach {
     dependsOn("verifyReleaseAdsConfiguration")
 }
-

@@ -5,6 +5,22 @@ export type Language = 'en' | 'es';
 let language: Language = 'en';
 
 const sourceCatalog: Record<string, string> = {
+  'ACCOUNT': 'CUENTA',
+  'Google/Firebase processes account identifiers to prepare purchase linking. Saved games are not synced. Purchases are unavailable in this alpha.': 'Google/Firebase procesa identificadores de cuenta para preparar la vinculación de compras. Las partidas no se sincronizan. Las compras no están disponibles en esta versión alfa.',
+  'Account connection is unavailable in this build.': 'La conexión de cuentas no está disponible en esta versión.',
+  'No account connected on this device.': 'No hay una cuenta conectada en este dispositivo.',
+  'Google account connected. Purchases are still unavailable.': 'Cuenta de Google conectada. Las compras aún no están disponibles.',
+  'A previous account request is finishing. Check status again shortly.': 'Se está completando una solicitud anterior. Consulta el estado de nuevo en unos momentos.',
+  'Connection cancelled. You can try again whenever you are ready.': 'Conexión cancelada. Puedes volver a intentarlo cuando quieras.',
+  'The account request failed. Check your connection and try again.': 'La solicitud de cuenta falló. Revisa la conexión y vuelve a intentarlo.',
+  'Disconnected from Firebase. Google account selection could not be reset; try disconnecting again after reconnecting.': 'Sesión de Firebase cerrada. No se pudo restablecer la selección de cuenta de Google; vuelve a conectar y desconectar para reintentarlo.',
+  'Working on your account request…': 'Procesando la solicitud de cuenta…',
+  'Please wait…': 'Espera un momento…',
+  'Disconnect': 'Desconectar',
+  'Unavailable': 'No disponible',
+  'Connect with Google': 'Conectar con Google',
+  'Check account status': 'Consultar estado de cuenta',
+  'Disconnecting signs out on this device; it does not delete your account.': 'Desconectar cierra la sesión en este dispositivo; no elimina tu cuenta.',
   'Drag the board. Hover or focus a note; tap for details.': 'Arrastra el tablero. Pasa el cursor o enfoca una nota; tócala para ver detalles.',
   'Move the upgrade board': 'Mover el tablero de mejoras', 'Zoom the upgrade board': 'Acercar el tablero de mejoras', 'Zoom out': 'Alejar', 'Zoom in': 'Acercar', 'Fit all upgrades': 'Ver todas las mejoras', 'Fit': 'Ver todo',
   'Pan left': 'Mover a la izquierda', 'Pan right': 'Mover a la derecha',

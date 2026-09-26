@@ -26,7 +26,7 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.Executor;
 
-/** Dormant native seam: no Capacitor registration, UI entry point, or token serialization. */
+/** Opt-in native identity. The account bridge never exposes credentials or identifiers. */
 final class FirebaseIdentityFoundation {
     private static FirebaseIdentityFoundation instance;
     private final Driver driver;
@@ -48,11 +48,15 @@ final class FirebaseIdentityFoundation {
         return coordinator.status();
     }
 
-    // A future reviewed native account control must call this only from an explicit user action.
+    // Called only by the explicit account control; never at startup.
     void signInFromUserAction(Activity activity, IdentityCoordinator.Completion<Void> completion) {
         requireMainThread();
         if (activity == null || activity.isFinishing() || activity.isDestroyed()) {
             completion.complete(null, IdentityCoordinator.Failure.CANCELLED);
+            return;
+        }
+        if (coordinator.status() == IdentityCoordinator.Status.BUSY) {
+            completion.complete(null, IdentityCoordinator.Failure.BUSY);
             return;
         }
         driver.activity = new WeakReference<>(activity);
@@ -62,6 +66,12 @@ final class FirebaseIdentityFoundation {
     void signOut(IdentityCoordinator.Completion<Void> completion) {
         requireMainThread();
         coordinator.signOut(completion);
+    }
+
+    void cancelPending() {
+        requireMainThread();
+        coordinator.cancelPending();
+        driver.activity.clear();
     }
 
     void withTokens(IdentityCoordinator.Completion<IdentityCoordinator.Tokens> completion) {
@@ -83,6 +93,7 @@ final class FirebaseIdentityFoundation {
         private FirebaseAppCheck appCheck;
         private FirebaseAuth auth;
         private CredentialManager credentials;
+        private CancellationSignal signInCancellation;
 
         Driver(Context context) {
             this.context = context;
@@ -134,9 +145,11 @@ final class FirebaseIdentityFoundation {
                 .build();
             GetCredentialRequest request = new GetCredentialRequest.Builder()
                 .addCredentialOption(option).build();
-            credentials.getCredentialAsync(host, request, new CancellationSignal(), main,
+            signInCancellation = new CancellationSignal();
+            credentials.getCredentialAsync(host, request, signInCancellation, main,
                 new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
                     public void onResult(GetCredentialResponse response) {
+                        signInCancellation = null;
                         Activity current = requestedActivity.get();
                         if (current == null || current.isFinishing() || current.isDestroyed()) {
                             completion.complete(null, IdentityCoordinator.Failure.CANCELLED);
@@ -160,10 +173,15 @@ final class FirebaseIdentityFoundation {
                         }
                     }
                     public void onError(GetCredentialException error) {
+                        signInCancellation = null;
                         completion.complete(null, error instanceof GetCredentialCancellationException
                             ? IdentityCoordinator.Failure.CANCELLED : IdentityCoordinator.Failure.SIGN_IN_FAILED);
                     }
                 });
+        }
+
+        public void cancelSignIn() {
+            if (signInCancellation != null) signInCancellation.cancel();
         }
 
         public void signOut(IdentityCoordinator.Completion<Void> completion) {
