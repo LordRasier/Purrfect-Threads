@@ -1,13 +1,13 @@
-# Account integration plan
+# Native purchase integration plan
 
 ## Outcome
-Connect the shop ACCOUNT card to explicit native Google identity in opt-in Android builds only. Purchases remain unavailable; no identity data or tokens cross into JavaScript.
+Complete an opt-in internal-test purchase path for Meowtastic Crew while default builds remain unavailable. Firebase/App Check/Play credentials stay native; server verification owns paid grants and consumption. No production release, real charges or remote server access.
 
-## Current slice
-1. RED/GREEN: account controller and localized card; native cancellation/lifecycle policy.
-2. Select native account plugin through conditional source directories (default stub, no reflection or Firebase dependencies).
-3. Add explicit connect/disconnect, safe busy/error/cancel states, and pre-sign-in disclosure. No startup authentication or saved-game cloud sync.
-4. Verify npm tests/build/sync then default and opt-in Android tests/build sequentially. Independent review and browser verification remain parent-owned.
+## Implementation
+1. Pure tested purchase callback, lease, wire and lifecycle policies.
+2. Fixed HTTPS transport, authenticated no-backup cache and native BillingClient adapters.
+3. Native exactly-once paid-time settlement, safe background deferral and localized purchase/restore/status/privacy UI.
+4. Strict RED/GREEN, web verification and sequential default/opt-in Android debug, R8 release and lint checks.
 
 ## Release gates
-Local Android OAuth/SHA-1 configuration is now supplied and verified separately. Device sign-in, recovery and App Check proof remain unverified. Privacy policy deployment, account-deletion path, store disclosures, purchase verification and license-tester evidence remain release blockers. No remote privacy/backend edits or real-money purchases are in scope.
+The user confirmed https://www.auraliax.com/; billing routes currently return 404. Operator activation, Play product/tester configuration, user-controlled signing/upload and license-tester/device proof remain necessary. Privacy institution/store declarations and retention/account deletion need review before production. Independent review and browser checks are parent-owned; no remote credentials are used by this implementation.

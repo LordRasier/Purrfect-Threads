@@ -5,8 +5,22 @@ export type Language = 'en' | 'es';
 let language: Language = 'en';
 
 const sourceCatalog: Record<string, string> = {
+  'Unverified or interrupted bonus earnings may be lost. Reconnect after 12 hours without verification.': 'Las ganancias adicionales no verificadas o interrumpidas pueden perderse. Vuelve a conectarte tras 12 horas sin verificación.',
+  'Google/Firebase processes account identifiers and App Check signals to verify optional purchases. Saved games are not synced. Purchases require an available verification service.': 'Google/Firebase procesa identificadores de cuenta y señales de App Check para verificar compras opcionales. Las partidas no se sincronizan. Las compras requieren un servicio de verificación disponible.',
+  'Google account connected. Use Restore purchases to check the verification service.': 'Cuenta de Google conectada. Usa Restaurar compras para consultar el servicio de verificación.',
+  'Buy with Google Play': 'Comprar con Google Play',
+  'Offline boosts require a previously verified purchase on this device. After a device restart or clock change, reconnect to verify. Refund updates may take up to 12 hours while offline.': 'Las mejoras sin conexión requieren una compra verificada previamente en este dispositivo. Después de reiniciar el dispositivo o cambiar el reloj, vuelve a conectarte para verificar. Los reembolsos pueden tardar hasta 12 horas en reflejarse sin conexión.',
+  'Checking Google Play and purchase verification…': 'Consultando Google Play y la verificación de compras…',
+  'Payment pending. No boost is granted until Google Play confirms payment.': 'Pago pendiente. La mejora no se activa hasta que Google Play confirme el pago.',
+  'Purchase cancelled.': 'Compra cancelada.',
+  'Reconnect the Google account used for this purchase, then restore.': 'Conecta la cuenta de Google usada para esta compra y luego restaura.',
+  'Restore purchases before trying again.': 'Restaura las compras antes de intentarlo de nuevo.',
+  'Meowtastic Crew is active. The original 12-hour timer continues offline.': 'Meowtastic Crew está activo. El temporizador original de 12 horas continúa sin conexión.',
+  'Ready. Google Play will show the final price before payment.': 'Todo listo. Google Play mostrará el precio final antes del pago.',
+  'Connect with Google to check purchases.': 'Conecta con Google para consultar las compras.',
+  'Purchases are unavailable. The verification service or Google Play is not ready. Restore later if a payment was already made.': 'Las compras no están disponibles. El servicio de verificación o Google Play no está listo. Restaura más tarde si ya realizaste un pago.',
   'ACCOUNT': 'CUENTA',
-  'Google/Firebase processes account identifiers to prepare purchase linking. Saved games are not synced. Purchases are unavailable in this alpha.': 'Google/Firebase procesa identificadores de cuenta para preparar la vinculación de compras. Las partidas no se sincronizan. Las compras no están disponibles en esta versión alfa.',
+
   'Account connection is unavailable in this build.': 'La conexión de cuentas no está disponible en esta versión.',
   'No account connected on this device.': 'No hay una cuenta conectada en este dispositivo.',
   'Google account connected. Purchases are still unavailable.': 'Cuenta de Google conectada. Las compras aún no están disponibles.',

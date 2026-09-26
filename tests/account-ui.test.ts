@@ -7,7 +7,7 @@ afterEach(() => setLanguage('en'));
 it('shows disclosure before explicit Google action in both languages', () => {
   expect(accountCard(signedOut)).toContain('Google/Firebase processes account identifiers');
   expect(accountCard(signedOut)).toContain('Saved games are not synced');
-  expect(accountCard(signedOut)).toContain('Purchases are unavailable in this alpha');
+  expect(accountCard(signedOut)).toContain('Purchases require an available verification service');
   expect(accountCard(signedOut)).toContain('Connect with Google');
   setLanguage('es');
   expect(accountCard(signedOut)).toContain('Google/Firebase procesa identificadores');

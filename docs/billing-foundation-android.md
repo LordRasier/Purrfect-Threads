@@ -1,135 +1,43 @@
-# Android billing foundation
+# Android billing integration (internal testing)
 
-The shop now exposes explicit Google account controls in opt-in Android builds, not purchases. The default build sets
-`PURRFECT_BILLING_FOUNDATION_ENABLED` to `false`; it does not apply the Google services plugin,
-does not package Firebase Auth, App Check, or Credential Manager, and does not start a billing client, sign in a user,
-or initialize analytics.
+The default build remains unavailable: `PURRFECT_BILLING_FOUNDATION_ENABLED=false` excludes Firebase, Credential Manager and Play Billing SDK dependencies. The opt-in build now includes account controls, native purchase/restore, authenticated verification and secure offline settlement. It is not production-ready.
 
-The Play Billing dependency is present only in the optional prerequisite build. There is no purchase,
-restore, entitlement, acknowledgement, or backend code in this slice.
+## Build and configuration
 
-## Optional Firebase prerequisite build
+Opt in only with `-PpurrfectBillingFoundationEnabled=true` and the ignored local `android/app/google-services.json`. Existing Gradle checks require the approved Firebase project/app/package and run before builds. FirebaseInitProvider remains removed; no new analytics dependency or debug App Check bypass is present. Signing and version changes are separate release responsibilities.
 
-Use `-PpurrfectBillingFoundationEnabled=true` only after supplying a local
-`android/app/google-services.json`. The file is ignored by Git. The build checks that the selected
-Firebase project, app ID, and client package match the approved Android application; a missing file,
-invalid JSON, wrong project, wrong app ID, or wrong package fails with a clear Gradle error. The
-check is wired into `preBuild` when enabled. Run `:app:verifyBillingFoundationConfiguration` for
-the focused production-file check. The separate `:app:verifyBillingFoundationFixture` task accepts
-`-PpurrfectFirebaseConfigFixture=...` for local fixture validation without enabling the feature or
-requiring a local Firebase configuration file; it cannot substitute for the production build check.
+## Native boundary
 
-The safe default command is `./gradlew.bat :app:assembleDebug` with no billing property. The only
-opt-in command is `./gradlew.bat :app:assembleDebug -PpurrfectBillingFoundationEnabled=true` from
-`android/`; it requires the ignored local configuration file and runs the production-file check.
+`CrewBilling` exports only `status`, `refresh`, `purchase`, `restore`, with no arguments. The bridge returns fixed status codes, localized Play price, readiness/active flags and bounded already-settled production seconds. It never exports identity, Firebase/App Check credentials, purchase tokens, account mappings or reusable entitlements. The default source set supplies a Firebase-free unavailable stub.
 
-Even in that optional build, the manifest removes `FirebaseInitProvider`. Opening the shop reads
-inert status; only pressing Connect or Disconnect initializes Firebase and installs
-`PlayIntegrityAppCheckProviderFactory` before accessing Auth. No account is created at startup.
+`BillingFlow` is the pure injected-port orchestrator: callbacks are single-use and tied to session/operation generation. A purchase uses authenticated prepare, current Play ownership, fresh product details, then Play's purchase sheet. Only the backend can verify and consume a token. Pending/cancellation is not payment proof; duplicate delivery never resets expiry or settlement. A consumed purchase/lost HTTP response recovers through prepare's server entitlement revalidation, independently of queryPurchases results. Wrong-account tokens are rejected before verification.
 
-## Implemented native seam
+`BillingBackend` uses only `https://www.auraliax.com/v1/purrfect/billing/`, confirmed by the user. It refuses redirects, bounds response sizes and timeouts, and never forwards SDK/HTTP error details or accepts arbitrary destinations. The backend's existing prepare/verify contract is read-only; this change does not deploy or activate it. The parent observed HTTP 404 for the billing entitlement route, so purchase preparation currently fails closed.
 
-`IdentityCoordinator` is a pure-Java policy with injected SDK operations. The optional
-`FirebaseIdentityFoundation` uses Credential Manager 1.3.0 / Google ID 1.1.1 and the existing
-Firebase BoM 34.19.0, matching the Firebase Android integration guide. Its source directory and
-SDK dependencies are compiled only when the foundation flag is true.
+## Offline production and recovery
 
-- Construction and status do not initialize Firebase. Status starts `UNINITIALIZED`; persisted
-  Google identity is recovered only after explicit activation. Anonymous users are not accepted.
-- Explicit sign-in requests an account picker without automatic selection, then exchanges the
-  Google credential with Firebase. User cancellation and SDK failures return fixed error codes.
-- Identity mutations serialize: sign-in/sign-out while busy returns `BUSY`; callers must wait
-  and retry, not assume sign-out succeeded. This avoids racing an uncancellable Firebase exchange.
-  Sign-out clears Firebase first, then Credential Manager state; clear failure is reported without
-  restoring the Firebase session. Explicit sign-out also clears a persisted session after restart.
-- Native-only token acquisition returns both Firebase ID and App Check tokens or neither.
-  Session generation and UID checks discard in-flight results after sign-out/account changes.
-  Tokens are never logged, serialized, returned to JavaScript, or sent anywhere by this slice.
+[Decision 009](decisions/009-native-purchase-settlement.md) documents the authority and tradeoffs. Native AES-GCM/Android Keystore cache lives outside backups and exported game saves, bound to UID, boot count, elapsedRealtime and a wall-clock consistency check. It preserves the original server purchase completion and twelve-hour expiry. Cache age is at most twelve hours; reboot/clock anomaly requires online verification. Offline refunds can remain undetected only until reconnect/original expiry.
 
-The foundation is package-private and process-scoped; all calls/callbacks use the Android main
-thread. `GoogleAccountPlugin` exports only `status`, `connect`, and `disconnect`; replies contain
-fixed `status` and `outcome` codes. UID, email, Google credentials, Firebase tokens and App Check
-tokens never cross the bridge. The default source set selects a Firebase-free unavailable stub,
-not reflection. There is no HTTP client, arbitrary URL method, purchase or entitlement grant.
+A native settlement cursor consumes each interval before returning extra-production seconds. Offline bonus keeps the normal first-eight-hour cap and 50% rate (65% with Roman). Game imports cannot replay paid time. Crashes between native settlement and game saving can lose bonus earnings; no two-file atomicity is claimed. Brief production-rate changes use conservative captured rates. A valid same-boot authenticated cache can recover the previously consented persisted Google identity after process death, never a new account/picker. Without that cache startup remains inert. Disconnect clears cache and native identity; it is not account deletion.
 
-## Account lifecycle and disclosure
+## Local verification and release gates
 
-The bilingual ACCOUNT card explains Google/Firebase identifier processing, no saved-game sync,
-and unavailable alpha purchases before the explicit action. Disconnect signs out; it does not
-delete the Firebase account. To switch accounts, disconnect first and then connect again.
+Verification commands: `npm test`, `npm run build`, `npm run android:sync`; JDK 21 sequential default and opt-in `:app:testDebugUnitTest :app:assembleDebug`; opt-in `:app:bundleRelease :app:lintRelease`. See [verification and artifact hash](verification-billing-060.md) for observed results and remaining gates.
 
-Destruction cancels/releases the pending UI callback immediately. A Credential Manager picker
-receives its cancellation signal. An uncancellable Firebase exchange retains the mutation lock
-until it settles; any late identity is signed out before another account operation can start.
-The coordinator drops the destroyed owner's completion, so the process singleton does not retain
-its Activity/plugin. Activity references in the SDK driver are weak. Native busy state offers a
-manual status refresh; it never claims that sign-out succeeded before completion.
+Do not treat unit tests, an APK or unsigned AAB as purchase E2E. Remaining gates include backend operator activation, product availability/price, Play signing/install channel, OAuth/attestation on the intended certificate, real license-tester successful/pending/cancel/duplicate/recovery/refund flows, secure-cache behavior across process death/reboot and account switching, independent review, institutional privacy/store disclosures and account-deletion/retention handling. No real-money payment or production release was performed.
 
-After process restart, status does not activate Firebase or silently recover an account. The user
-must explicitly connect to recover any persisted Google identity. This is not proof of purchases
-or server-side purchase linking. The existing billing port remains unavailable on every platform.
+## Official sources
 
-## Remaining release gates
+- Play lifecycle, product details, pending payments and reconnection: https://developer.android.com/google/play/billing/integrate
+- Backend verification and consumption: https://developer.android.com/google/play/billing/security
+- Purchase offer selection: https://developer.android.com/reference/com/android/billingclient/api/ProductDetails.OneTimePurchaseOfferDetails
+- Android Keystore and background cryptographic operations: https://developer.android.com/privacy-and-security/keystore
+- Monotonic clock: https://developer.android.com/reference/android/os/SystemClock
+- Boot count: https://developer.android.com/reference/android/provider/Settings.Global#BOOT_COUNT
+- Firebase identity: https://firebase.google.com/docs/auth/android/google-signin
+- Native App Check: https://firebase.google.com/docs/app-check/android/custom-resource
+- Capacitor methods/lifecycle: https://capacitorjs.com/docs/plugins/android
 
-The ignored local Firebase configuration now includes the expected Android OAuth client entries
-for the two registered SHA-1 fingerprints. Local configuration is not device proof. Verify every
-intended signing certificate, real-device Google sign-in/cancel/disconnect, Activity recreation,
-process restart/reinstall recovery, and real Play Integrity attestation. No debug App Check bypass
-is included, and this account UI never requests an attestation token.
+## Operator activation order (internal testers only)
 
-**Do not release the opt-in account build as production-ready:** the deployed privacy policy and
-in-app privacy text still require account-processing review/update, and account deletion needs an
-implemented/disclosed path. Those remote/privacy changes are intentionally outside this slice.
-Purchase lifecycle, backend verification, entitlement storage/offline expiry, release signing/R8,
-Play product configuration and license-tester evidence remain separate gates. No BillingClient
-connection, remote backend request, real-money purchase, or production deployment is authorized.
-## Sources
-
-- Capacitor v8 explicit Android plugin methods and responses: https://capacitorjs.com/docs/plugins/android
-
-- Firebase Android BoM and compatible dependency declaration: https://firebase.google.com/docs/android/learn-more#bom
-- App Check Play Integrity dependency and initialization ordering: https://firebase.google.com/docs/app-check/android/play-integrity-provider
-- Google services plugin and package-name matching behavior: https://firebase.google.com/docs/android/google-services-plugin-and-file
-- Google Play Billing Library dependency: https://developer.android.com/google/play/billing/integrate
-- Google sign-in, web client ID, SHA-1 prerequisite, and sign-out: https://firebase.google.com/docs/auth/android/google-signin
-- Credential Manager Java callbacks and Activity context: https://developer.android.com/reference/androidx/credentials/CredentialManager
-- Native App Check token retrieval: https://firebase.google.com/docs/app-check/android/custom-resource
-## Verification (2026-09-26)
-
-- Web suite: 187 tests passed; production web build passed.
-- Previous prerequisite slice: JDK 21 default and opt-in debug tests/build passed
-  with four existing native policy tests. Current identity verification is recorded below.
-- Valid fixture passes without enabling billing; missing path and mismatched
-  package fail. Missing production config prevents opt-in builds.
-- Independent review found and resolved fixture/config coupling. No blocking
-  findings remained. No device attestation or purchase was exercised.
-
-### Native identity slice (2026-09-26)
-
-- RED: coordinator tests initially failed to compile because the coordinator did not exist.
-  A later regression test failed because sign-out before activation did not clear persisted
-  identity; explicit sign-out now initializes in the same guarded order before clearing it.
-- GREEN: 11 identity tests plus 4 existing ads policy tests passed in each full Android
-  configuration. Sequential JDK 21 `:app:testDebugUnitTest :app:assembleDebug` runs passed
-  without the property and with `-PpurrfectBillingFoundationEnabled=true`.
-- `npm test`: 187 tests passed. `npm run build`: passed; existing large Three.js chunk warning.
-- Default merged manifest contains no `FirebaseInitProvider`; default `debugRuntimeClasspath`
-  contains no Firebase, Credential Manager, or Billing dependencies. `git diff --check` passed.
-- Independent review approved this dormant slice with no blocking findings. No device sign-in, attestation,
-  release/minified build, backend request, or purchase was exercised.
-
-### Account bridge slice (2026-09-26)
-
-- RED/GREEN: absent controller/UI/plugin boundary files failed focused Vitest runs, then passed
-  (7 controller, 3 localized UI, 2 source-boundary checks). Native destruction/cancellation tests
-  first failed for missing `cancelPending`; a stale-disconnect regression then failed behaviorally
-  before generation checks were added. Final native suite: 15 identity + 4 ads tests per variant.
-- `npm test`: 199 passed. `npm run build`: passed. `npm run android:sync`: passed afterward.
-- JDK 21, sequential `:app:testDebugUnitTest :app:assembleDebug`: default passed (17 seconds),
-  then `-PpurrfectBillingFoundationEnabled=true` passed (39 seconds). No device tests were run.
-- Default merged manifest: no FirebaseInitProvider. Default debugRuntimeClasspath: no Firebase,
-  Credential Manager, or Play Billing dependencies. `git diff --check`: passed.
-- Sync replaced ignored packaged web assets only; no tracked generated-file diff. The final local
-  debug APK is the opt-in build. Existing Vite large-chunk and Gradle deprecation warnings remain.
-- Parent-owned independent review and browser checks are pending at this handoff. Native SDK/UI
-  integration, actual Google sign-in, and Activity recreation still require physical-device proof.
+First configure the approved Firebase/App Check/Play service-account prerequisites, product and license testers, and install the correctly signed internal bundle. The operator—not this implementation—then backs up/migrates using the existing backend procedure and enables billing for the internal test window. Execute real-device license-tester purchase, pending, cancellation, restore, expiry and refund checks after that activation. Keep production disabled until those results and privacy/retention/deletion/store obligations are reviewed. Successful local compilation is not an activation approval or a production-readiness claim.

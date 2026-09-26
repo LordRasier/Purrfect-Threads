@@ -6,7 +6,7 @@ export function accountPresentation(state: AccountState) {
   const messages = {
     unavailable: 'Account connection is unavailable in this build.',
     'signed-out': 'No account connected on this device.',
-    'signed-in': 'Google account connected. Purchases are still unavailable.',
+    'signed-in': 'Google account connected. Use Restore purchases to check the verification service.',
     busy: 'A previous account request is finishing. Check status again shortly.',
   };
   const notices = {
@@ -26,7 +26,7 @@ export function accountCard(state = unavailableAccount): string {
   const view = accountPresentation(state);
   return `<section class="account-card" aria-labelledby="account-title" data-account-card>
     <h2 id="account-title" class="eyebrow">${tr('ACCOUNT')}</h2>
-    <p id="account-disclosure">${tr('Google/Firebase processes account identifiers to prepare purchase linking. Saved games are not synced. Purchases are unavailable in this alpha.')}</p>
+    <p id="account-disclosure">${tr('Google/Firebase processes account identifiers and App Check signals to verify optional purchases. Saved games are not synced. Purchases require an available verification service.')}</p>
     <p id="account-status" role="status" aria-live="polite">${view.message}</p>
     <div class="account-actions"><button id="account-action" class="soft-button" data-action="${view.action}" aria-describedby="account-disclosure account-status" ${view.disabled ? 'disabled' : ''}>${view.label}</button>
     <button id="account-refresh" class="soft-button" data-action="account-refresh" ${view.refresh ? '' : 'hidden'} ${state.pending ? 'disabled' : ''}>${tr('Check account status')}</button></div>

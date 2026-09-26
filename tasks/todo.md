@@ -27,3 +27,12 @@
 - [ ] Parent independent review and browser verification.
 - [x] Local OAuth configuration updated (device proof still required).
 - [ ] Deployed privacy/account-deletion and real-device verification gates before release.
+
+## Purchase vertical slice
+- [x] Confirm fixed backend host from user: https://www.auraliax.com/ (routes currently unavailable).
+- [x] RED for absent native cache policy; approve same-boot authenticated offline recovery.
+- [x] Native transport, secure settlement cache and BillingClient lifecycle.
+- [x] Purchase/restore UI and accurate privacy/offline disclosures.
+- [x] Web tests/build/sync (215); default/opt-in Android tests/debug (42 each); opt-in R8 bundle and release lint (0 errors/19 warnings).
+- [x] Independent source review and web browser checks (parent/reviewer reported no source blockers).
+- [ ] Real-device license-tester purchase/recovery/refund proof (not performed).

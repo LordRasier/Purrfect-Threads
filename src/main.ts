@@ -1,7 +1,8 @@
 import { AccountController, createAccountPort } from './platform/account';
 import { Capacitor } from '@capacitor/core';
-import { billing } from './platform/billing';
-import { shopUnavailable } from './ui/shop';
+import { BillingController, createBillingPort } from './platform/billing';
+import { applyCrewCredit, CrewCreditDelivery } from './game/crew-credit';
+import { billingMessage } from './ui/shop';
 import { initializeAds, showPrivacyOptions } from './platform/ads';
 import { CompanionChat } from './ui/companion-chat';
 import { FallingCat } from './ui/falling-cat';
@@ -18,7 +19,7 @@ import './ui/tablet.css';
 import './ui/upgrade-tree.css';
 import { upgradeRequirement } from './ui/upgrade-tree';
 import { PRODUCERS, UPGRADES, TALENTS, COATS } from './game/catalog';
-import { advance, activeCompanion, grantBonus, buyProducer, buyUpgrade, createGame, tap, tapValue, criticalChance, upgradeCost, type GameState } from './game/engine';
+import { advance, production, activeCompanion, grantBonus, buyProducer, buyUpgrade, createGame, tap, tapValue, criticalChance, upgradeCost, type GameState } from './game/engine';
 import { applyOffline, buyTalent, prestige, prestigeReward, selectCoat } from './game/progression';
 import { BACKUP_KEY, SAVE_KEY, decode, encode, loadGame, saveGame, type StoragePort } from './game/storage';
 import { CozyAudio } from './audio';
@@ -111,12 +112,33 @@ async function start(session: Session): Promise<void> {
   let seenAchievements = new Set(game.achievements);
   let seenCompanions = new Set(game.collection);
   const ui = new GameUI(root, () => game, action);
+  const creditDelivery = new CrewCreditDelivery(() => document.hidden);
+  let minimumCreditRate = production(game);
+  const billing = new BillingController(createBillingPort(), () => {
+    const owner = game, rate = Decimal.min(minimumCreditRate, production(game));
+    const efficiency = activeCompanion(game)?.id === 'roman' ? 0.65 : 0.5;
+    minimumCreditRate = production(game);
+    return (foreground, offline) => creditDelivery.deliver(() => {
+      if (!session.active || game !== owner || foreground + offline <= 0) return;
+      applyCrewCredit(owner, foreground, offline, rate, efficiency); persist(); refresh();
+    });
+  }, () => { if (session.active) ui.setBillingState(billing.state); });
+  const billingTimer = window.setInterval(() => {
+    if (session.active && !document.hidden) void billing.run('status');
+  }, 1000);
+  const billingRefreshTimer = window.setInterval(() => {
+    if (session.active && !document.hidden) void billing.run('refresh');
+  }, 60000);
+  queueMicrotask(() => { if (session.active) void billing.run('status').then(() => billing.run('refresh')); });
+  window.addEventListener('pagehide', () => {
+    billing.dispose(); clearInterval(billingTimer); clearInterval(billingRefreshTimer);
+  }, { once: true });
   const account = new AccountController(createAccountPort(), () => {
     if (session.active) ui.setAccountState(account.state);
   });
   // Merely opening the shop reads inert status; only its explicit button signs in.
   root.addEventListener('screenchange', () => queueMicrotask(() => {
-    if (session.active && ui.screen === 'shop') void account.refresh();
+    if (session.active && ui.screen === 'shop') { void account.refresh(); void billing.run('refresh'); }
   }));
   window.addEventListener('pagehide', () => account.dispose(), { once: true });
   const chatHost = document.createElement('div');
@@ -168,6 +190,7 @@ async function start(session: Session): Promise<void> {
     if (newCompanions.length) persist();
     seenAchievements = new Set(game.achievements);
     document.body.classList.toggle('reduced-motion', reduced());
+    minimumCreditRate = Decimal.min(minimumCreditRate, production(game));
     world?.sync(game); ui.refresh();
     const sound = document.getElementById('sound-button')!;
     const audible = game.settings.volume > 0 || game.settings.musicVolume > 0;
@@ -222,7 +245,7 @@ async function start(session: Session): Promise<void> {
       stopHolding();
       ui.showDialog(`<span class="eyebrow">${text.chapter}</span><h2 id="modal-title">${text.resetTitle}</h2><p><strong>${text.reward(format(prestigeReward(game), 0))}</strong></p><p>${text.resetLose}</p><p>${text.resetKeep}</p><div class="dialog-actions"><button class="soft-button" data-action="close">${text.cancel}</button><button class="primary-button" data-action="confirm-prestige">${text.confirm}</button></div>`);
     } else if (kind === 'confirm-prestige') {
-      if (prestige(game)) { ui.dialog.close(); changed(text.freshStart); }
+      if (prestige(game)) { billing.invalidateCredits(); ui.dialog.close(); changed(text.freshStart); }
     } else if (kind === 'privacy') {
       stopHolding(); ui.showPrivacy();
     } else if (kind === 'ads-privacy') {
@@ -234,11 +257,12 @@ async function start(session: Session): Promise<void> {
       stopHolding(); showSettings();
     } else if (kind === 'account-connect' || kind === 'account-disconnect' || kind === 'account-refresh') {
       stopHolding();
-      void (kind === 'account-connect' ? account.connect() : kind === 'account-disconnect' ? account.disconnect() : account.refresh());
+      billing.disconnect();
+      void (kind === 'account-connect' ? account.connect() : kind === 'account-disconnect' ? account.disconnect() : account.refresh()).then(() => billing.run('refresh'));
     } else if (kind === 'shop-purchase' || kind === 'shop-restore') {
       stopHolding();
-      void (kind === 'shop-purchase' ? billing.purchase() : billing.restore()).then(() => {
-        if (session.active) ui.toast(shopUnavailable());
+      void billing.run(kind === 'shop-purchase' ? 'purchase' : 'restore').then(() => {
+        if (session.active) ui.toast(billingMessage(billing.state));
       });
     } else if (kind === 'sound') {
       const audible = game.settings.volume > 0 || game.settings.musicVolume > 0;
@@ -291,7 +315,7 @@ async function start(session: Session): Promise<void> {
       settle(); download(encode(game), 'purrfect-threads-before-import.json');
       applyOffline(incoming, Date.now());
       if (storage) saveGame(storage, incoming, Date.now());
-      game = incoming; previous = performance.now();
+      billing.invalidateCredits(); game = incoming; minimumCreditRate = production(game); previous = performance.now();
       seenCompanions = new Set(game.collection); seenAchievements = new Set(game.achievements);
       setLanguage(game.settings.language); ui.localizeShell(); music.setVolume(game.settings.musicVolume);
       ui.dialog.close(); changed(text.imported);
@@ -311,7 +335,9 @@ async function start(session: Session): Promise<void> {
     if (document.hidden) hide();
     else if (session.active) {
       music.setVisible(true);
+      void billing.run('status').then(() => billing.run('refresh'));
       const amount = applyOffline(game, Date.now());
+      creditDelivery.flush();
       previous = performance.now(); suspended = false; persist(); refresh(amount.gte(1) ? text.offline(format(amount)) : undefined);
     }
   });

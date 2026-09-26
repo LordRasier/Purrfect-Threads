@@ -1,7 +1,8 @@
 import { unavailableAccount, updateAccountCard } from './account';
 import type { AccountState } from '../platform/account';
 import { privacyContent } from './privacy';
-import { shopPanel } from './shop';
+import { shopPanel, updateShop } from './shop';
+import { unavailableBilling, type BillingState } from '../platform/billing';
 import { upgradeRequirement } from './upgrade-tree';
 import { mountUpgradeBoard } from './upgrade-board';
 import './achievement-notifications.css';
@@ -21,6 +22,8 @@ import { crewPanel, upgradePanel, chapterPanel, collectionPanel, achievementsPan
 export type Screen = 'workshop' | 'crew' | 'upgrades' | 'achievements' | 'collection' | 'chapter' | 'shop';
 export class GameUI {
   screen: Screen = 'workshop';
+  private billingState: BillingState = unavailableBilling;
+  setBillingState(state: BillingState): void { this.billingState = state; updateShop(this.root, state); }
   private accountState: AccountState = unavailableAccount;
   setAccountState(state: AccountState): void {
     this.accountState = state;
@@ -164,7 +167,7 @@ export class GameUI {
     this.root.querySelector('.tablet-stage')!.setAttribute('aria-hidden', String(sky));
     this.panel.dataset.screen = this.screen;
     this.root.classList.toggle('olympus-open', this.screen === 'chapter');
-    const panels = { workshop: () => '', crew: () => crewPanel(game), upgrades: () => upgradePanel(game), achievements: () => achievementsPanel(game, this.achievementCategory), collection: () => collectionPanel(game), chapter: () => chapterPanel(), shop: () => shopPanel(this.accountState) };
+    const panels = { workshop: () => '', crew: () => crewPanel(game), upgrades: () => upgradePanel(game), achievements: () => achievementsPanel(game, this.achievementCategory), collection: () => collectionPanel(game), chapter: () => chapterPanel(), shop: () => shopPanel(this.accountState, this.billingState) };
     this.panel.innerHTML = panels[this.screen]();
     if (this.screen === 'upgrades') this.disposeUpgradeBoard = mountUpgradeBoard(this.panel, this.game);
     if (focused) document.getElementById(focused)?.focus({ preventScroll: true });
