@@ -14,6 +14,14 @@ test('only opening each unlocked patch clears its unread status, including after
   const nav = page.locator('.navigation [data-screen="achievements"]');
   const count = page.locator('#achievement-unread-count');
   await expect(count).toHaveText('2');
+  await expect(count).toHaveCSS('position', 'relative');
+  await expect(count).toHaveCSS('background-image', /data:image\/svg\+xml/);
+  await expect(nav.locator(':scope > .icon')).toBeHidden();
+  const number = await count.boundingBox();
+  const button = await nav.boundingBox();
+  expect(number!.x).toBeGreaterThanOrEqual(button!.x);
+  expect(number!.y).toBeGreaterThanOrEqual(button!.y);
+  expect(number!.y + number!.height).toBeLessThanOrEqual(button!.y + button!.height);
   await nav.click();
   await expect(count).toHaveText('2');
   await page.locator('#achievement-paw-marathon').click();
@@ -30,4 +38,5 @@ test('only opening each unlocked patch clears its unread status, including after
   await nav.click();
   await page.locator('#achievement-persistent-paws').click();
   await expect(count).toBeHidden();
+  await expect(nav.locator(':scope > .icon')).toBeVisible();
 });

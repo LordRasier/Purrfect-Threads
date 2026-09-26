@@ -2,18 +2,19 @@
 .tablet-app .navigation #achievement-unread-count:not([hidden]) {
   display:grid;
   place-items:center;
-  position:absolute;
-  top:2px;
-  left:calc(50% - 18px);
-  min-width:16px;
-  height:16px;
-  padding:0 3px;
-  border:2px solid #fffaf0;
-  border-radius:999px;
-  background:#b42318;
+  position:relative;
+  order:-1;
+  flex:none;
+  width:30px;
+  height:28px;
+  padding:0 0 3px;
+  border:0;
+  border-radius:0;
+  background: center / 100% 100% no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23b42318' d='M12 21S2 15 2 8c0-6 8-7 10-1 2-6 10-5 10 1 0 7-10 13-10 13Z'/%3E%3C/svg%3E");
   color:#fff;
-  font-size:10px;
+  font-size:11px;
+  font-variant-numeric:tabular-nums;
   font-weight:800;
   line-height:1;
 }
-.tablet-app .navigation button[data-screen="achievements"]:has(#achievement-unread-count:not([hidden])) > .icon { color:#b42318; }
+.tablet-app .navigation button[data-screen="achievements"]:has(#achievement-unread-count:not([hidden])) > .icon { display:none; }
