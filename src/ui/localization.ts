@@ -6,7 +6,7 @@ let language: Language = 'en';
 
 const sourceCatalog: Record<string, string> = {
   'Drag the board. Hover or focus a note; tap for details.': 'Arrastra el tablero. Pasa el cursor o enfoca una nota; tócala para ver detalles.',
-  'Move the upgrade board': 'Mover el tablero de mejoras',
+  'Move the upgrade board': 'Mover el tablero de mejoras', 'Zoom the upgrade board': 'Acercar el tablero de mejoras', 'Zoom out': 'Alejar', 'Zoom in': 'Acercar', 'Fit all upgrades': 'Ver todas las mejoras', 'Fit': 'Ver todo',
   'Pan left': 'Mover a la izquierda', 'Pan right': 'Mover a la derecha',
   'Pan up': 'Mover hacia arriba', 'Pan down': 'Mover hacia abajo',
   'Center on Helping Thread': 'Centrar en Hilo de ayuda',

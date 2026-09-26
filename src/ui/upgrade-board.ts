@@ -1,10 +1,14 @@
 import type { UpgradeId } from '../game/catalog';
 import type { GameState } from '../game/engine';
-import { NOTE_SIZE, TREE_PINS, upgradeTooltip } from './upgrade-tree';
+import { NOTE_SIZE, TREE_PINS, TREE_SIZE, upgradeTooltip } from './upgrade-tree';
+import { anchorZoom, clampZoom, fitZoom } from './upgrade-zoom';
 
 /** Owns one rendered board, including its tooltip outside the scroll clip. */
 export function mountUpgradeBoard(host: HTMLElement, game: () => GameState): () => void {
   const viewport = host.querySelector<HTMLElement>('.tree-scroll')!;
+  const surface = host.querySelector<HTMLElement>('.tree-zoom-surface')!;
+  const canvas = host.querySelector<HTMLElement>('.upgrade-tree')!;
+  const zoomOutput = host.querySelector<HTMLOutputElement>('[data-zoom-level]')!;
   const lifetime = new AbortController(), options = { signal: lifetime.signal };
   const tooltip = document.createElement('div');
   tooltip.id = 'upgrade-tooltip'; tooltip.className = 'tree-tooltip';
@@ -13,12 +17,35 @@ export function mountUpgradeBoard(host: HTMLElement, game: () => GameState): () 
   let suppressClick = false;
   let suppressHover = false;
   let tapTimer = 0;
+  let zoom = 1;
+  let offsetX = 0;
+  let offsetY = 0;
+  let fitted = false;
   let drag: { id: number; x: number; y: number; left: number; top: number; moved: boolean; note: HTMLButtonElement | null } | null = null;
   const noteAt = (target: EventTarget | null) => target instanceof Element ? target.closest<HTMLButtonElement>('.sticky-note') : null;
+  const applyZoom = (next: number, clientX = viewport.clientWidth / 2, clientY = viewport.clientHeight / 2) => {
+    const to = clampZoom(next);
+    const scaledWidth = TREE_SIZE.width * to, scaledHeight = TREE_SIZE.height * to;
+    const nextOffsetX = Math.max(0, (viewport.clientWidth - scaledWidth) / 2);
+    const nextOffsetY = Math.max(0, (viewport.clientHeight - scaledHeight) / 2);
+    const anchored = anchorZoom({ scrollLeft: viewport.scrollLeft, scrollTop: viewport.scrollTop, pointerX: clientX, pointerY: clientY, from: zoom, to, fromOffsetX: offsetX, fromOffsetY: offsetY, toOffsetX: nextOffsetX, toOffsetY: nextOffsetY });
+    zoom = to;
+    offsetX = nextOffsetX; offsetY = nextOffsetY;
+    surface.style.width = `${Math.max(scaledWidth, viewport.clientWidth)}px`; surface.style.height = `${Math.max(scaledHeight, viewport.clientHeight)}px`;
+    canvas.style.transform = `translate(${offsetX}px,${offsetY}px) scale(${zoom})`;
+    zoomOutput.value = `${Math.round(zoom * 100)}%`; zoomOutput.textContent = zoomOutput.value;
+    viewport.scrollLeft = anchored.left; viewport.scrollTop = anchored.top;
+    position();
+  };
   const center = (id: UpgradeId) => {
     const [x, y] = TREE_PINS[id];
-    viewport.scrollLeft = x - viewport.clientWidth / 2;
-    viewport.scrollTop = y + NOTE_SIZE / 2 - viewport.clientHeight / 2;
+    viewport.scrollLeft = offsetX + x * zoom - viewport.clientWidth / 2;
+    viewport.scrollTop = offsetY + (y + NOTE_SIZE / 2) * zoom - viewport.clientHeight / 2;
+  };
+  const fit = (reveal = false) => {
+    fitted = true;
+    applyZoom(fitZoom({ canvasWidth: TREE_SIZE.width, canvasHeight: TREE_SIZE.height, viewportWidth: viewport.clientWidth, viewportHeight: viewport.clientHeight, padding: 16 }));
+    if (reveal) viewport.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   };
   const hide = () => {
     activeNote?.setAttribute('aria-describedby', `upgrade-state-${activeNote.dataset.id}`);
@@ -78,6 +105,13 @@ export function mountUpgradeBoard(host: HTMLElement, game: () => GameState): () 
     event.preventDefault(); hide();
     viewport.scrollLeft = drag.left - dx; viewport.scrollTop = drag.top - dy;
   }, options);
+  viewport.addEventListener('wheel', event => {
+    if (event.ctrlKey || event.metaKey || event.deltaY === 0 || drag) return;
+    event.preventDefault();
+    const board = viewport.getBoundingClientRect();
+    fitted = false;
+    applyZoom(zoom * (event.deltaY < 0 ? 1.1 : 1 / 1.1), event.clientX - board.left, event.clientY - board.top);
+  }, { ...options, passive: false });
   // Also end sub-threshold gestures released outside the uncaptured viewport.
   window.addEventListener('pointerup', event => finish(event), options);
   window.addEventListener('pointercancel', event => finish(event, true), options);
@@ -94,7 +128,9 @@ export function mountUpgradeBoard(host: HTMLElement, game: () => GameState): () 
   }, options);
   viewport.addEventListener('focusin', event => {
     const note = noteAt(event.target); if (!note || drag) return;
-    suppressClick = suppressHover = false; center(note.dataset.id as UpgradeId); show(note);
+    suppressClick = suppressHover = false;
+    if (zoom < 1) { fitted = false; applyZoom(1); }
+    center(note.dataset.id as UpgradeId); show(note);
   }, options);
   viewport.addEventListener('focusout', hide, options);
   document.addEventListener('keydown', event => { if (event.key === 'Escape') hide(); }, options);
@@ -104,19 +140,26 @@ export function mountUpgradeBoard(host: HTMLElement, game: () => GameState): () 
   host.querySelectorAll<HTMLButtonElement>('[data-pan]').forEach(button => button.addEventListener('click', () => {
     hide();
     switch (button.dataset.pan) {
-      case 'home': center('hold'); break;
+      case 'home': fitted = false; applyZoom(1); center('hold'); break;
       case 'left': viewport.scrollLeft -= 180; break;
       case 'right': viewport.scrollLeft += 180; break;
       case 'up': viewport.scrollTop -= 180; break;
       case 'down': viewport.scrollTop += 180; break;
     }
   }, options));
+  host.querySelectorAll<HTMLButtonElement>('[data-zoom]').forEach(button => button.addEventListener('click', () => {
+    hide();
+    if (button.dataset.zoom === 'fit') { fit(true); return; }
+    fitted = false; applyZoom(zoom * (button.dataset.zoom === 'in' ? 1.1 : 1 / 1.1));
+  }, options));
+  const resizeObserver = new ResizeObserver(() => { if (fitted) fit(); else applyZoom(zoom); });
+  resizeObserver.observe(viewport);
   const dispose = () => {
-    lifetime.abort(); clearTimeout(tapTimer);
+    lifetime.abort(); resizeObserver.disconnect(); clearTimeout(tapTimer);
     if (drag && viewport.hasPointerCapture(drag.id)) viewport.releasePointerCapture(drag.id);
     drag = null; viewport.classList.remove('is-dragging'); tooltip.remove();
   };
   window.addEventListener('pagehide', dispose, { ...options, once: true });
-  center('hold');
+  applyZoom(1); center('hold');
   return dispose;
 }

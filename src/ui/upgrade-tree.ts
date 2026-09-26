@@ -39,14 +39,15 @@ export function upgradeTree(game: GameState): string {
     return [`<path data-from="${parent}" data-to="${item.id}" d="M ${x1} ${y1} Q ${(x1 + x2) / 2} ${(y1 + y2) / 2 + 10} ${x2} ${y2}"/>`];
   }).join('');
   return `<div class="tree-toolbar"><p class="tree-guide" id="tree-guide">${tr('Drag the board. Hover or focus a note; tap for details.')}</p>
-    <div class="tree-controls" role="group" aria-label="${tr('Move the upgrade board')}">${(['left', 'up', 'home', 'down', 'right'] as const).map(direction => `<button type="button" data-pan="${direction}" aria-label="${tr({left:'Pan left',up:'Pan up',home:'Center on Helping Thread',down:'Pan down',right:'Pan right'}[direction])}">${icon(direction === 'home' ? 'yarn' : 'arrow')}</button>`).join('')}</div></div>
+    <div class="tree-toolbar-actions"><div class="tree-zoom-controls" role="group" aria-label="${tr('Zoom the upgrade board')}"><button type="button" data-zoom="out" aria-label="${tr('Zoom out')}">−</button><output data-zoom-level aria-live="polite">100%</output><button type="button" data-zoom="in" aria-label="${tr('Zoom in')}">+</button><button type="button" data-zoom="fit" aria-label="${tr('Fit all upgrades')}">${tr('Fit')}</button></div>
+    <div class="tree-controls" role="group" aria-label="${tr('Move the upgrade board')}">${(['left', 'up', 'home', 'down', 'right'] as const).map(direction => `<button type="button" data-pan="${direction}" aria-label="${tr({left:'Pan left',up:'Pan up',home:'Center on Helping Thread',down:'Pan down',right:'Pan right'}[direction])}">${icon(direction === 'home' ? 'yarn' : 'arrow')}</button>`).join('')}</div></div></div>
     <div class="tree-scroll" tabindex="0" role="region" aria-label="${tr('Upgrade tree')}" aria-describedby="tree-guide">
-    <div class="upgrade-tree" style="width:${TREE_SIZE.width}px;height:${TREE_SIZE.height}px"><svg class="tree-strings" width="${TREE_SIZE.width}" height="${TREE_SIZE.height}" viewBox="0 0 ${TREE_SIZE.width} ${TREE_SIZE.height}" aria-hidden="true">${strings}</svg>
+    <div class="tree-zoom-surface" style="width:${TREE_SIZE.width}px;height:${TREE_SIZE.height}px"><div class="upgrade-tree" style="width:${TREE_SIZE.width}px;height:${TREE_SIZE.height}px"><svg class="tree-strings" width="${TREE_SIZE.width}" height="${TREE_SIZE.height}" viewBox="0 0 ${TREE_SIZE.width} ${TREE_SIZE.height}" aria-hidden="true">${strings}</svg>
     ${UPGRADES.map((item, index) => {
       const [x, y] = TREE_PINS[item.id];
       return `<button class="upgrade sticky-note note-${index % 4}${item.id === 'hold' ? ' tree-root' : ''}" style="left:${x - NOTE_SIZE / 2}px;top:${y}px" id="upgrade-${item.id}" data-action="upgrade-info" data-id="${item.id}" aria-label="${text.inspect} ${tr(item.name)}" aria-describedby="upgrade-state-${item.id}">
         <span class="note-pin" aria-hidden="true"></span><span class="note-cat" aria-hidden="true">${icon(item.icon)}</span><span class="tree-lock" aria-hidden="true">${icon('lock')}</span>
         <span class="sr-only" id="upgrade-price-${item.id}">${format(upgradeCost(game, item))}</span>
         <span class="sr-only" id="upgrade-state-${item.id}">${upgradeRequirement(game, item.id) || tr('Ready to learn')}</span></button>`;
-    }).join('')}</div></div>`;
+    }).join('')}</div></div></div>`;
 }

@@ -27,3 +27,9 @@ Forge of Paws counts only the original twelve effectful milestones. The migrated
 ## Verification
 
 Unit tests cover all graph paths, isolated/additive bonuses for all ten producers, ascending/scaled prices, every-node reset, purchase gates, migration, unchanged legacy output/counters, and both input sources. Browser tests cover hover/focus/tap, mouse/finger drag, outside-viewport release, all string endpoints, document overflow, keyboard focus, fresh/legacy reloads, desktop/mobile screenshots, and shop-status spacing.
+
+## Zoom follow-up
+
+The board now scales its canvas through a sized wrapper and origin-at-zero transform, so zoomed strings and notes share scroll bounds without widening the document. Wheel zoom anchors the pointer but leaves Ctrl/Command-wheel to browser zoom. Accessible controls expose zoom percentage, +/- steps, fit-all, and the existing root-center action; fit recalculates after viewport resize while it remains active. Keyboard focus restores at least 100% before centering a note, preserving readable inspection targets.
+
+Verification adds pure clamp, pointer-anchor, and fit math tests plus desktop/mobile browser coverage for fit bounds, controls, wheel behavior, drag suppression, and screenshots.
