@@ -13,7 +13,7 @@ describe('home companions', () => {
       'The grumpy boss. Always has a complaint.',
       'All cuddles, not a single clever thought.',
       'A sleepy, chubby sweetheart.',
-      'Fluffy, feisty, and always pestering someone.',
+      'Fluffy, determined, and a little persistent.',
       'Tiny paws. The sweetest heart.',
       'A lovable klutz. Trouble follows every step.',
     ]);

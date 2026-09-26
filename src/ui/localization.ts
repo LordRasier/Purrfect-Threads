@@ -18,7 +18,7 @@ const sourceCatalog: Record<string, string> = {
   'The grumpy boss. Always has a complaint.': 'La jefa gruñona. Siempre tiene alguna queja.',
   'All cuddles, not a single clever thought.': 'Todo mimos y pocas ideas brillantes.',
   'A sleepy, chubby sweetheart.': 'Gordito, dormilón y muy mimoso.',
-  'Fluffy, feisty, and always pestering someone.': 'Peludo, peleonero y siempre molestando a alguien.',
+  'Fluffy, determined, and a little persistent.': 'Peludo, decidido y un poco insistente.',
   'Tiny paws. The sweetest heart.': 'Patitas pequeñas. Un corazón muy dulce.',
   'A lovable klutz. Trouble follows every step.': 'Un torpe adorable. Cada paso trae una travesura.',
   'All passive production +10%.': '+10% de toda la producción automática.',

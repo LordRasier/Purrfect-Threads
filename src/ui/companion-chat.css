@@ -1,0 +1,19 @@
+/* Parent places this in normal layout beneath the home actions, reserving space without covering play controls. */
+.companion-chat-host { flex:none; min-height:72px; display:flex; align-items:flex-end; justify-content:flex-end; margin:8px 0 0; }
+.companion-chat { z-index:1; max-width:min(290px,100%); display:flex; gap:9px; align-items:center; padding:8px 11px 8px 8px; border:1px solid #d8c7a7; border-radius:18px; background:#fffaf1ef; color:#4c4032; box-shadow:0 5px 18px #46331d20; pointer-events:none; }
+.companion-chat[hidden] { display:none; }
+.companion-chat__portrait { width:42px; height:42px; flex:none; border-radius:50%; object-fit:cover; background:#eee1cc; }
+.companion-chat__content { min-width:0; }
+.companion-chat__name { display:block; font-family:Georgia,serif; font-size:12px; color:#6d5a40; }
+.companion-chat__text { margin:2px 0 0; font-size:12px; line-height:1.35; }
+@media (max-height:520px) and (orientation:landscape) { .companion-chat-host { min-height:48px; } .companion-chat { padding:5px 8px; } .companion-chat__portrait { width:32px; height:32px; } .companion-chat__text { font-size:11px; line-height:1.25; } }
+@media (prefers-reduced-motion: reduce) { .companion-chat { transition:none; } }
+
+/* Keep the landscape team shortcut beside, never under, companion messages. */
+@media (max-height:540px) and (min-width:600px) { .tablet-app .companion-chat-host { min-height:48px; padding-right:190px; justify-content:flex-start; } .tablet-app .companion-chat { max-width:min(440px,100%); } }
+
+
+/* Small phones trade a little scene height for complete, unobstructed messages. */
+@media (max-width:599px) and (max-height:650px) { .tablet-app .play-area .world { min-height:60px; } .tablet-app .companion-chat-host { min-height:60px; margin-top:4px; } .tablet-app .companion-chat { padding:6px 8px; } .tablet-app .companion-chat__text { font-size:11px; line-height:1.25; } }
+/* Native banners can leave a short portrait WebView; keep interaction and chat ahead of decorative copy. */
+@media (max-width:599px) and (max-height:550px) { .tablet-app .play-area .intro, .tablet-app .play-area .pull-hint { display:none; } }

@@ -1,0 +1,65 @@
+import { test, expect } from '@playwright/test';
+import { createGame } from '../src/game/engine';
+import { encode, SAVE_KEY } from '../src/game/storage';
+import { enterWorkshop } from './entry';
+
+test.setTimeout(60000);
+
+test('companion chat repeats in the workshop and hides on other screens and dialogs', async ({ page }, info) => {
+  const game = createGame(Date.now());
+  game.collection = [0]; game.coat = 0; game.settings.language = 'es'; game.settings.quality = 'low';
+  await page.addInitScript(({key, raw}) => localStorage.setItem(key, raw), {key: SAVE_KEY, raw: encode(game)});
+  await page.clock.install();
+  await page.goto('/'); await enterWorkshop(page);
+  await expect(page.locator('#world')).toHaveAttribute('data-ready', 'true', { timeout: 30000 });
+  await page.clock.runFor(100);
+  const bubble = page.locator('.companion-chat');
+  await expect(bubble).toBeHidden();
+  await page.clock.fastForward(91000);
+  await expect(bubble).toBeVisible();
+  await expect(bubble.locator('.companion-chat__name')).toHaveText('Kira');
+  const first = await bubble.locator('p').innerText();
+  await page.clock.fastForward(91000);
+  await expect(bubble.locator('p')).not.toHaveText(first);
+  const bounds = await bubble.boundingBox();
+  expect(bounds).not.toBeNull();
+  expect(bounds!.x).toBeGreaterThanOrEqual(0);
+  expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(page.viewportSize()!.width);
+  expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(page.viewportSize()!.height);
+  await page.screenshot({ path: `test-results/chat-${info.project.name}.png` });
+  // Stress the responsive container with a full-length localized thought.
+  await bubble.locator('p').evaluate(node => { node.textContent = 'Esta madeja estaba perfectamente ordenada hasta que decidí ayudar. Ahora parece una bufanda para seis gatos.'; });
+  await page.setViewportSize({width: 320, height: 568});
+  const phoneChat = await bubble.boundingBox();
+  const phoneArea = await page.locator('.play-area').boundingBox();
+  expect(phoneChat!.y + phoneChat!.height).toBeLessThanOrEqual(phoneArea!.y + phoneArea!.height);
+  const phoneButton = await page.locator('.home-actions button').boundingBox();
+  expect(phoneButton!.y + phoneButton!.height).toBeLessThanOrEqual(phoneChat!.y);
+  await expect(page.locator('.home-actions button')).toBeInViewport();
+  await page.screenshot({ path: `test-results/chat-small-phone-${info.project.name}.png` });
+  // Approximate a small Android WebView after reserving system bars and a banner.
+  await page.setViewportSize({width: 320, height: 480});
+  const compactChat = await bubble.boundingBox();
+  const compactArea = await page.locator('.play-area').boundingBox();
+  const compactButton = await page.locator('.home-actions button').boundingBox();
+  expect(compactChat!.y + compactChat!.height).toBeLessThanOrEqual(compactArea!.y + compactArea!.height);
+  expect(compactButton!.y + compactButton!.height).toBeLessThanOrEqual(compactChat!.y);
+  await page.setViewportSize({width: 844, height: 390});
+  const chatBounds = await bubble.boundingBox();
+  const buttonBounds = await page.locator('.home-actions button').boundingBox();
+  expect(chatBounds!.y + chatBounds!.height).toBeLessThanOrEqual(390);
+  const overlaps = chatBounds!.x < buttonBounds!.x + buttonBounds!.width && chatBounds!.x + chatBounds!.width > buttonBounds!.x && chatBounds!.y < buttonBounds!.y + buttonBounds!.height && chatBounds!.y + chatBounds!.height > buttonBounds!.y;
+  expect(overlaps).toBe(false);
+  await page.screenshot({ path: `test-results/chat-landscape-${info.project.name}.png` });
+  await page.locator('.navigation [data-screen="achievements"]').click();
+  await page.clock.runFor(100);
+  await expect(bubble).toBeHidden();
+  await page.clock.fastForward(91000);
+  await expect(bubble).toBeHidden();
+  await page.locator('.navigation [data-screen="workshop"]').click();
+  await page.clock.fastForward(91000);
+  await expect(bubble).toBeVisible();
+  await page.locator('[data-action="settings"]').first().click();
+  await page.clock.runFor(100);
+  await expect(bubble).toBeHidden();
+});
