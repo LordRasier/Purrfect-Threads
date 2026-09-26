@@ -228,6 +228,7 @@ export class GameUI {
         const card = document.getElementById(`achievement-${item.id}`); if (!card) continue;
         const earned = game.achievements.includes(item.id), progress = achievementProgress(game, item);
         card.classList.toggle('earned', earned);
+        card.classList.toggle('unread', earned && !game.readAchievements.includes(item.id));
         set(`badge-status-${item.id}`, earned ? text.unlocked : `${format(progress.value, 0)} / ${format(item.target, 0)}`);
         (document.getElementById(`badge-bar-${item.id}`) as HTMLElement).style.width = `${progress.ratio * 100}%`;
       }

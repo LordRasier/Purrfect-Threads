@@ -18,3 +18,34 @@
   line-height:1;
 }
 .tablet-app .navigation button[data-screen="achievements"]:has(#achievement-unread-count:not([hidden])) > .icon { display:none; }
+
+.achievement-card.achievement-patch.earned.unread {
+  position:relative;
+  border-color:#9c651b;
+  background:#fff1bf;
+  box-shadow:0 0 0 3px #fff8df,0 0 0 5px #d6aa50,0 0 22px 6px #f4c65da6,inset 0 0 16px #fffdf2;
+}
+.achievement-card.achievement-patch.earned.unread::after {
+  content:'✦';
+  position:absolute;
+  top:-10px;
+  right:4px;
+  display:grid;
+  place-items:center;
+  width:24px;
+  height:24px;
+  border:1px solid #b7802d;
+  border-radius:50%;
+  background:#fff8df;
+  color:#865310;
+  font-size:17px;
+  box-shadow:0 0 10px #f4c65d;
+}
+.achievement-story {
+  padding:16px 20px;
+  border:1px solid #e4d5b8;
+  border-radius:16px;
+  background:#faf3e4;
+  color:#625440;
+  line-height:1.65;
+}
