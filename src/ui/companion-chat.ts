@@ -6,16 +6,19 @@ export type VisibleCompanionLine = { id: CompanionId; name: string; text: string
 
 const names: Record<CompanionId, string> = { kira: 'Kira', mario: 'Mario', roman: 'Roman', luigi: 'Luigi', lola: 'Lola', biscocho: 'Biscuit' };
 const interval = (random: () => number) => 45 + random() * 45;
+const messageDuration = 12;
 
 /** A passive, loop-driven companion thought bubble. */
 export class CompanionChat {
   private elapsed = 0;
+  private remaining = 0;
   private due: number;
   private activeId: CompanionId | null = null;
   private activeLanguage: ChatLanguage | null = null;
   private readonly history = new Map<CompanionId, number[]>();
   private readonly bubble: HTMLElement | null;
   currentLine: VisibleCompanionLine | null = null;
+  get remainingRatio(): number { return this.remaining / messageDuration; }
 
   constructor(host: HTMLElement | null, private readonly random: () => number = Math.random) {
     this.due = interval(random);
@@ -36,7 +39,13 @@ export class CompanionChat {
       this.hide();
       return;
     }
-    this.elapsed += Math.max(0, deltaSeconds);
+    const delta = Math.max(0, deltaSeconds);
+    if (this.currentLine) {
+      this.remaining = Math.max(0, this.remaining - delta);
+      if (!this.remaining) this.hide();
+      else this.updateProgress();
+    }
+    this.elapsed += delta;
     if (this.elapsed < this.due) return;
     this.elapsed = 0;
     this.due = interval(this.random);
@@ -52,15 +61,21 @@ export class CompanionChat {
     const index = candidates[Math.min(candidates.length - 1, Math.floor(this.random() * candidates.length))];
     this.history.set(id, [...previous, index].slice(-5));
     this.currentLine = { id, name: names[id], text: lines[index][language], portrait: `${import.meta.env.BASE_URL}art/companions/${id}.webp` };
+    this.remaining = messageDuration;
     if (!this.bubble) return;
     this.bubble.querySelector<HTMLImageElement>('.companion-chat__portrait')!.src = this.currentLine.portrait;
     this.bubble.querySelector<HTMLImageElement>('.companion-chat__portrait')!.alt = '';
     this.bubble.querySelector<HTMLElement>('.companion-chat__name')!.textContent = this.currentLine.name;
     this.bubble.querySelector<HTMLElement>('.companion-chat__text')!.textContent = this.currentLine.text;
     this.bubble.hidden = false;
+    this.updateProgress();
   }
 
-  private hide(): void { this.currentLine = null; if (this.bubble) this.bubble.hidden = true; }
+  private updateProgress(): void {
+    const progress = this.bubble?.querySelector<HTMLProgressElement>('progress');
+    if (progress) progress.value = this.remainingRatio;
+  }
+  private hide(): void { this.currentLine = null; this.remaining = 0; if (this.bubble) this.bubble.hidden = true; }
   private createBubble(host: HTMLElement): HTMLElement {
     const bubble = document.createElement('aside');
     bubble.className = 'companion-chat'; bubble.hidden = true; bubble.setAttribute('aria-live', 'polite'); bubble.setAttribute('aria-atomic', 'true');
@@ -68,6 +83,7 @@ export class CompanionChat {
     const content = document.createElement('div'); content.className = 'companion-chat__content';
     const name = document.createElement('strong'); name.className = 'companion-chat__name';
     const text = document.createElement('p'); text.className = 'companion-chat__text';
-    content.append(name, text); bubble.append(image, content); host.append(bubble); return bubble;
+    const progress = document.createElement('progress'); progress.className = 'companion-chat__progress'; progress.max = 1; progress.value = 1; progress.setAttribute('aria-hidden', 'true');
+    content.append(name, text, progress); bubble.append(image, content); host.append(bubble); return bubble;
   }
 }

@@ -76,3 +76,19 @@ describe('CompanionChat eligibility and long-run selection', () => {
     }
   });
 });
+
+it('expires each message after twelve seconds, with a decreasing remaining ratio, and keeps speaking later', () => {
+  const chat = new CompanionChat(null, () => 0);
+  chat.update(0, 'kira', 'en', true);
+  chat.update(45, 'kira', 'en', true);
+  expect(chat.remainingRatio).toBe(1);
+  chat.update(6, 'kira', 'en', true);
+  expect(chat.remainingRatio).toBeCloseTo(0.5);
+  expect(chat.currentLine).not.toBeNull();
+  chat.update(6, 'kira', 'en', true);
+  expect(chat.remainingRatio).toBe(0);
+  expect(chat.currentLine).toBeNull();
+  chat.update(33, 'kira', 'en', true);
+  expect(chat.currentLine).not.toBeNull();
+  expect(chat.remainingRatio).toBe(1);
+});

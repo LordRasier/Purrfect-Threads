@@ -107,7 +107,7 @@ async function start(session: Session): Promise<void> {
   const ui = new GameUI(root, () => game, action);
   const chatHost = document.createElement('div');
   chatHost.className = 'companion-chat-host';
-  root.querySelector('.home-actions')!.after(chatHost);
+  root.querySelector('.stash')!.append(chatHost);
   const chat = new CompanionChat(chatHost);
   let adsStarted = false;
   window.addEventListener('pagehide', () => chat.dispose(), { once: true });

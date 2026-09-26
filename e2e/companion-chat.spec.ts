@@ -18,6 +18,15 @@ test('companion chat repeats in the workshop and hides on other screens and dial
   await page.clock.fastForward(91000);
   await expect(bubble).toBeVisible();
   await expect(bubble.locator('.companion-chat__name')).toHaveText('Kira');
+  await expect(page.locator('.stash .companion-chat')).toBeVisible();
+  const progress = bubble.locator('progress');
+  expect(Number(await progress.getAttribute('value'))).toBeGreaterThan(0.8);
+  expect(Number(await progress.getAttribute('value'))).toBeLessThanOrEqual(1);
+  await page.clock.fastForward(6000);
+  expect(Number(await progress.getAttribute('value'))).toBeGreaterThan(0);
+  expect(Number(await progress.getAttribute('value'))).toBeLessThan(0.6);
+  await page.clock.fastForward(6100);
+  await expect(bubble).toBeHidden();
   const first = await bubble.locator('p').innerText();
   await page.clock.fastForward(91000);
   await expect(bubble.locator('p')).not.toHaveText(first);
@@ -34,7 +43,7 @@ test('companion chat repeats in the workshop and hides on other screens and dial
   const phoneArea = await page.locator('.play-area').boundingBox();
   expect(phoneChat!.y + phoneChat!.height).toBeLessThanOrEqual(phoneArea!.y + phoneArea!.height);
   const phoneButton = await page.locator('.home-actions button').boundingBox();
-  expect(phoneButton!.y + phoneButton!.height).toBeLessThanOrEqual(phoneChat!.y);
+  expect(phoneChat!.y + phoneChat!.height).toBeLessThanOrEqual(phoneButton!.y);
   await expect(page.locator('.home-actions button')).toBeInViewport();
   await page.screenshot({ path: `test-results/chat-small-phone-${info.project.name}.png` });
   // Approximate a small Android WebView after reserving system bars and a banner.
@@ -43,7 +52,7 @@ test('companion chat repeats in the workshop and hides on other screens and dial
   const compactArea = await page.locator('.play-area').boundingBox();
   const compactButton = await page.locator('.home-actions button').boundingBox();
   expect(compactChat!.y + compactChat!.height).toBeLessThanOrEqual(compactArea!.y + compactArea!.height);
-  expect(compactButton!.y + compactButton!.height).toBeLessThanOrEqual(compactChat!.y);
+  expect(compactChat!.y + compactChat!.height).toBeLessThanOrEqual(compactButton!.y);
   await page.setViewportSize({width: 844, height: 390});
   const chatBounds = await bubble.boundingBox();
   const buttonBounds = await page.locator('.home-actions button').boundingBox();
