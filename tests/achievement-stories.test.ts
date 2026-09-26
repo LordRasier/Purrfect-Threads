@@ -11,7 +11,7 @@ describe('unread achievement stories', () => {
     for (const language of ['en', 'es'] as const) {
       const stories = ACHIEVEMENTS.map(item => achievementStory(item.id, language));
       expect(stories.every(story => story.trim().length > 15)).toBe(true);
-      expect(stories.every(story => story.length >= 65 && story.length <= 240)).toBe(true);
+      expect(stories.every(story => story.length >= 180 && story.length <= 420)).toBe(true);
       expect(new Set(stories).size).toBe(ACHIEVEMENTS.length);
     }
   });
