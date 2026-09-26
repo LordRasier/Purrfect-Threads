@@ -1,3 +1,5 @@
+import { Capacitor } from '@capacitor/core';
+import { initializeAds, showPrivacyOptions } from './platform/ads';
 import { achievementStory } from './game/achievement-stories';
 import { exportProgress } from './platform/export';
 import Decimal from 'break_infinity.js';
@@ -102,6 +104,16 @@ async function start(session: Session): Promise<void> {
   let seenAchievements = new Set(game.achievements);
   let seenCompanions = new Set(game.collection);
   const ui = new GameUI(root, () => game, action);
+  let adsStarted = false;
+  function showSettings(): void {
+    ui.showSettings();
+    if (Capacitor.getPlatform() !== 'android') return;
+    const privacy = document.createElement('button');
+    privacy.className = 'soft-button';
+    privacy.dataset.action = 'ads-privacy';
+    privacy.textContent = game.settings.language === 'es' ? 'Privacidad publicitaria' : 'Advertising privacy';
+    ui.dialog.append(privacy);
+  }
   const reduced = () => game.settings.reducedMotion || motionPreference.matches;
   const held = new HoldInput(pull);
   const stopHolding = () => held.cancel();
@@ -187,8 +199,13 @@ async function start(session: Session): Promise<void> {
       if (prestige(game)) { ui.dialog.close(); changed(text.freshStart); }
     } else if (kind === 'privacy') {
       stopHolding(); ui.showPrivacy();
+    } else if (kind === 'ads-privacy') {
+      stopHolding();
+      void showPrivacyOptions().then(status => {
+        if (session.active && (status.consentError || !status.privacyOptionsRequired)) ui.toast(game.settings.language === 'es' ? 'No hay opciones publicitarias disponibles en este momento.' : 'No advertising privacy options are available right now.');
+      }).catch(() => ui.toast(game.settings.language === 'es' ? 'No se pudieron abrir las opciones de privacidad.' : 'Privacy options could not be opened.'));
     } else if (kind === 'settings') {
-      stopHolding(); ui.showSettings();
+      stopHolding(); showSettings();
     } else if (kind === 'sound') {
       const audible = game.settings.volume > 0 || game.settings.musicVolume > 0;
       game.settings.volume = audible ? 0 : 0.35; game.settings.musicVolume = audible ? 0 : 0.2;
@@ -220,7 +237,7 @@ async function start(session: Session): Promise<void> {
     if (target.id === 'volume') game.settings.volume = Math.max(0, Math.min(1, Number(target.value)));
     if (target.id === 'music-volume') { game.settings.musicVolume = Math.max(0, Math.min(1, Number(target.value))); music.setVolume(game.settings.musicVolume); }
     if (target.id === 'language' && (target.value === 'en' || target.value === 'es')) {
-      game.settings.language = target.value; setLanguage(target.value); ui.localizeShell(); ui.renderPanel(); ui.showSettings(); document.getElementById('language')?.focus();
+      game.settings.language = target.value; setLanguage(target.value); ui.localizeShell(); ui.renderPanel(); showSettings(); document.getElementById('language')?.focus();
     }
     if (target.id === 'motion') game.settings.reducedMotion = (target as HTMLInputElement).checked;
     if (target.id === 'quality' && ['auto', 'low', 'high'].includes(target.value)) game.settings.quality = target.value as GameState['settings']['quality'];
@@ -281,6 +298,11 @@ async function start(session: Session): Promise<void> {
     previous = now;
     if (!suspended && session.active) {
       advance(game, delta);
+      if (!ui.launching && !ui.dialog.open && !adsStarted) {
+        adsStarted = true;
+        // Advertising failure never blocks play. Native UMP owns consent and request gating.
+        void initializeAds().catch(() => {});
+      }
       held.flush(now);
       if (now - lastUI >= 160) { refresh(); lastUI = now; }
       syncOlympus();

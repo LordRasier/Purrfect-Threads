@@ -3,6 +3,8 @@
 ## Status
 Implemented for local testing; not approved for store publication.
 
+The original no-network/no-advertising decision below is superseded for the Android advertising development build by [Android banner ads and consent](../ANDROID_ADS.md). The bundled game and progress remain offline-capable; Google advertising requires network access. Production ads remain disabled pending release review.
+
 ## Decision
 Use Capacitor 8.5.2 with the existing Vite/Three.js game bundled in `dist`.
 This avoids rewriting the game and does not depend on a hosted page or live-update service.
