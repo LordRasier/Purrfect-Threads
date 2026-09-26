@@ -1,6 +1,7 @@
 import { Capacitor } from '@capacitor/core';
 import { initializeAds, showPrivacyOptions } from './platform/ads';
 import { CompanionChat } from './ui/companion-chat';
+import { FallingCat } from './ui/falling-cat';
 import { achievementStory } from './game/achievement-stories';
 import { exportProgress } from './platform/export';
 import Decimal from 'break_infinity.js';
@@ -12,7 +13,7 @@ import './ui/olympus.css';
 import './ui/companions.css';
 import './ui/tablet.css';
 import { PRODUCERS, UPGRADES, TALENTS, COATS } from './game/catalog';
-import { advance, activeCompanion, buyProducer, buyUpgrade, createGame, tap, tapValue, criticalChance, upgradeCost, type GameState } from './game/engine';
+import { advance, activeCompanion, grantBonus, buyProducer, buyUpgrade, createGame, tap, tapValue, criticalChance, upgradeCost, type GameState } from './game/engine';
 import { applyOffline, buyTalent, prestige, prestigeReward, selectCoat } from './game/progression';
 import { BACKUP_KEY, SAVE_KEY, decode, encode, loadGame, saveGame, type StoragePort } from './game/storage';
 import { CozyAudio } from './audio';
@@ -109,8 +110,14 @@ async function start(session: Session): Promise<void> {
   chatHost.className = 'companion-chat-host';
   root.querySelector('.stash')!.append(chatHost);
   const chat = new CompanionChat(chatHost);
+  const fallingCat = new FallingCat(ui.worldHost, () => {
+    grantBonus(game);
+    persist();
+    refresh(game.settings.language === 'es' ? '¡Gato lápiz atrapado! +5 de lana' : 'Pencil cat caught! +5 yarn');
+    audio.play(game.settings.volume, true);
+  });
   let adsStarted = false;
-  window.addEventListener('pagehide', () => chat.dispose(), { once: true });
+  window.addEventListener('pagehide', () => { chat.dispose(); fallingCat.dispose(); }, { once: true });
   function showSettings(): void {
     ui.showSettings();
     if (Capacitor.getPlatform() !== 'android') return;
@@ -274,6 +281,7 @@ async function start(session: Session): Promise<void> {
   function hide(): void {
     music.setVisible(false);
     chat.update(0, null, game.settings.language, false);
+    fallingCat.update(0, false, reduced(), game.settings.language);
     stopHolding();
     if (suspended || !session.active) return;
     settle(); persist(); suspended = true;
@@ -310,8 +318,9 @@ async function start(session: Session): Promise<void> {
         // Advertising failure never blocks play. Native UMP owns consent and request gating.
         void initializeAds().catch(() => {});
       }
-      chat.update(delta, activeCompanion(game)?.id ?? null, game.settings.language,
-        !ui.launching && ui.screen === 'workshop' && !ui.dialog.open && !importPending);
+      const workshopEligible = !ui.launching && ui.screen === 'workshop' && !ui.dialog.open && !importPending && !document.hidden;
+      chat.update(delta, activeCompanion(game)?.id ?? null, game.settings.language, workshopEligible);
+      fallingCat.update(delta, workshopEligible, reduced(), game.settings.language);
       held.flush(now);
       if (now - lastUI >= 160) { refresh(); lastUI = now; }
       syncOlympus();

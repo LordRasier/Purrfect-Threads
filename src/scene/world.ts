@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { ball, block, makeCat, makePlant, makeWorkshop, makeYarn, material, shape, tube, visibleCatCount, type CatModel } from './models';
+import { ball, block, makeCat, makePlant, makeSleepingCloud, makeWorkshop, makeYarn, material, shape, tube, visibleCatCount, type CatModel } from './models';
 import { activeCompanion, population, type GameState } from '../game/engine';
 import { CompanionPortrait } from './companion';
 
@@ -96,9 +96,7 @@ export class WorkshopWorld {
     loom.position.set(0.4, 0.05, -2.9); loom.rotation.y = 0.18; this.growth.add(loom); this.structures.push(loom);
     const annex = makeWorkshop(); annex.scale.setScalar(0.53); annex.position.set(2.15, 0.05, -2.65);
     this.growth.add(annex); this.structures.push(annex);
-    const cloud = new THREE.Group();
-    for (let i = 0; i < 5; i++) ball(cloud, '#f6efe7', [(i - 2) * 0.33, i % 2 * 0.18, 0], [0.38, 0.25, 0.32]);
-    block(cloud, '#c2b0d3', [0, 0.4, 0], [0.78, 0.40, 0.6]);
+    const cloud = makeSleepingCloud();
     cloud.position.set(1.0, 3.25, -2.0); this.growth.add(cloud); this.structures.push(cloud);
   }
 

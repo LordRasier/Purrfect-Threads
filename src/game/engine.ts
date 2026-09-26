@@ -119,6 +119,15 @@ export function criticalChance(game: GameState): number {
   return Math.min(25, chance) / 100;
 }
 
+/** Fixed active-event reward: it contributes to ordinary earned/run totals, never tap stats. */
+export function grantBonus(game: GameState): Decimal {
+  const amount = new Decimal(5);
+  earn(game, amount);
+  updateCollection(game);
+  updateAchievements(game);
+  return amount;
+}
+
 export function tap(game: GameState, now: number, random: () => number = Math.random): Decimal {
   if (!Number.isFinite(now) || now - game.lastTap < 200) return new Decimal(0);
   game.lastTap = now;

@@ -56,6 +56,37 @@ function bake(group: THREE.Group): THREE.Group {
   return result;
 }
 
+/** Static sleeping silhouette, baked by material like the other workshop props. */
+export function makeSleepingCloud(): THREE.Group {
+  const cloud = new THREE.Group();
+  const puffs = new THREE.Group();
+  for (let i = 0; i < 5; i++) ball(puffs, '#f6efe7', [(i - 2) * 0.33, i % 2 * 0.18, 0], [0.38, 0.25, 0.32]);
+  cloud.add(bake(puffs));
+  const cat = new THREE.Group();
+  const fur = '#b4a0c7';
+  ball(cat, fur, [0.12, 0.43, 0], [0.60, 0.25, 0.35]);
+  ball(cat, fur, [-0.35, 0.61, 0.20], [0.32, 0.27, 0.27]);
+  for (const x of [-0.55, -0.16]) {
+    shape(cat, new THREE.ConeGeometry(0.13, 0.26, 3), fur, [x, 0.86, 0.17]);
+    shape(cat, new THREE.ConeGeometry(0.075, 0.16, 3), '#edc1bd', [x, 0.86, 0.22]);
+  }
+  for (const x of [-0.48, -0.23]) {
+    ball(cat, '#f6efe7', [x, 0.32, 0.35], [0.14, 0.085, 0.16]);
+    shape(cat, tube([
+      new THREE.Vector3(x - 0.07, 0.64, 0.447),
+      new THREE.Vector3(x, 0.60, 0.476),
+      new THREE.Vector3(x + 0.07, 0.64, 0.447),
+    ], 0.017, 8), '#59485f', [0, 0, 0]);
+  }
+  ball(cat, '#edc1bd', [-0.35, 0.53, 0.466], [0.038, 0.025, 0.019]);
+  shape(cat, tube([
+    new THREE.Vector3(0.49, 0.42, -0.18), new THREE.Vector3(0.67, 0.36, 0.06),
+    new THREE.Vector3(0.39, 0.29, 0.34), new THREE.Vector3(0.03, 0.30, 0.35),
+  ], 0.10, 18), fur, [0, 0, 0]);
+  const sleeping = bake(cat); sleeping.name = 'sleeping-cat'; cloud.add(sleeping);
+  return cloud;
+}
+
 export interface CatModel { root: THREE.Group; paws: THREE.Object3D[]; tail: THREE.Object3D; head: THREE.Object3D }
 const templates = new Map<number, THREE.Group>();
 
