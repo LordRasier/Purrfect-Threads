@@ -1,4 +1,5 @@
 import Decimal from 'break_infinity.js';
+import { productionSeconds, type CrewEntitlement } from './shop';
 import { updateAchievements } from './achievements';
 import { COATS, PRODUCERS, UPGRADES, type ProducerId, type UpgradeId, type TalentId } from './catalog';
 
@@ -140,9 +141,9 @@ export function tap(game: GameState, now: number, random: () => number = Math.ra
   return amount;
 }
 
-export function advance(game: GameState, seconds: number): void {
+export function advance(game: GameState, seconds: number, entitlement: CrewEntitlement | null = null, now = Date.now()): void {
   if (!Number.isFinite(seconds) || seconds <= 0) return;
-  earn(game, production(game).mul(seconds));
+  earn(game, production(game).mul(entitlement ? productionSeconds(now - seconds * 1000, now, entitlement) : seconds));
   game.stats.playSeconds = Math.min(Number.MAX_SAFE_INTEGER, game.stats.playSeconds + seconds);
   updateCollection(game);
   updateAchievements(game);

@@ -12,6 +12,8 @@ No package installation or internet connection is needed to play the included bu
 
 ## Tablet navigation update
 
+**Shop preview:** a glowing Shop tab follows Olympus. Meowtastic Crew / Equipo Miautástico previews a 12-hour ×2 automatic-production boost at a **USD 2.00 base reference price**. Purchases and restore are unavailable on both web and Android; no payment or paid boost can be activated in this build. See [the billing decision and launch blockers](docs/decisions/005-shop-billing-preview.md). The workshop's factory backdrop has been removed.
+
 The entire workshop now lives inside one cozy tablet. **Workshop** is the play screen; **Your crew**, **Upgrades**, **Achievements**, and **Cats** are separate internal screens. The header keeps the yarn balance visible, and production continues while browsing. Manual pulling is available only on the play screen.
 
 **Olympus** takes the view upward out of the tablet into the sky. The back arrow or Escape returns to the workshop. Motion preferences skip the journey animation. The former floating yarn dock has been removed so it cannot cover gods or purchase controls on phones.

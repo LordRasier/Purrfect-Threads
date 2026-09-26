@@ -1,4 +1,5 @@
 import { privacyContent } from './privacy';
+import { shopPanel } from './shop';
 import './achievement-notifications.css';
 import { showLaunch } from './launch';
 import { refreshCompanions } from './companions';
@@ -13,7 +14,7 @@ import { icon } from './icons';
 import { ACHIEVEMENTS, achievementProgress, unreadAchievementCount } from '../game/achievements';
 import { crewPanel, upgradePanel, chapterPanel, collectionPanel, achievementsPanel } from './panels';
 
-export type Screen = 'workshop' | 'crew' | 'upgrades' | 'achievements' | 'collection' | 'chapter';
+export type Screen = 'workshop' | 'crew' | 'upgrades' | 'achievements' | 'collection' | 'chapter' | 'shop';
 export class GameUI {
   screen: Screen = 'workshop';
   launching = true;
@@ -45,6 +46,7 @@ export class GameUI {
           <button data-screen="achievements" aria-label="${text.achievementsTab}" aria-pressed="false">${icon('heart')}<span class="nav-long">${text.achievementsTab}</span><span class="nav-short">${tr('Badges')}</span><span class="nav-count" id="achievement-unread-count" aria-live="polite" hidden></span></button>
           <button data-screen="collection" aria-label="${text.collection}" aria-pressed="false">${icon('cat')}<span>${text.collectionShort}</span><span class="nav-count" id="collection-count">0/6</span></button>
           <button data-screen="chapter" aria-label="${text.chapter}" aria-pressed="false">${icon('star')}<span>${text.olympusShort}</span></button>
+          <button data-screen="shop" aria-label="${tr('Shop')}" aria-pressed="false">${icon('shop')}<span>${tr('Shop')}</span></button>
         </nav>
         <div class="header-actions"><span class="save-status" id="save-status" role="status">${text.saving}</span><button class="icon-button" data-action="sound" aria-label="${text.mute}" id="sound-button">${icon('sound')}</button><button class="icon-button" data-action="settings" aria-label="${text.settings}">${icon('settings')}</button></div>
         <div class="tablet-wallet">${icon('yarn')}<strong id="tablet-yarn">0</strong></div>
@@ -151,7 +153,7 @@ export class GameUI {
     this.root.querySelector('.tablet-stage')!.setAttribute('aria-hidden', String(sky));
     this.panel.dataset.screen = this.screen;
     this.root.classList.toggle('olympus-open', this.screen === 'chapter');
-    const panels = { workshop: () => '', crew: () => crewPanel(game), upgrades: () => upgradePanel(game), achievements: () => achievementsPanel(game, this.achievementCategory), collection: () => collectionPanel(game), chapter: () => chapterPanel() };
+    const panels = { workshop: () => '', crew: () => crewPanel(game), upgrades: () => upgradePanel(game), achievements: () => achievementsPanel(game, this.achievementCategory), collection: () => collectionPanel(game), chapter: () => chapterPanel(), shop: shopPanel };
     this.panel.innerHTML = panels[this.screen]();
     if (focused) document.getElementById(focused)?.focus({ preventScroll: true });
   }

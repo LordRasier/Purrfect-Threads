@@ -1,4 +1,6 @@
 import { Capacitor } from '@capacitor/core';
+import { billing } from './platform/billing';
+import { shopUnavailable } from './ui/shop';
 import { initializeAds, showPrivacyOptions } from './platform/ads';
 import { CompanionChat } from './ui/companion-chat';
 import { FallingCat } from './ui/falling-cat';
@@ -219,6 +221,11 @@ async function start(session: Session): Promise<void> {
       }).catch(() => ui.toast(game.settings.language === 'es' ? 'No se pudieron abrir las opciones de privacidad.' : 'Privacy options could not be opened.'));
     } else if (kind === 'settings') {
       stopHolding(); showSettings();
+    } else if (kind === 'shop-purchase' || kind === 'shop-restore') {
+      stopHolding();
+      void (kind === 'shop-purchase' ? billing.purchase() : billing.restore()).then(() => {
+        if (session.active) ui.toast(shopUnavailable());
+      });
     } else if (kind === 'sound') {
       const audible = game.settings.volume > 0 || game.settings.musicVolume > 0;
       game.settings.volume = audible ? 0 : 0.35; game.settings.musicVolume = audible ? 0 : 0.2;

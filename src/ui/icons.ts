@@ -1,4 +1,5 @@
 const paths: Record<string, string> = {
+  shop: '<path d="M4 9h16l-2-6H6L4 9Zm1 0v12h14V9M9 21v-7h6v7M4 9a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0"/>',
   cat: '<path d="M5 11V4l5 4h4l5-4v7c3 9-2 11-7 11S2 20 5 11Z"/><path d="M8 14v1m8-1v1m-6 3 2 1 2-1"/>',
   yarn: '<circle cx="12" cy="11" r="8"/><path d="M6 5c0 7 5 12 11 12M4 10c5-1 10-1 15 3M8 4c1 7 4 10 11 11M8 18c3-4 6-6 11-7m-7 8c0 4 7 0 9 3"/>',
   paw: '<ellipse cx="12" cy="16" rx="5" ry="4"/><ellipse cx="5" cy="10" rx="2" ry="2.5"/><ellipse cx="10" cy="6" rx="2" ry="2.5"/><ellipse cx="16" cy="7" rx="2" ry="2.5"/><ellipse cx="20" cy="12" rx="1.6" ry="2"/>',

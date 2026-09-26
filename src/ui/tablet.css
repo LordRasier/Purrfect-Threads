@@ -15,7 +15,7 @@
 .tablet-app .header-actions { grid-column:3; grid-row:1; justify-self:end; margin:0; }
 .tablet-app .tablet-wallet { grid-column:2; grid-row:1; display:flex; gap:8px; align-items:center; padding:8px 15px; border-radius:22px; background:#f1e8dc; color:#71604e; }
 .tablet-wallet .icon { color:#d7836e; width:20px; }
-.tablet-app .navigation { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); grid-column:1/-1; grid-row:2; order:0; width:100%; margin:0; gap:6px; padding:10px 0 8px; border-top:1px solid #e6dcca; }
+.tablet-app .navigation { display:grid; grid-template-columns:repeat(7,minmax(48px,1fr)); grid-column:1/-1; grid-row:2; order:0; width:100%; margin:0; gap:6px; padding:10px 0 8px; border-top:1px solid #e6dcca; overflow-x:auto; scrollbar-width:thin; }
 .tablet-app .navigation button { display:flex; justify-content:center; gap:6px; padding:8px 5px; min-width:44px; min-height:44px; font-size:12px; border-radius:14px; transition:background-color .18s,color .18s; }
 .tablet-app .navigation button[aria-pressed=true] { background:#dce6d3; color:#435b42; box-shadow:inset 0 -2px 0 #bbcba9; }
 .tablet-app .navigation [data-screen=chapter] { color:#80629b; }
@@ -146,6 +146,3 @@
 @media(max-width:850px) { .tablet-app .app-launch { inset:19px 7px 17px; border-radius:16px; } }
 @media(max-height:540px) and (min-width:600px) { .tablet-app .app-launch { inset:14px 10px; gap:18px; }.launch-yarn { width:62px;height:62px;margin-bottom:10px; }.launch-logo h1 { font-size:34px; } }
 @media(prefers-reduced-motion:reduce) { .launch-logo,#enter-workshop { animation:none !important; } }
-
-/* Pencil factory stays behind the interactive diorama, never over controls. */
-.tablet-app .world::before { content:''; position:absolute; inset:0; z-index:0; pointer-events:none; background:url('/art/workshop-pastel-factory.png') center / 100% 100% no-repeat; opacity:0.8; mask-image:linear-gradient(to bottom,transparent,#000 12%,#000 85%,transparent); }

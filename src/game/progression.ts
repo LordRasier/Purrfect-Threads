@@ -1,4 +1,5 @@
 import Decimal from 'break_infinity.js';
+import { productionSeconds, type CrewEntitlement } from './shop';
 import { updateAchievements } from './achievements';
 import { TALENTS, type TalentId } from './catalog';
 import { MAX_CHAPTERS, activeCompanion, createGame, production, updateCollection, type GameState } from './engine';
@@ -47,10 +48,11 @@ export function selectCoat(game: GameState, index: number): boolean {
   return true;
 }
 
-export function applyOffline(game: GameState, now: number): Decimal {
+export function applyOffline(game: GameState, now: number, entitlement: CrewEntitlement | null = null): Decimal {
   if (!Number.isFinite(now)) return new Decimal(0);
   const elapsed = Math.min(8 * 3600, Math.max(0, (now - game.savedAt) / 1000));
-  const amount = production(game).mul(elapsed * (activeCompanion(game)?.id === 'roman' ? 0.65 : 0.5));
+  const credited = productionSeconds(game.savedAt, game.savedAt + elapsed * 1000, entitlement);
+  const amount = production(game).mul(credited * (activeCompanion(game)?.id === 'roman' ? 0.65 : 0.5));
   game.yarn = game.yarn.add(amount);
   game.lifetime = game.lifetime.add(amount);
   game.runEarned = game.runEarned.add(amount);
