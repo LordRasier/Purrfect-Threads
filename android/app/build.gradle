@@ -1,5 +1,21 @@
 apply plugin: 'com.android.application'
 
+def billingFoundationProperty = providers.gradleProperty("purrfectBillingFoundationEnabled").orElse("false").get()
+if (!(billingFoundationProperty in ["true", "false"])) {
+    throw new GradleException("purrfectBillingFoundationEnabled must be exactly true or false")
+}
+def billingFoundationEnabled = billingFoundationProperty.toBoolean()
+def firebaseConfigFile = file("google-services.json")
+def expectedFirebaseProjectId = "platform-pulse-lordrasier"
+def expectedFirebaseAppId = "1:293396971360:android:97753a705bcf38e7ee6805"
+
+if (billingFoundationEnabled) {
+    if (!firebaseConfigFile.isFile()) {
+        throw new GradleException("Billing foundation is enabled but android/app/google-services.json is missing")
+    }
+    apply plugin: 'com.google.gms.google-services'
+}
+
 def productionAdsProperty = providers.gradleProperty("purrfectAdsProduction").orElse("false").get()
 if (!(productionAdsProperty in ["true", "false"])) {
     throw new GradleException("purrfectAdsProduction must be exactly true or false")
@@ -17,6 +33,7 @@ android {
         versionName "0.5.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField "boolean", "PURRFECT_ADS_PRODUCTION", "false"
+        buildConfigField "boolean", "PURRFECT_BILLING_FOUNDATION_ENABLED", billingFoundationEnabled.toString()
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
              // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
@@ -50,6 +67,12 @@ dependencies {
     implementation project(':capacitor-android')
     implementation "com.google.android.gms:play-services-ads:25.5.0"
     implementation "com.google.android.ump:user-messaging-platform:4.0.0"
+    if (billingFoundationEnabled) {
+        implementation "com.android.billingclient:billing:9.1.0"
+        implementation platform('com.google.firebase:firebase-bom:34.19.0')
+        implementation 'com.google.firebase:firebase-auth'
+        implementation 'com.google.firebase:firebase-appcheck-playintegrity'
+    }
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
@@ -63,6 +86,60 @@ tasks.register("verifyReleaseAdsConfiguration") {
         logger.lifecycle(productionAdsEnabled
             ? "AdMob release check: PRODUCTION banner explicitly enabled."
             : "AdMob release check: Google test banner enforced (safe default).")
+    }
+}
+
+def validateFirebaseConfiguration = { File configuredFile ->
+    if (!configuredFile.isFile()) {
+        throw new GradleException("Billing foundation is enabled but the Firebase configuration file is missing")
+    }
+
+    def config
+    try {
+        config = new groovy.json.JsonSlurper().parse(configuredFile)
+    } catch (Exception ignored) {
+        throw new GradleException("Billing foundation is enabled but the Firebase configuration file is not valid JSON")
+    }
+    if (config.project_info?.project_id != expectedFirebaseProjectId) {
+        throw new GradleException("Billing foundation is enabled but the Firebase configuration has the wrong project ID")
+    }
+    def expectedPackageName = android.defaultConfig.applicationId
+    def matchingClient = (config.client instanceof List) && config.client.any { client ->
+        client?.client_info?.mobilesdk_app_id == expectedFirebaseAppId &&
+            client?.client_info?.android_client_info?.package_name == expectedPackageName
+    }
+    if (!matchingClient) {
+        throw new GradleException("Billing foundation is enabled but the Firebase configuration has no matching Android client")
+    }
+}
+
+tasks.register("verifyBillingFoundationConfiguration") {
+    doLast {
+        if (!billingFoundationEnabled) {
+            logger.lifecycle("Billing foundation check: disabled; no Firebase configuration is required.")
+            return
+        }
+        validateFirebaseConfiguration(firebaseConfigFile)
+        logger.lifecycle("Billing foundation check: Firebase configuration matches the Android application ID.")
+    }
+}
+
+tasks.register("verifyBillingFoundationFixture") {
+    doLast {
+        def fixtureFile = providers.gradleProperty("purrfectFirebaseConfigFixture")
+            .map { project.file(it) }
+            .orNull
+        if (fixtureFile == null) {
+            throw new GradleException("Billing foundation fixture path is required")
+        }
+        validateFirebaseConfiguration(fixtureFile)
+        logger.lifecycle("Billing foundation fixture check: configuration matches the expected Android client.")
+    }
+}
+
+if (billingFoundationEnabled) {
+    tasks.matching { it.name == "preBuild" }.configureEach {
+        dependsOn("verifyBillingFoundationConfiguration")
     }
 }
 

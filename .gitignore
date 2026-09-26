@@ -8,4 +8,5 @@ playwright-report/
 *.jks
 *.keystore
 android/key.properties
+android/app/google-services.json
 android/.idea/
