@@ -114,7 +114,7 @@ async function start(session: Session): Promise<void> {
     grantBonus(game);
     persist();
     refresh(game.settings.language === 'es' ? '¡Gato lápiz atrapado! +5 de lana' : 'Pencil cat caught! +5 yarn');
-    audio.play(game.settings.volume, true);
+    audio.playMeow(game.settings.volume);
   });
   let adsStarted = false;
   window.addEventListener('pagehide', () => { chat.dispose(); fallingCat.dispose(); }, { once: true });
