@@ -41,6 +41,13 @@ final class IdentityCoordinator {
         return driver.currentGoogleUid() == null ? Status.SIGNED_OUT : Status.SIGNED_IN;
     }
 
+    /** Only called after authenticating a previously consented native purchase cache. */
+    void recoverPersistedIdentity() { if (!busy) initialize(); }
+    String currentUid() { return status() == Status.SIGNED_IN ? driver.currentGoogleUid() : null; }
+    String sessionKey() {
+        String uid = currentUid();
+        return uid == null ? null : generation + ":" + uid;
+    }
     void signIn(Completion<Void> completion) {
         if (busy) { completion.complete(null, Failure.BUSY); return; }
         busy = true;

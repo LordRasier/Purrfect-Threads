@@ -9,6 +9,17 @@ public class IdentityCoordinatorTest {
     private final FakeDriver driver = new FakeDriver();
     private final IdentityCoordinator identity = new IdentityCoordinator(driver);
 
+    @Test public void cacheRecoveryNeverPromptsAndSessionChangesInvalidateRequests() {
+        assertNull(identity.sessionKey());
+        driver.uid = "persisted-user";
+        identity.recoverPersistedIdentity();
+        assertEquals(IdentityCoordinator.Status.SIGNED_IN, identity.status());
+        assertEquals(List.of("firebase", "appcheck", "auth"), driver.events);
+        String session = identity.sessionKey();
+        assertNotNull(session);
+        identity.signOut(new Result<>());
+        assertNotEquals(session, identity.sessionKey());
+    }
     @Test public void statusAndSignedOutTokensNeverInitializeSdk() {
         assertEquals(IdentityCoordinator.Status.UNINITIALIZED, identity.status());
         Result<IdentityCoordinator.Tokens> result = new Result<>();

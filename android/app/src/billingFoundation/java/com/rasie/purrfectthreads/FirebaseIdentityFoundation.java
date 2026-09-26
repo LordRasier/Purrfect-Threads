@@ -65,6 +65,7 @@ final class FirebaseIdentityFoundation {
 
     void signOut(IdentityCoordinator.Completion<Void> completion) {
         requireMainThread();
+        BillingRuntime.invalidate(driver.context);
         coordinator.signOut(completion);
     }
 
@@ -79,6 +80,9 @@ final class FirebaseIdentityFoundation {
         coordinator.withTokens(completion);
     }
 
+    void recoverPersistedIdentity() { requireMainThread(); coordinator.recoverPersistedIdentity(); }
+    String currentUid() { requireMainThread(); return coordinator.currentUid(); }
+    String sessionKey() { requireMainThread(); return coordinator.sessionKey(); }
     private static void requireMainThread() {
         if (Looper.myLooper() != Looper.getMainLooper()) {
             throw new IllegalStateException("Identity operations require the main thread");

@@ -8,6 +8,7 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(SaveDocumentPlugin.class);
         registerPlugin(GoogleAccountPlugin.class);
+        registerPlugin(CrewBillingPlugin.class);
         registerPlugin(AdMobBannerPlugin.class);
         super.onCreate(savedInstanceState);
     }
