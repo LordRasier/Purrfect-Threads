@@ -20,6 +20,14 @@ The entire workshop now lives inside one cozy tablet. **Workshop** is the play s
 
 See [tablet verification](docs/verification-tablet.md). Existing saves, companions, prices, and prestige rules are unchanged.
 
+## Branching upgrade board
+
+Buy **Helping Thread** for 25 yarn to unlock hold-to-pull, then follow the red strings through 63 small, icon-only pastel notes. Drag with a mouse or finger, use the arrow controls, or Tab between notes; focus brings each note into view. Hover/focus shows its name, effect, cost, and requirements; tap opens purchase details. Each new purchase needs its connected parent; Master Tools also needs Master Knitters. Prices retain the 10% increase per completed chapter.
+
+Each of the ten producer types has five practice nodes, each adding one percentage point to that producer’s practice bonus: five purchases give +5%, not five multiplying +1% bonuses. Base prices are the producer’s initial cost × tier². The twelve existing effectful milestones retain their larger bonuses and prices. Forge of Paws counts only those twelve milestones, excluding Helping Thread and all practice nodes. All 63 tree upgrades reset on prestige and must be repurchased; only Olympus talents are permanent upgrades. This is authored pacing, not playtested economic balance.
+
+Save version 6 preserves old owned upgrades and grants only the hold root to v1–v5 saves, once, without spending yarn or adding purchase counts. Missing ancestors are not granted, so existing production is unchanged. Helping Thread and practice nodes do not amplify Forge of Paws. New chapters clear the entire tree; modern reloads do not restore it. Keep a backup before downgrading to an older release. See [the compatibility decision](docs/decisions/006-upgrade-tree.md).
+
 ## What changed in 0.5.0
 
 - Six illustrated home companions: **Kira, Mario, Roman, Luigi, Lola, and Biscuit**, with personalities and markings based on the user's pets. Biscuit retains the legacy internal ID `biscocho` so existing saves remain valid.
@@ -60,7 +68,7 @@ See [0.5 verification](docs/verification-v05.md) and [companion artwork](docs/as
 - A cozy tablet scrolls independently. The yarn stays visible on desktop and phones; Olympus keeps a playable miniature workshop dock.
 - Every crew card gains thematic background motifs with purchases (up to 18 decorations per row to bound rendering cost).
 - All 36 achievements are now embroidered, tilted patches. Tap one for its condition and progress; category filters remain available.
-- Twelve small sticky-note upgrades open a detail sheet before purchase. Triple-yarn bonuses have explicit odds, never affect passive production, and use no paid randomness.
+- The twelve original milestone upgrades remain on the expanded chapter tree and open a detail sheet before purchase. Triple-yarn bonuses have explicit odds, never affect passive production, and use no paid randomness.
 - Mount Pawlympus is a separate full-screen realm with original generated temple artwork, permanent cat statuettes, and a back button / Escape navigation.
 - Cozy background music, independent music/effects sliders, master mute, and English/Spanish language selection. Audio begins after interaction and pauses while the game is hidden.
 
@@ -70,6 +78,7 @@ Legacy v1/v2 saves default music to 20% and language to English. Other settings 
 
 | Upgrade | Yarn cost | Effect |
 | --- | ---: | --- |
+| Helping Thread | 25 | Enables pointer/Space hold repeat |
 | Soft Paws | 100 | Manual base ×2 |
 | Lucky Bell | 300 | +5 percentage points of triple-touch chance |
 | Happy Workers | 1,000 | Automatic ×1.5 |
@@ -87,7 +96,7 @@ Chapter chance bonuses add to a maximum of 20% (25% while Biscuit is selected). 
 
 ## Controls and progression
 
-- Click/tap the yarn; hold the pointer or Space to pull five times per second. Manual input shares the same rate limit.
+- Click/tap the yarn or press Space for one pull. Buy Helping Thread to hold the pointer or Space and pull five times per second. All manual input shares the same rate limit.
 - Buy cats or complete teams with yarn. Use ×1, ×10, or Max. Each purchase increases that team's next price by 15%, rounded up.
 - Buy chapter upgrades, meet six collectible companions, and choose a new protagonist.
 - At 100,000 current-run yarn, the first restart unlocks and awards one golden paw. Each next run doubles its production goal; excess yarn cannot increase the reward. The confirmation explains what resets and what remains.

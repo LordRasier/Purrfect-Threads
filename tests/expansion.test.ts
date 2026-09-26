@@ -40,6 +40,7 @@ describe('expanded workshop', () => {
     const game = createGame(0);
     tap(game, 0); expect(game.achievements).toContain('first-thread');
     game.yarn = game.runEarned = game.lifetime = new Decimal('1e9');
+    game.upgrades = ['hold'];
     buyProducer(game, 'kitten', 10); buyUpgrade(game, 'paws');
     expect(game.stats.bulkPurchases).toBe(1);
     expect(game.stats.upgradePurchases).toBe(1);
@@ -76,7 +77,7 @@ describe('expanded workshop', () => {
     for (const key of ['tailor','dyer','spinner','weaver','astral']) delete legacy.owned[key];
     delete legacy.achievements; legacy.stats = { taps: 75, playSeconds: 22 };
     const restored = decode(JSON.stringify(legacy));
-    expect(restored.version).toBe(5); expect(restored.owned.kitten).toBe(10); expect(restored.owned.astral).toBe(0);
+    expect(restored.version).toBe(6); expect(restored.owned.kitten).toBe(10); expect(restored.owned.astral).toBe(0);
     expect(restored.yarn.eq(10000)).toBe(true); expect(restored.settings).toEqual(game.settings);
     expect(restored.achievements).toContain('first-thread');
     expect(restored.stats.upgradePurchases).toBe(0);

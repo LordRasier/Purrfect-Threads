@@ -13,9 +13,7 @@ test('a new workshop can earn, adopt, produce, and reload', async ({ page, isMob
     for (let n = 0; n < 75; n++) { await pull.tap(); await page.waitForTimeout(210); }
   } else {
     await pull.focus();
-    await page.keyboard.down('Space');
-    await page.waitForTimeout(15200);
-    await page.keyboard.up('Space');
+    for (let n = 0; n < 75; n++) { await page.keyboard.press('Space'); await page.waitForTimeout(210); }
   }
   await page.locator('.navigation [data-screen="crew"]').click();
   const adopt = page.getByRole('button', { name: /Adopt Kitten/ });

@@ -40,7 +40,7 @@ function knownList<T extends string | number>(value: unknown, known: readonly T[
 export function decode(raw: string): GameState {
   if (raw.length > 100000) throw new Error('Save file is too large.');
   const data = record(JSON.parse(raw));
-  if (data.version !== 1 && data.version !== 2 && data.version !== 3 && data.version !== 4 && data.version !== 5) throw new Error('This save version is not supported.');
+  if (data.version !== 1 && data.version !== 2 && data.version !== 3 && data.version !== 4 && data.version !== 5 && data.version !== 6) throw new Error('This save version is not supported.');
   const game = createGame(integer(data.savedAt));
   for (const key of ['yarn', 'lifetime', 'runEarned', 'points', 'claimed'] as const) game[key] = decimal(data[key]);
   const owned = record(data.owned);
@@ -81,6 +81,9 @@ export function decode(raw: string): GameState {
     // Legacy saves did not track these counters. Infer only facts still present.
     game.stats.upgradePurchases = game.upgrades.length;
   }
+  // Preserve old hold controls once, after v1 purchase-counter inference. Never
+  // fabricate purchases or effectful ancestors for grandfathered owned leaves.
+  if (data.version <= 5 && !game.upgrades.includes('hold')) game.upgrades.push('hold');
   const settings = record(data.settings);
   if (typeof settings.volume !== 'number' || !Number.isFinite(settings.volume) || settings.volume < 0 || settings.volume > 1 || typeof settings.reducedMotion !== 'boolean' || !['auto', 'low', 'high'].includes(String(settings.quality))) throw new Error('Invalid settings.');
   if (data.version >= 3 && (typeof settings.musicVolume !== 'number' || !Number.isFinite(settings.musicVolume) || settings.musicVolume < 0 || settings.musicVolume > 1 || !['en', 'es'].includes(String(settings.language)))) throw new Error('Invalid music or language settings.');

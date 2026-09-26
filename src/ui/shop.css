@@ -21,7 +21,7 @@
 .shop-price strong { font-size:24px; color:#594731; }
 .shop-price span,.shop-details .shop-price-note,.shop-details .shop-status { font-size:12px; }
 .shop-details .primary-button { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; min-height:48px; opacity:1; color:#6a6355; background:#e7e0d0; box-shadow:none; cursor:not-allowed; }
-.shop-status { padding:10px 12px; border-radius:10px; background:#ece5d6; }
+.shop-status { margin:16px 0; padding:10px 12px; border-radius:10px; background:#ece5d6; }
 .shop-restore { min-height:48px; }
 @media(max-width:600px) {
   .shop-panel { padding:8px 0 24px; }

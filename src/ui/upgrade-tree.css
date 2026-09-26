@@ -1,0 +1,32 @@
+.tablet-app .upgrade-board { max-width:980px; padding:14px 10px 12px; }
+.upgrade-board .board-heading { margin-bottom:6px; }
+.tree-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
+.tree-guide { color:#fff4db; font-size:12px; line-height:1.5; margin:0; }
+.tree-controls { display:flex; flex:none; gap:4px; }
+.tree-controls button { display:grid; place-items:center; width:44px; height:44px; padding:9px; border:1px solid #d3d7b7; border-radius:8px; background:#f5eed9; color:#3c5544; }
+.tree-controls [data-pan=left] .icon { transform:rotate(180deg); }.tree-controls [data-pan=up] .icon { transform:rotate(-90deg); }.tree-controls [data-pan=down] .icon { transform:rotate(90deg); }
+.tree-scroll { overflow:auto; height:clamp(260px,calc(100dvh - 450px),560px); overscroll-behavior:contain; scrollbar-width:thin; scrollbar-color:#dfbda2 #294639; border-radius:6px; touch-action:none; cursor:grab; user-select:none; }
+.tree-scroll.is-dragging,.tree-scroll.is-dragging * { cursor:grabbing; }
+.upgrade-tree { position:relative; }
+.tree-strings { position:absolute; inset:0; pointer-events:none; }
+.tree-strings path { stroke:#ed6966; stroke-width:2; fill:none; stroke-linecap:round; filter:drop-shadow(1px 1px 0 #183128); }
+.upgrade-tree .upgrade.sticky-note { position:absolute; display:grid; place-items:center; width:48px; height:48px; min-height:48px; padding:8px; gap:0; transform:none; border-radius:2px 2px 9px 2px; cursor:pointer; }
+.upgrade-tree .upgrade.sticky-note:hover { transform:none; box-shadow:0 0 0 3px #fff1c3; }
+.upgrade-tree .tree-root { outline:2px dashed #eed17f; outline-offset:5px; }
+.upgrade-tree .note-pin { z-index:2; top:-4px; left:calc(50% - 4px); width:8px; height:8px; background:#cc4545; border:1px solid #8c3334; box-shadow:inset 1px 1px 0 #f7aca0,1px 2px 2px #132c32; }
+.upgrade-tree .note-cat { height:28px; }
+.upgrade-tree .note-cat .icon { width:28px; height:28px; }
+.upgrade-tree .tree-lock { display:none; position:absolute; bottom:2px; right:2px; padding:2px; background:#fff6df; border-radius:4px; }
+.upgrade-tree .tree-lock .icon { width:10px; height:10px; }
+.upgrade-tree .prerequisite-locked .tree-lock { display:block; }
+.upgrade-tree .purchased { box-shadow:0 0 0 3px #c6dcac; }
+.upgrade-tree .purchased::after { content:'✓'; position:absolute; bottom:-4px; right:-4px; background:#435f3b; color:#fff; font-size:11px; border-radius:50%; width:17px; height:17px; display:grid; place-items:center; }
+.tree-scroll:focus-visible,.upgrade-tree .sticky-note:focus-visible,.tree-controls button:focus-visible { outline:3px solid #fff5d4; outline-offset:4px; }
+.upgrade-tree .sticky-note:focus-visible { box-shadow:0 0 0 7px #243f32; z-index:3; }
+.tree-tooltip { position:fixed; z-index:45; width:260px; max-width:calc(100vw - 24px); max-height:calc(100dvh - 24px); overflow:hidden; pointer-events:none; padding:14px 16px; border:1px solid #d8bd88; border-radius:14px; background:#fff8df; color:#493d2d; box-shadow:0 6px 20px #1c332b55; font-size:12px; line-height:1.5; }
+.tree-tooltip[hidden] { display:none; }.tree-tooltip strong { font:600 16px Georgia,serif; }.tree-tooltip p { margin:6px 0; }.tree-tooltip small { font-size:11px; }.tree-tooltip-cost { font-weight:700; }
+@media(max-width:600px) {
+  .tablet-app .upgrade-board { border-width:6px; padding:12px 6px; }
+  .tree-toolbar { flex-direction:column; gap:6px; text-align:center; }
+  .tree-scroll { height:clamp(230px,calc(100dvh - 440px),560px); }
+}

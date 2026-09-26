@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import Decimal from 'break_infinity.js';
-import { UPGRADES } from '../src/game/catalog';
+import { UPGRADES, MILESTONE_UPGRADES } from '../src/game/catalog';
 import { createGame, tap, tapValue, criticalChance, buyUpgrade, production, upgradeCost } from '../src/game/engine';
 import { decode, encode } from '../src/game/storage';
 import { prestige } from '../src/game/progression';
@@ -16,15 +16,15 @@ describe('expanded chapter upgrades', () => {
     expect(upgradeCost(game, paws).toNumber()).toBeCloseTo(121);
   });
   it('charges the chapter-adjusted upgrade cost and rejects a base-cost-only balance', () => {
-    const game = createGame(); game.chapters = 1; game.yarn = new Decimal(100);
+    const game = createGame(); game.chapters = 1; game.upgrades = ['hold']; game.yarn = new Decimal(100);
     expect(buyUpgrade(game, 'paws')).toBe(false);
     game.yarn = new Decimal(110);
     expect(buyUpgrade(game, 'paws')).toBe(true);
     expect(game.yarn.eq(0)).toBe(true);
   });
-  it('offers twelve unique one-time upgrades', () => {
-    expect(UPGRADES).toHaveLength(12);
-    expect(new Set(UPGRADES.map(item => item.id)).size).toBe(12);
+  it('offers the hold root and twelve unique one-time upgrades', () => {
+    expect(MILESTONE_UPGRADES).toHaveLength(13);
+    expect(new Set(MILESTONE_UPGRADES.map(item => item.id)).size).toBe(13);
   });
   it('uses explicit additive critical odds and triples the whole manual reward only', () => {
     const game = createGame(); game.upgrades = ['bell', 'clover', 'whiskers'];
@@ -47,7 +47,7 @@ describe('expanded chapter upgrades', () => {
   it('stacks the manual and automatic upgrades exactly once and resets them', () => {
     const game = createGame(); game.yarn = game.runEarned = game.lifetime = new Decimal('1e8');
     game.owned.kitten = 1;
-    for (const id of ['paws','mittens','silky','happy','tools','tea','purring','moonlit'] as const) {
+    for (const id of ['hold','paws','mittens','silky','happy','tools','tea','purring','moonlit'] as const) {
       expect(buyUpgrade(game,id)).toBe(true); expect(buyUpgrade(game,id)).toBe(false);
     }
     expect(tapValue(game).toNumber()).toBe(6);
@@ -65,7 +65,7 @@ describe('v3 settings migration', () => {
     const old = JSON.parse(encode(game)); old.version = 2;
     delete old.settings.language; delete old.settings.musicVolume;
     const restored = decode(JSON.stringify(old));
-    expect(restored.version).toBe(5); expect(restored.owned.kitten).toBe(10);
+    expect(restored.version).toBe(6); expect(restored.owned.kitten).toBe(10);
     expect(restored.settings.language).toBe('en'); expect(restored.settings.musicVolume).toBe(.2);
   });
   it('validates and retains the selected language and music level across prestige', () => {

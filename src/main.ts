@@ -14,6 +14,8 @@ import './ui/experience.css';
 import './ui/olympus.css';
 import './ui/companions.css';
 import './ui/tablet.css';
+import './ui/upgrade-tree.css';
+import { upgradeRequirement } from './ui/upgrade-tree';
 import { PRODUCERS, UPGRADES, TALENTS, COATS } from './game/catalog';
 import { advance, activeCompanion, grantBonus, buyProducer, buyUpgrade, createGame, tap, tapValue, criticalChance, upgradeCost, type GameState } from './game/engine';
 import { applyOffline, buyTalent, prestige, prestigeReward, selectCoat } from './game/progression';
@@ -130,7 +132,7 @@ async function start(session: Session): Promise<void> {
     ui.dialog.append(privacy);
   }
   const reduced = () => game.settings.reducedMotion || motionPreference.matches;
-  const held = new HoldInput(pull);
+  const held = new HoldInput(pull, () => game.upgrades.includes('hold'));
   const stopHolding = () => held.cancel();
   root.addEventListener('screenchange', stopHolding);
   const persist = () => {
@@ -190,7 +192,7 @@ async function start(session: Session): Promise<void> {
     } else if (kind === 'upgrade-info') {
       const upgrade = UPGRADES.find(item => item.id === id); if (!upgrade) return;
       stopHolding();
-      ui.showDialog(`<span class="detail-art">${icon(upgrade.icon)}</span><span class="eyebrow">${text.thisChapter}</span><h2 id="modal-title">${tr(upgrade.name)}</h2><p>${tr(upgrade.detail)}</p><p>${text.boardReset}</p>${['bell','clover','whiskers'].includes(upgrade.id) ? `<p>${text.criticalOdds(criticalChance(game) * 100)}</p>` : ''}${upgrade.id === 'master' && !game.talents.includes('knitters') ? `<p>${text.lockedTalent}</p>` : ''}<p class="detail-cost">${text.cost(format(upgradeCost(game, upgrade)))}</p><button class="primary-button" data-action="upgrade" data-id="${upgrade.id}">${game.upgrades.includes(upgrade.id) ? text.bought : text.buy(tr(upgrade.name))}</button>`);
+      ui.showDialog(`<span class="detail-art">${icon(upgrade.icon)}</span><span class="eyebrow">${text.thisChapter}</span><h2 id="modal-title">${tr(upgrade.name)}</h2><p>${tr(upgrade.detail)}</p><p>${text.boardReset}</p>${['bell','clover','whiskers'].includes(upgrade.id) ? `<p>${text.criticalOdds(criticalChance(game) * 100)}</p>` : ''}${upgradeRequirement(game, upgrade.id) ? `<p class="upgrade-requirement">${upgradeRequirement(game, upgrade.id)}</p>` : ''}<p class="detail-cost">${text.cost(format(upgradeCost(game, upgrade)))}</p><button class="primary-button" data-action="upgrade" data-id="${upgrade.id}">${game.upgrades.includes(upgrade.id) ? text.bought : text.buy(tr(upgrade.name))}</button>`);
       ui.refresh();
     } else if (kind === 'achievement-info') {
       const item = ACHIEVEMENTS.find(item => item.id === id); if (!item) return;

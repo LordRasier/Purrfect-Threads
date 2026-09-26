@@ -1,7 +1,7 @@
 import Decimal from 'break_infinity.js';
 import { productionSeconds, type CrewEntitlement } from './shop';
 import { updateAchievements } from './achievements';
-import { COATS, PRODUCERS, UPGRADES, type ProducerId, type UpgradeId, type TalentId } from './catalog';
+import { COATS, PRODUCERS, UPGRADES, MILESTONE_UPGRADES, PRODUCER_UPGRADES, UPGRADE_PARENT, type ProducerId, type UpgradeId, type TalentId } from './catalog';
 
 export type Quantity = 1 | 10 | 'max';
 // Beyond the authored prototype content, bound transactions and imported teams.
@@ -9,7 +9,7 @@ export const MAX_OWNED = 10000;
 // Keeps exponential chapter goals inside the supported Decimal save exponent range.
 export const MAX_CHAPTERS = 3_000_000;
 export interface GameState {
-  version: 5;
+  version: 6;
   yarn: Decimal;
   lifetime: Decimal;
   runEarned: Decimal;
@@ -34,7 +34,7 @@ export interface GameState {
 
 export function createGame(now = Date.now()): GameState {
   return {
-    version: 5, yarn: new Decimal(0), lifetime: new Decimal(0), runEarned: new Decimal(0),
+    version: 6, yarn: new Decimal(0), lifetime: new Decimal(0), runEarned: new Decimal(0),
     owned: Object.fromEntries(PRODUCERS.map(item => [item.id, 0])) as Record<ProducerId, number>,
     upgrades: [], talents: [], points: new Decimal(0), claimed: new Decimal(0), legacyClaimed: new Decimal(0), legacyChapters: 0, chapters: 0,
     starterCats: 0, collection: [], coat: 0, achievements: [], readAchievements: [], stats: { taps: 0, playSeconds: 0, upgradePurchases: 0, bulkPurchases: 0, maxPurchases: 0, coatChanges: 0, offlineYarn: new Decimal(0) },
@@ -85,7 +85,10 @@ export function producerOutput(game: GameState, id: ProducerId, count = 1): Deci
   if (game.talents.includes('artemis') && (id === 'dyer' || id === 'spinner')) multiplier *= 1.2;
   if (game.talents.includes('ares') && (id === 'weaver' || id === 'astral')) multiplier *= 1.2;
   if (game.talents.includes('aphrodite')) multiplier *= 1.1;
-  if (game.talents.includes('hephaestus')) multiplier *= 1 + game.upgrades.length * 0.1;
+  // Count legacy milestones only: the free input root and small practice steps add no global bonus.
+  if (game.talents.includes('hephaestus')) multiplier *= 1 + MILESTONE_UPGRADES.filter(item => item.id !== 'hold' && game.upgrades.includes(item.id)).length * 0.1;
+  const practice = PRODUCER_UPGRADES.filter(item => item.producer === id && game.upgrades.includes(item.id)).length;
+  multiplier *= 1 + practice / 100;
   const companion = activeCompanion(game);
   if (companion?.id === 'kira') multiplier *= 1.1;
   if (companion?.id === 'luigi' && (id === 'kitten' || id === 'basket' || id === 'corner')) multiplier *= 1.3;
@@ -198,13 +201,22 @@ export function buyUpgrade(game: GameState, id: UpgradeId): boolean {
   const upgrade = UPGRADES.find(item => item.id === id)!;
   const cost = upgradeCost(game, upgrade);
   if (game.upgrades.includes(id) || game.yarn.lt(cost)) return false;
-  if (id === 'master' && !game.talents.includes('knitters')) return false;
+  if (missingUpgradeRequirements(game, id).length) return false;
   game.yarn = game.yarn.sub(cost);
   game.upgrades.push(id);
   game.stats.upgradePurchases = Math.min(Number.MAX_SAFE_INTEGER, game.stats.upgradePurchases + 1);
   updateCollection(game);
   updateAchievements(game);
   return true;
+}
+
+export function missingUpgradeRequirements(game: GameState, id: UpgradeId): string[] {
+  // Existing owned leaves remain valid even when they predate the tree.
+  if (game.upgrades.includes(id)) return [];
+  const parent = UPGRADE_PARENT[id];
+  const missing: string[] = parent && !game.upgrades.includes(parent) ? [UPGRADES.find(item => item.id === parent)!.name] : [];
+  if (id === 'master' && !game.talents.includes('knitters')) missing.push('Master Knitters');
+  return missing;
 }
 
 /** Chapter restarts preserve upgrade power while gently raising the next board's costs. */

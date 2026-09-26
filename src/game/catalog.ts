@@ -12,7 +12,8 @@ export const PRODUCERS = [
 ] as const;
 export type ProducerId = typeof PRODUCERS[number]['id'];
 
-export const UPGRADES = [
+export const MILESTONE_UPGRADES = [
+  { id: 'hold', name: 'Helping Thread', detail: 'Hold the yarn ball or Space to keep pulling, five times a second.', cost: 25, icon: 'yarn' },
   { id: 'paws', name: 'Soft Paws', detail: 'Twice the yarn with every touch.', cost: 100, icon: 'paw' },
   { id: 'happy', name: 'Happy Workers', detail: '+50% yarn from all your cats.', cost: 1000, icon: 'heart' },
   { id: 'tools', name: 'Better Tools', detail: 'Double all automatic production.', cost: 10000, icon: 'knit' },
@@ -26,7 +27,28 @@ export const UPGRADES = [
   { id: 'silky', name: 'Silky Threads', detail: 'Double the yarn with every touch.', cost: 500000, icon: 'yarn' },
   { id: 'moonlit', name: 'Moonlit Shift', detail: 'Double all automatic production.', cost: 1000000, icon: 'cloud' },
 ] as const;
+export type MilestoneUpgradeId = typeof MILESTONE_UPGRADES[number]['id'];
+export type PracticeTier = 1 | 2 | 3 | 4 | 5;
+export type ProducerUpgradeId = `${ProducerId}-practice-${PracticeTier}`;
+export const PRODUCER_UPGRADES = PRODUCERS.flatMap(producer => ([1, 2, 3, 4, 5] as const).map(tier => ({
+  id: `${producer.id}-practice-${tier}` as ProducerUpgradeId,
+  name: `${producer.name} · Practice ${tier}`,
+  detail: `+1% ${producer.name} production (additive).`,
+  cost: producer.cost * tier * tier,
+  icon: producer.icon,
+  producer: producer.id,
+  tier,
+})));
+export const UPGRADES = [...MILESTONE_UPGRADES, ...PRODUCER_UPGRADES] as const;
 export type UpgradeId = typeof UPGRADES[number]['id'];
+/** One chapter parent per node; Master Tools also retains its permanent talent gate. */
+export const UPGRADE_PARENT = {
+  hold: null, paws: 'hold', mittens: 'paws', silky: 'mittens',
+  bell: 'hold', clover: 'bell', whiskers: 'clover',
+  happy: 'hold', tea: 'happy', purring: 'tea', moonlit: 'purring',
+  tools: 'happy', master: 'tools',
+  ...Object.fromEntries(PRODUCER_UPGRADES.map(item => [item.id, item.tier === 1 ? 'hold' : `${item.producer}-practice-${item.tier - 1}`])),
+} as Record<UpgradeId, UpgradeId | null>;
 export const TALENTS = [
   { id: 'welcome', name: 'Welcome Home', god: 'Hera', statue: 0, detail: 'Start every new chapter with 3 cats.', cost: 1, icon: 'house' },
   { id: 'helping', name: 'Helping Paw', god: 'Hermes', statue: 1, detail: 'Each touch also earns 1% of your yarn per second.', cost: 2, icon: 'paw' },
@@ -38,7 +60,7 @@ export const TALENTS = [
   { id: 'artemis', name: 'Moon Hunt', god: 'Artemis', statue: 7, detail: '+20% Rainbow Dyers and Spinning Siamese production.', cost: 3, icon: 'moon' },
   { id: 'ares', name: 'Warrior Weave', god: 'Ares', statue: 8, detail: '+20% Dream Weavers and Celestial Cats production.', cost: 4, icon: 'star' },
   { id: 'aphrodite', name: 'Love of Labor', god: 'Aphrodite', statue: 9, detail: '+10% all automatic production.', cost: 4, icon: 'heart' },
-  { id: 'hephaestus', name: 'Forge of Paws', god: 'Hephaestus', statue: 10, detail: '+10% automatic production per purchased chapter upgrade.', cost: 3, icon: 'house' },
+  { id: 'hephaestus', name: 'Forge of Paws', god: 'Hephaestus', statue: 10, detail: '+10% automatic production per milestone upgrade. Helping Thread and practice nodes do not count.', cost: 3, icon: 'house' },
   { id: 'dionysus', name: 'Joyful Pull', god: 'Dionysus', statue: 11, detail: '+10% yarn from every touch.', cost: 2, icon: 'paw' },
 ] as const;
 export type TalentId = typeof TALENTS[number]['id'];

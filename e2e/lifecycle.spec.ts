@@ -24,6 +24,8 @@ test('BFCache restore cannot resume a stale writer after another tab takes owner
 });
 
 test('losing pointer capture does not cancel a keyboard hold', async ({ page }) => {
+  const game = createGame(); game.upgrades = ['hold'];
+  await page.addInitScript(({ key, raw }) => localStorage.setItem(key, raw), { key: SAVE_KEY, raw: encode(game) });
   await page.goto('/'); await enterWorkshop(page);
   await expect(page.locator('#world')).toHaveAttribute('data-ready', 'true');
   const pull = page.getByRole('button', { name: 'Pull yarn', exact: true });

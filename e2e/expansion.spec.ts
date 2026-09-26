@@ -6,7 +6,7 @@ import { encode, SAVE_KEY } from '../src/game/storage';
 
 test('compact ten-crew shop and separate cozy progression spaces', async ({ page }, info) => {
   const game = createGame(Date.now()); game.yarn = game.runEarned = game.lifetime = new Decimal('1e14');
-  game.chapters = 9; game.claimed = new Decimal(9); game.points = new Decimal(6); game.talents = ['knitters'];
+  game.chapters = 9; game.claimed = new Decimal(9); game.points = new Decimal(6); game.talents = ['knitters']; game.upgrades = ['hold'];
   await page.addInitScript(({key, raw}) => localStorage.setItem(key,raw), {key:SAVE_KEY,raw:encode(game)});
   await page.goto('/'); await enterWorkshop(page);
   if (info.project.name === 'desktop') await page.setViewportSize({width:961,height:854});

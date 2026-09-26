@@ -1,5 +1,7 @@
 import { enterWorkshop } from './entry';
 import { test, expect } from '@playwright/test';
+import { createGame } from '../src/game/engine';
+import { encode, SAVE_KEY } from '../src/game/storage';
 
 test('tablet home and internal tabs share one device without a floating yarn dock', async ({page}) => {
   await page.addInitScript(() => document.addEventListener('click', () => {
@@ -70,6 +72,8 @@ test('tablet and sky fit small phones, landscape and desktop with usable control
 
 
 test('leaving the play screen cancels held input and prevents hidden Space clicks', async ({page}) => {
+  const game = createGame(); game.upgrades = ['hold'];
+  await page.addInitScript(({ key, raw }) => localStorage.setItem(key, raw), { key: SAVE_KEY, raw: encode(game) });
   await page.goto('/'); await enterWorkshop(page);await expect(page.locator('#world')).toHaveAttribute('data-ready','true');
   await page.locator('#pull').focus();await page.keyboard.down('Space');await page.waitForTimeout(450);
   await page.locator('.navigation [data-screen="crew"]').click();

@@ -1,9 +1,23 @@
 import type { Copy } from './copy';
+import { PRODUCERS, PRODUCER_UPGRADES } from '../game/catalog';
 
 export type Language = 'en' | 'es';
 let language: Language = 'en';
 
 const sourceCatalog: Record<string, string> = {
+  'Drag the board. Hover or focus a note; tap for details.': 'Arrastra el tablero. Pasa el cursor o enfoca una nota; tócala para ver detalles.',
+  'Move the upgrade board': 'Mover el tablero de mejoras',
+  'Pan left': 'Mover a la izquierda', 'Pan right': 'Mover a la derecha',
+  'Pan up': 'Mover hacia arriba', 'Pan down': 'Mover hacia abajo',
+  'Center on Helping Thread': 'Centrar en Hilo de ayuda',
+  'Helping Thread': 'Hilo de ayuda',
+  'Hold the yarn ball or Space to keep pulling, five times a second.': 'Mantén presionado el ovillo o Espacio para seguir tirando, cinco veces por segundo.',
+  'Requires:': 'Requiere:', 'Ready to learn': 'Disponible para aprender',
+  'Upgrade tree': 'Árbol de mejoras',
+  'Start with Helping Thread. Follow the red strings to grow your workshop.': 'Empieza con Hilo de ayuda. Sigue los hilos rojos para mejorar tu taller.',
+  'Scroll the board to explore. Select a note for details.': 'Desplaza el tablero para explorar. Selecciona una nota para ver los detalles.',
+  'Tap the yarn to pull a thread': 'Toca el ovillo para tirar de un hilo',
+  'Unlock Helping Thread to hold the yarn or Space': 'Desbloquea Hilo de ayuda para mantener el ovillo o Espacio',
   'Shop': 'Tienda',
   'A LITTLE EXTRA HELP': 'UN POCO DE AYUDA EXTRA',
   'An optional helping paw. Your workshop is always free to play.': 'Una ayuda opcional. Tu taller siempre se puede jugar gratis.',
@@ -68,7 +82,7 @@ const sourceCatalog: Record<string, string> = {
   'Moon Hunt': 'Caza lunar', '+20% Rainbow Dyers and Spinning Siamese production.': '+20% de producción de Tintoreros arcoíris y Siameses hilanderos.',
   'Warrior Weave': 'Tejido guerrero', '+20% Dream Weavers and Celestial Cats production.': '+20% de producción de Tejedores de sueños y Gatos celestiales.',
   'Love of Labor': 'Amor por el oficio', '+10% all automatic production.': '+10% de toda la producción automática.',
-  'Forge of Paws': 'Forja de patas', '+10% automatic production per purchased chapter upgrade.': '+10% de producción automática por cada mejora de capítulo comprada.',
+  'Forge of Paws': 'Forja de patas', '+10% automatic production per milestone upgrade. Helping Thread and practice nodes do not count.': '+10% de producción automática por mejora principal. Hilo de ayuda y las prácticas no cuentan.',
   'Joyful Pull': 'Toque alegre', '+10% yarn from every touch.': '+10% de lana con cada toque.',
   'Buy all twelve permanent Olympus talents.': 'Compra los doce talentos permanentes del Olimpo.',
   'PLAYABLE PROTOTYPE · 0.5.0': 'PROTOTIPO JUGABLE · 0.5.0',
@@ -104,6 +118,12 @@ const achievementCatalog: Record<string, string> = {
 };
 
 const catalog = { ...sourceCatalog, ...achievementCatalog };
+for (const item of PRODUCER_UPGRADES) {
+  const producer = PRODUCERS.find(producer => producer.id === item.producer)!;
+  const name = sourceCatalog[producer.name];
+  catalog[item.name] = `${name} · Práctica ${item.tier}`;
+  catalog[item.detail] = `+1% de producción de ${name} (acumulativo).`;
+}
 const spanishCopyCache = new WeakMap<Copy, Copy>();
 
 export function setLanguage(next: Language): void { language = next; }

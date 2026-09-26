@@ -50,7 +50,7 @@ describe('yarn economy', () => {
   });
   it('stacks run upgrades, rejects repeat purchases, and handles giant magnitudes', () => {
     const game = createGame(0);
-    game.yarn = new Decimal('1e500');
+    game.yarn = new Decimal('1e500'); game.upgrades = ['hold'];
     game.owned.kitten = 2;
     expect(buyUpgrade(game, 'happy')).toBe(true);
     expect(buyUpgrade(game, 'tools')).toBe(true);

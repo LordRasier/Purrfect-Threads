@@ -5,7 +5,7 @@ import { createGame } from '../src/game/engine';
 import { encode, SAVE_KEY } from '../src/game/storage';
 
 test.beforeEach(async ({page}) => {
-  const game = createGame(); game.yarn = game.lifetime = game.runEarned = new Decimal('1e8');
+  const game = createGame(); game.upgrades = ['hold']; game.yarn = game.lifetime = game.runEarned = new Decimal('1e8');
   await page.addInitScript(({key,raw}) => { if (!localStorage.getItem(key)) localStorage.setItem(key,raw); }, {key:SAVE_KEY,raw:encode(game)});
 });
 
@@ -26,7 +26,7 @@ test('crew scroll keeps owned crews decorated while yarn stays on the workshop h
 test('notes and embroidered patches open details without accidental purchases', async ({page}) => {
   await page.goto('/'); await enterWorkshop(page);
   await page.getByRole('button',{name:'Upgrades',exact:true}).click();
-  await expect(page.locator('.sticky-note')).toHaveCount(12);
+  await expect(page.locator('.sticky-note')).toHaveCount(63);
   await expect(page.locator('#upgrade-bell')).toHaveAccessibleName('Inspect Lucky Bell');
   await page.locator('#upgrade-bell').click();
   await expect(page.getByRole('dialog')).toContainText('5% chance');

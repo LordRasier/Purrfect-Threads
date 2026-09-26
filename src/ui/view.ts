@@ -1,11 +1,13 @@
 import { privacyContent } from './privacy';
 import { shopPanel } from './shop';
+import { upgradeRequirement } from './upgrade-tree';
+import { mountUpgradeBoard } from './upgrade-board';
 import './achievement-notifications.css';
 import { showLaunch } from './launch';
 import { refreshCompanions } from './companions';
 import Decimal from 'break_infinity.js';
 import { COATS, PRODUCERS, UPGRADES, TALENTS, type ProducerId } from '../game/catalog';
-import { population, production, producerOutput, quote, tapValue, upgradeCost, MAX_OWNED, type GameState, type Quantity } from '../game/engine';
+import { population, production, producerOutput, quote, tapValue, upgradeCost, missingUpgradeRequirements, MAX_OWNED, type GameState, type Quantity } from '../game/engine';
 import { prestigeReward, prestigeGoal } from '../game/progression';
 import { text } from './copy';
 import { getLanguage, setLanguage, translate as tr } from './localization';
@@ -26,6 +28,7 @@ export class GameUI {
   private panel: HTMLElement;
   private toastTimer = 0;
   private travelAnimation: Animation | null = null;
+  private disposeUpgradeBoard: (() => void) | undefined;
   private shellText: { node: Text; source: string }[] = [];
   private shellLabels: { node: Element; attribute: string; source: string }[] = [];
 
@@ -56,7 +59,7 @@ export class GameUI {
           <div class="intro"><div class="eyebrow">${icon('sun')}${text.eyebrow}</div><h1>${text.titleFirst}<br><em>${text.titleSecond}</em></h1><p>${text.subtitle}</p></div>
           <div class="stash"><span class="stash-label">${text.yarn}</span><div class="stash-value">${icon('yarn')}<span data-testid="yarn" id="yarn-count">0</span></div><div class="stats-line"><span><i class="status-dot"></i><strong data-testid="rate" id="rate">0</strong> ${text.perSecond}</span><span class="stat-divider"></span><span>${icon('paw')}<strong data-testid="population" id="population">0</strong> ${text.workingCats}</span></div></div>
           <div class="world" id="world"><div class="scene-halo"></div><span class="room-label" id="room-label">${text.chapterLabel(0)}</span><button id="pull" class="yarn-target" aria-label="${text.pull}"><span class="sr-only">${text.pull}</span></button><div class="float-layer" id="float-layer" aria-hidden="true"></div><span class="scene-sparkle sparkle-one">✦</span><span class="scene-sparkle sparkle-two">✧</span></div>
-          <div class="pull-hint"><span class="hint-icon">${icon('paw')}</span><span><strong>${text.holdHint}</strong><small id="tap-hint">${text.keyboardHint}</small></span><span class="per-tap" id="per-tap">+1</span></div>
+          <div class="pull-hint"><span class="hint-icon">${icon('paw')}</span><span><strong id="hold-hint">${text.holdHint}</strong><small id="tap-hint">${text.keyboardHint}</small></span><span class="per-tap" id="per-tap">+1</span></div>
           <div class="home-actions"><button class="soft-button" data-screen="crew">${icon('paw')}${text.team}${icon('arrow')}</button></div>
         </section>
         <aside class="tablet-panel-shell" hidden><div class="management" id="management" role="region" tabindex="0" aria-label="${text.managementLabel}"></div></aside>
@@ -137,6 +140,7 @@ export class GameUI {
   }
 
   renderPanel(): void {
+    this.disposeUpgradeBoard?.(); this.disposeUpgradeBoard = undefined;
     const game = this.game();
     const focused = document.activeElement?.id;
     const sky = this.screen === 'chapter';
@@ -155,6 +159,7 @@ export class GameUI {
     this.root.classList.toggle('olympus-open', this.screen === 'chapter');
     const panels = { workshop: () => '', crew: () => crewPanel(game), upgrades: () => upgradePanel(game), achievements: () => achievementsPanel(game, this.achievementCategory), collection: () => collectionPanel(game), chapter: () => chapterPanel(), shop: shopPanel };
     this.panel.innerHTML = panels[this.screen]();
+    if (this.screen === 'upgrades') this.disposeUpgradeBoard = mountUpgradeBoard(this.panel, this.game);
     if (focused) document.getElementById(focused)?.focus({ preventScroll: true });
   }
 
@@ -167,6 +172,8 @@ export class GameUI {
     set('rate', format(production(game)));
     set('population', format(population(game), 0));
     set('per-tap', text.perTap(format(tapValue(game))));
+    set('hold-hint', game.upgrades.includes('hold') ? text.holdHint : tr('Tap the yarn to pull a thread'));
+    set('tap-hint', game.upgrades.includes('hold') ? text.keyboardHint : tr('Unlock Helping Thread to hold the yarn or Space'));
     set('collection-count', `${game.collection.length}/6`);
     const unread = unreadAchievementCount(game);
     const unreadBadge = document.getElementById('achievement-unread-count');
@@ -182,7 +189,6 @@ export class GameUI {
     this.root.querySelectorAll<HTMLButtonElement>('[data-quantity]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.quantity === String(this.quantity))));
     const nextCat = COATS.find((_, index) => !game.collection.includes(index));
     set('goal-title', nextCat ? text.nextGoal(nextCat.name) : text.familyTitle);
-    set('tap-hint', population(game).eq(0) ? text.firstGoalDetail : text.keyboardHint);
     if (this.screen === 'crew') {
       const resting = String(game.settings.quality === 'low');
       this.panel.querySelectorAll<HTMLElement>('.crew-scene').forEach(scene => {
@@ -211,13 +217,16 @@ export class GameUI {
         // Notes remain inspectable even when unaffordable or already purchased.
         button.disabled = false;
         button.classList.toggle('purchased', bought);
+        const requirement = upgradeRequirement(game, upgrade.id);
+        button.classList.toggle('prerequisite-locked', !!requirement);
+        set(`upgrade-state-${upgrade.id}`, bought ? text.bought : requirement || tr('Ready to learn'));
         set(`upgrade-price-${upgrade.id}`, bought ? text.bought : format(upgradeCost(game, upgrade), 0));
       }
     }
     const confirm = this.dialog.querySelector<HTMLButtonElement>('[data-action="upgrade"]');
     if (confirm) {
       const item = UPGRADES.find(item => item.id === confirm.dataset.id);
-      confirm.disabled = !item || game.upgrades.includes(item.id) || game.yarn.lt(upgradeCost(game, item)) || (item.id === 'master' && !game.talents.includes('knitters'));
+      confirm.disabled = !item || game.upgrades.includes(item.id) || game.yarn.lt(upgradeCost(game, item)) || missingUpgradeRequirements(game, item.id).length > 0;
     }
     const talentConfirm = this.dialog.querySelector<HTMLButtonElement>('[data-action="talent"]');
     if (talentConfirm) {

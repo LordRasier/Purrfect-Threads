@@ -97,7 +97,7 @@ describe('versioned local saves', () => {
     game.chapters = 2; game.claimed = new Decimal(3); game.points = new Decimal(1); game.talents = ['welcome', 'helping', 'knitters']; game.achievements = ['pantheon'];
     const legacy = JSON.parse(encode(game)); legacy.version = 3; delete legacy.legacyClaimed; delete legacy.legacyChapters;
     const migrated = decode(JSON.stringify(legacy));
-    expect(migrated.version).toBe(5);
+    expect(migrated.version).toBe(6);
     expect(migrated.points.toNumber()).toBe(1); expect(migrated.claimed.toNumber()).toBe(3);
     expect(migrated.legacyClaimed.toNumber()).toBe(3); expect(migrated.legacyChapters).toBe(2);
     expect(migrated.talents).toEqual(['welcome', 'helping', 'knitters']);

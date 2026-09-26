@@ -24,7 +24,8 @@ describe('chapters, talents and collection', () => {
     game.runEarned = game.lifetime = new Decimal(100000);
     game.yarn = new Decimal(50000);
     buyProducer(game, 'basket', 10);
-    buyUpgrade(game, 'paws');
+    expect(buyUpgrade(game, 'hold')).toBe(true);
+    expect(buyUpgrade(game, 'paws')).toBe(true);
     game.stats.taps = 55;
     game.settings.volume = 0.2;
     const coats = [...game.collection];
@@ -52,8 +53,9 @@ describe('chapters, talents and collection', () => {
     buyTalent(game, 'helping');
     expect(tapValue(game).toNumber()).toBe(4);
     buyTalent(game, 'knitters');
+    game.upgrades = ['hold', 'happy', 'tools'];
     expect(buyUpgrade(game, 'master')).toBe(true);
-    expect(production(game).toNumber()).toBe(600);
+    expect(production(game).toNumber()).toBe(1800);
     expect(selectCoat(game, 5)).toBe(false);
   });
   it('progresses through three accelerated runs without rewarding a reset twice', () => {
