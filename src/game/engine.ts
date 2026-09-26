@@ -8,7 +8,7 @@ export const MAX_OWNED = 10000;
 // Keeps exponential chapter goals inside the supported Decimal save exponent range.
 export const MAX_CHAPTERS = 3_000_000;
 export interface GameState {
-  version: 4;
+  version: 5;
   yarn: Decimal;
   lifetime: Decimal;
   runEarned: Decimal;
@@ -24,6 +24,7 @@ export interface GameState {
   collection: number[];
   coat: number;
   achievements: string[];
+  readAchievements: string[];
   stats: { taps: number; playSeconds: number; upgradePurchases: number; bulkPurchases: number; maxPurchases: number; coatChanges: number; offlineYarn: Decimal };
   settings: { volume: number; musicVolume: number; language: 'en' | 'es'; reducedMotion: boolean; quality: 'auto' | 'low' | 'high' };
   savedAt: number;
@@ -32,10 +33,10 @@ export interface GameState {
 
 export function createGame(now = Date.now()): GameState {
   return {
-    version: 4, yarn: new Decimal(0), lifetime: new Decimal(0), runEarned: new Decimal(0),
+    version: 5, yarn: new Decimal(0), lifetime: new Decimal(0), runEarned: new Decimal(0),
     owned: Object.fromEntries(PRODUCERS.map(item => [item.id, 0])) as Record<ProducerId, number>,
     upgrades: [], talents: [], points: new Decimal(0), claimed: new Decimal(0), legacyClaimed: new Decimal(0), legacyChapters: 0, chapters: 0,
-    starterCats: 0, collection: [], coat: 0, achievements: [], stats: { taps: 0, playSeconds: 0, upgradePurchases: 0, bulkPurchases: 0, maxPurchases: 0, coatChanges: 0, offlineYarn: new Decimal(0) },
+    starterCats: 0, collection: [], coat: 0, achievements: [], readAchievements: [], stats: { taps: 0, playSeconds: 0, upgradePurchases: 0, bulkPurchases: 0, maxPurchases: 0, coatChanges: 0, offlineYarn: new Decimal(0) },
     settings: { volume: 0.35, musicVolume: 0.2, language: 'en', reducedMotion: false, quality: 'auto' }, savedAt: now, lastTap: -Infinity,
   };
 }
@@ -185,12 +186,18 @@ export function buyProducer(game: GameState, id: ProducerId, quantity: Quantity)
 
 export function buyUpgrade(game: GameState, id: UpgradeId): boolean {
   const upgrade = UPGRADES.find(item => item.id === id)!;
-  if (game.upgrades.includes(id) || game.yarn.lt(upgrade.cost)) return false;
+  const cost = upgradeCost(game, upgrade);
+  if (game.upgrades.includes(id) || game.yarn.lt(cost)) return false;
   if (id === 'master' && !game.talents.includes('knitters')) return false;
-  game.yarn = game.yarn.sub(upgrade.cost);
+  game.yarn = game.yarn.sub(cost);
   game.upgrades.push(id);
   game.stats.upgradePurchases = Math.min(Number.MAX_SAFE_INTEGER, game.stats.upgradePurchases + 1);
   updateCollection(game);
   updateAchievements(game);
   return true;
+}
+
+/** Chapter restarts preserve upgrade power while gently raising the next board's costs. */
+export function upgradeCost(game: GameState, upgrade: typeof UPGRADES[number]): Decimal {
+  return new Decimal(upgrade.cost).mul(Decimal.pow('1.1', game.chapters));
 }

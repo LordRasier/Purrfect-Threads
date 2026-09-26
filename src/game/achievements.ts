@@ -74,3 +74,15 @@ export function updateAchievements(game: GameState): string[] {
   }
   return unlocked;
 }
+
+/** Number of unlocked patches whose story has not yet been opened. */
+export function unreadAchievementCount(game: GameState): number {
+  return game.achievements.filter(id => !game.readAchievements.includes(id)).length;
+}
+
+/** Marks an unlocked patch as read; returns whether this changed saved state. */
+export function markAchievementRead(game: GameState, id: string): boolean {
+  if (!game.achievements.includes(id) || game.readAchievements.includes(id)) return false;
+  game.readAchievements.push(id);
+  return true;
+}

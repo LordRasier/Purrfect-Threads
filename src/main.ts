@@ -1,3 +1,4 @@
+import { achievementStory } from './game/achievement-stories';
 import { exportProgress } from './platform/export';
 import Decimal from 'break_infinity.js';
 import './ui/style.css';
@@ -8,7 +9,7 @@ import './ui/olympus.css';
 import './ui/companions.css';
 import './ui/tablet.css';
 import { PRODUCERS, UPGRADES, TALENTS, COATS } from './game/catalog';
-import { advance, buyProducer, buyUpgrade, createGame, tap, tapValue, criticalChance, type GameState } from './game/engine';
+import { advance, buyProducer, buyUpgrade, createGame, tap, tapValue, criticalChance, upgradeCost, type GameState } from './game/engine';
 import { applyOffline, buyTalent, prestige, prestigeReward, selectCoat } from './game/progression';
 import { BACKUP_KEY, SAVE_KEY, decode, encode, loadGame, saveGame, type StoragePort } from './game/storage';
 import { CozyAudio } from './audio';
@@ -18,7 +19,7 @@ import { GameUI } from './ui/view';
 import { text } from './ui/copy';
 import { icon } from './ui/icons';
 import { format } from './ui/format';
-import { ACHIEVEMENTS, achievementProgress } from './game/achievements';
+import { ACHIEVEMENTS, achievementProgress, markAchievementRead } from './game/achievements';
 import { HoldInput } from './game/input';
 import type { WorkshopWorld } from './scene/world';
 import type { OlympusWorld } from './scene/olympus';
@@ -162,12 +163,13 @@ async function start(session: Session): Promise<void> {
     } else if (kind === 'upgrade-info') {
       const upgrade = UPGRADES.find(item => item.id === id); if (!upgrade) return;
       stopHolding();
-      ui.showDialog(`<span class="detail-art">${icon(upgrade.icon)}</span><span class="eyebrow">${text.thisChapter}</span><h2 id="modal-title">${tr(upgrade.name)}</h2><p>${tr(upgrade.detail)}</p><p>${text.boardReset}</p>${['bell','clover','whiskers'].includes(upgrade.id) ? `<p>${text.criticalOdds(criticalChance(game) * 100)}</p>` : ''}${upgrade.id === 'master' && !game.talents.includes('knitters') ? `<p>${text.lockedTalent}</p>` : ''}<p class="detail-cost">${text.cost(format(upgrade.cost))}</p><button class="primary-button" data-action="upgrade" data-id="${upgrade.id}">${game.upgrades.includes(upgrade.id) ? text.bought : text.buy(tr(upgrade.name))}</button>`);
+      ui.showDialog(`<span class="detail-art">${icon(upgrade.icon)}</span><span class="eyebrow">${text.thisChapter}</span><h2 id="modal-title">${tr(upgrade.name)}</h2><p>${tr(upgrade.detail)}</p><p>${text.boardReset}</p>${['bell','clover','whiskers'].includes(upgrade.id) ? `<p>${text.criticalOdds(criticalChance(game) * 100)}</p>` : ''}${upgrade.id === 'master' && !game.talents.includes('knitters') ? `<p>${text.lockedTalent}</p>` : ''}<p class="detail-cost">${text.cost(format(upgradeCost(game, upgrade)))}</p><button class="primary-button" data-action="upgrade" data-id="${upgrade.id}">${game.upgrades.includes(upgrade.id) ? text.bought : text.buy(tr(upgrade.name))}</button>`);
       ui.refresh();
     } else if (kind === 'achievement-info') {
       const item = ACHIEVEMENTS.find(item => item.id === id); if (!item) return;
       stopHolding(); const progress = achievementProgress(game,item);
-      ui.showDialog(`<span class="detail-art embroidered">${icon(item.icon)}</span><span class="eyebrow">${tr(item.category)}</span><h2 id="modal-title">${tr(item.name)}</h2><p>${tr(item.detail)}</p><p>${game.achievements.includes(item.id) ? text.unlocked : `${format(progress.value,0)} / ${format(item.target,0)}`}</p><div class="badge-progress"><i style="width:${progress.ratio * 100}%"></i></div><p>${text.achievementsSubtitle}</p>`);
+      if (markAchievementRead(game, item.id)) { persist(); ui.refresh(); }
+      ui.showDialog(`<span class="detail-art embroidered">${icon(item.icon)}</span><span class="eyebrow">${tr(item.category)}</span><h2 id="modal-title">${tr(item.name)}</h2><p>${tr(item.detail)}</p><p>${game.achievements.includes(item.id) ? text.unlocked : `${format(progress.value,0)} / ${format(item.target,0)}`}</p><div class="badge-progress"><i style="width:${progress.ratio * 100}%"></i></div><p class="achievement-story">${achievementStory(item.id, game.settings.language)}</p>`);
     } else if (kind === 'talent-info') {
       const talent = TALENTS.find(item => item.id === id); if (!talent) return;
       stopHolding();

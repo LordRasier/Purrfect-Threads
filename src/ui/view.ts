@@ -1,15 +1,16 @@
 import { privacyContent } from './privacy';
+import './achievement-notifications.css';
 import { showLaunch } from './launch';
 import { refreshCompanions } from './companions';
 import Decimal from 'break_infinity.js';
 import { COATS, PRODUCERS, UPGRADES, TALENTS, type ProducerId } from '../game/catalog';
-import { population, production, producerOutput, quote, tapValue, MAX_OWNED, type GameState, type Quantity } from '../game/engine';
+import { population, production, producerOutput, quote, tapValue, upgradeCost, MAX_OWNED, type GameState, type Quantity } from '../game/engine';
 import { prestigeReward, prestigeGoal } from '../game/progression';
 import { text } from './copy';
 import { getLanguage, setLanguage, translate as tr } from './localization';
 import { format } from './format';
 import { icon } from './icons';
-import { ACHIEVEMENTS, achievementProgress } from '../game/achievements';
+import { ACHIEVEMENTS, achievementProgress, unreadAchievementCount } from '../game/achievements';
 import { crewPanel, upgradePanel, chapterPanel, collectionPanel, achievementsPanel } from './panels';
 
 export type Screen = 'workshop' | 'crew' | 'upgrades' | 'achievements' | 'collection' | 'chapter';
@@ -41,7 +42,7 @@ export class GameUI {
           <button data-screen="workshop" aria-label="${text.workshop}" aria-pressed="true">${icon('house')}<span class="nav-long">${text.workshop}</span><span class="nav-short">${tr('Play')}</span></button>
           <button data-screen="crew" aria-label="${text.team}" aria-pressed="false">${icon('paw')}<span class="nav-long">${text.team}</span><span class="nav-short">${tr('Crew')}</span></button>
           <button data-screen="upgrades" aria-label="${text.upgradesTab}" aria-pressed="false">${icon('knit')}<span>${text.upgradesTab}</span></button>
-          <button data-screen="achievements" aria-label="${text.achievementsTab}" aria-pressed="false">${icon('heart')}<span class="nav-long">${text.achievementsTab}</span><span class="nav-short">${tr('Badges')}</span></button>
+          <button data-screen="achievements" aria-label="${text.achievementsTab}" aria-pressed="false">${icon('heart')}<span class="nav-long">${text.achievementsTab}</span><span class="nav-short">${tr('Badges')}</span><span class="nav-count" id="achievement-unread-count" aria-live="polite" hidden></span></button>
           <button data-screen="collection" aria-label="${text.collection}" aria-pressed="false">${icon('cat')}<span>${text.collectionShort}</span><span class="nav-count" id="collection-count">0/6</span></button>
           <button data-screen="chapter" aria-label="${text.chapter}" aria-pressed="false">${icon('star')}<span>${text.olympusShort}</span></button>
         </nav>
@@ -165,6 +166,15 @@ export class GameUI {
     set('population', format(population(game), 0));
     set('per-tap', text.perTap(format(tapValue(game))));
     set('collection-count', `${game.collection.length}/6`);
+    const unread = unreadAchievementCount(game);
+    const unreadBadge = document.getElementById('achievement-unread-count');
+    if (unreadBadge) {
+      unreadBadge.textContent = String(unread);
+      unreadBadge.hidden = unread === 0;
+      const achievementsButton = unreadBadge.closest<HTMLButtonElement>('button')!;
+      if (unread) achievementsButton.setAttribute('aria-describedby', unreadBadge.id);
+      else achievementsButton.removeAttribute('aria-describedby');
+    }
     set('room-label', text.chapterLabel(game.chapters));
     this.root.querySelectorAll<HTMLButtonElement>('.navigation button[data-screen]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.screen === this.screen)));
     this.root.querySelectorAll<HTMLButtonElement>('[data-quantity]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.quantity === String(this.quantity))));
@@ -199,13 +209,13 @@ export class GameUI {
         // Notes remain inspectable even when unaffordable or already purchased.
         button.disabled = false;
         button.classList.toggle('purchased', bought);
-        set(`upgrade-price-${upgrade.id}`, bought ? text.bought : format(upgrade.cost, 0));
+        set(`upgrade-price-${upgrade.id}`, bought ? text.bought : format(upgradeCost(game, upgrade), 0));
       }
     }
     const confirm = this.dialog.querySelector<HTMLButtonElement>('[data-action="upgrade"]');
     if (confirm) {
       const item = UPGRADES.find(item => item.id === confirm.dataset.id);
-      confirm.disabled = !item || game.upgrades.includes(item.id) || game.yarn.lt(item.cost) || (item.id === 'master' && !game.talents.includes('knitters'));
+      confirm.disabled = !item || game.upgrades.includes(item.id) || game.yarn.lt(upgradeCost(game, item)) || (item.id === 'master' && !game.talents.includes('knitters'));
     }
     const talentConfirm = this.dialog.querySelector<HTMLButtonElement>('[data-action="talent"]');
     if (talentConfirm) {

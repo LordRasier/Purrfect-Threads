@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import Decimal from 'break_infinity.js';
 import { advance, createGame } from '../src/game/engine';
 import { decode, encode, loadGame, saveGame, SAVE_KEY, BACKUP_KEY, type StoragePort } from '../src/game/storage';
+import { markAchievementRead, unreadAchievementCount } from '../src/game/achievements';
 
 function memoryStorage(): StoragePort {
   const values = new Map<string, string>();
@@ -20,6 +21,17 @@ describe('versioned local saves', () => {
     expect(result.upgrades).toEqual(['paws']);
     expect(result.coat).toBe(1);
     expect(result.settings).toEqual(game.settings);
+  });
+  it('persists individual achievement reads and migrates existing unlocked patches as unread', () => {
+    const game = createGame(100); game.achievements = ['first-thread', 'persistent-paws'];
+    expect(unreadAchievementCount(game)).toBe(2);
+    expect(markAchievementRead(game, 'first-thread')).toBe(true);
+    expect(markAchievementRead(game, 'first-thread')).toBe(false);
+    expect(unreadAchievementCount(decode(encode(game)))).toBe(1);
+
+    const legacy = JSON.parse(encode(game)); legacy.version = 4; delete legacy.readAchievements;
+    const migrated = decode(JSON.stringify(legacy));
+    expect(unreadAchievementCount(migrated)).toBe(2);
   });
   it.each([
     { version: 8 }, { yarn: '-1' }, { yarn: 'Infinity' }, { yarn: 'NaN' },
@@ -81,12 +93,11 @@ describe('versioned local saves', () => {
 
   it('grandfathers legitimate v3 claims exactly once and preserves talents across reload', () => {
     const game = createGame(100);
-    game.version = 4;
     game.lifetime = new Decimal('1000000'); game.runEarned = game.yarn = new Decimal(100);
     game.chapters = 2; game.claimed = new Decimal(3); game.points = new Decimal(1); game.talents = ['welcome', 'helping', 'knitters']; game.achievements = ['pantheon'];
     const legacy = JSON.parse(encode(game)); legacy.version = 3; delete legacy.legacyClaimed; delete legacy.legacyChapters;
     const migrated = decode(JSON.stringify(legacy));
-    expect(migrated.version).toBe(4);
+    expect(migrated.version).toBe(5);
     expect(migrated.points.toNumber()).toBe(1); expect(migrated.claimed.toNumber()).toBe(3);
     expect(migrated.legacyClaimed.toNumber()).toBe(3); expect(migrated.legacyChapters).toBe(2);
     expect(migrated.talents).toEqual(['welcome', 'helping', 'knitters']);

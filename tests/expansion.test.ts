@@ -76,7 +76,7 @@ describe('expanded workshop', () => {
     for (const key of ['tailor','dyer','spinner','weaver','astral']) delete legacy.owned[key];
     delete legacy.achievements; legacy.stats = { taps: 75, playSeconds: 22 };
     const restored = decode(JSON.stringify(legacy));
-    expect(restored.version).toBe(4); expect(restored.owned.kitten).toBe(10); expect(restored.owned.astral).toBe(0);
+    expect(restored.version).toBe(5); expect(restored.owned.kitten).toBe(10); expect(restored.owned.astral).toBe(0);
     expect(restored.yarn.eq(10000)).toBe(true); expect(restored.settings).toEqual(game.settings);
     expect(restored.achievements).toContain('first-thread');
     expect(restored.stats.upgradePurchases).toBe(0);

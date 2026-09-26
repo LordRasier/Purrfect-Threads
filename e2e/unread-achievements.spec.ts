@@ -1,0 +1,33 @@
+import { test, expect } from '@playwright/test';
+import { createGame } from '../src/game/engine';
+import { encode, SAVE_KEY } from '../src/game/storage';
+import { enterWorkshop } from './entry';
+
+test('only opening each unlocked patch clears its unread status, including after reload', async ({ page }) => {
+  const game = createGame(Date.now());
+  game.stats.taps = 75;
+  game.achievements = ['first-thread', 'persistent-paws'];
+  await page.addInitScript(({key, raw}) => {
+    if (!localStorage.getItem(key)) localStorage.setItem(key, raw);
+  }, {key: SAVE_KEY, raw: encode(game)});
+  await page.goto('/'); await enterWorkshop(page);
+  const nav = page.locator('.navigation [data-screen="achievements"]');
+  const count = page.locator('#achievement-unread-count');
+  await expect(count).toHaveText('2');
+  await nav.click();
+  await expect(count).toHaveText('2');
+  await page.locator('#achievement-paw-marathon').click();
+  await expect(count).toHaveText('2');
+  await page.keyboard.press('Escape');
+  await page.locator('#achievement-first-thread').click();
+  await expect(page.locator('.achievement-story')).not.toBeEmpty();
+  await expect(count).toHaveText('1');
+  await page.keyboard.press('Escape');
+  await page.locator('#achievement-first-thread').click();
+  await expect(count).toHaveText('1');
+  await page.reload(); await enterWorkshop(page);
+  await expect(count).toHaveText('1');
+  await nav.click();
+  await page.locator('#achievement-persistent-paws').click();
+  await expect(count).toBeHidden();
+});

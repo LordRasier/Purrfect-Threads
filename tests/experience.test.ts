@@ -1,11 +1,27 @@
 import { describe, expect, it, vi } from 'vitest';
 import Decimal from 'break_infinity.js';
 import { UPGRADES } from '../src/game/catalog';
-import { createGame, tap, tapValue, criticalChance, buyUpgrade, production } from '../src/game/engine';
+import { createGame, tap, tapValue, criticalChance, buyUpgrade, production, upgradeCost } from '../src/game/engine';
 import { decode, encode } from '../src/game/storage';
 import { prestige } from '../src/game/progression';
 
 describe('expanded chapter upgrades', () => {
+  it('raises upgrade prices by 10% per completed chapter without changing chapter zero', () => {
+    const game = createGame();
+    const paws = UPGRADES.find(item => item.id === 'paws')!;
+    expect(upgradeCost(game, paws).eq(paws.cost)).toBe(true);
+    game.chapters = 1;
+    expect(upgradeCost(game, paws).eq(110)).toBe(true);
+    game.chapters = 2;
+    expect(upgradeCost(game, paws).toNumber()).toBeCloseTo(121);
+  });
+  it('charges the chapter-adjusted upgrade cost and rejects a base-cost-only balance', () => {
+    const game = createGame(); game.chapters = 1; game.yarn = new Decimal(100);
+    expect(buyUpgrade(game, 'paws')).toBe(false);
+    game.yarn = new Decimal(110);
+    expect(buyUpgrade(game, 'paws')).toBe(true);
+    expect(game.yarn.eq(0)).toBe(true);
+  });
   it('offers twelve unique one-time upgrades', () => {
     expect(UPGRADES).toHaveLength(12);
     expect(new Set(UPGRADES.map(item => item.id)).size).toBe(12);
@@ -49,7 +65,7 @@ describe('v3 settings migration', () => {
     const old = JSON.parse(encode(game)); old.version = 2;
     delete old.settings.language; delete old.settings.musicVolume;
     const restored = decode(JSON.stringify(old));
-    expect(restored.version).toBe(4); expect(restored.owned.kitten).toBe(10);
+    expect(restored.version).toBe(5); expect(restored.owned.kitten).toBe(10);
     expect(restored.settings.language).toBe('en'); expect(restored.settings.musicVolume).toBe(.2);
   });
   it('validates and retains the selected language and music level across prestige', () => {

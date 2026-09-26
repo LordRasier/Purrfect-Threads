@@ -1,8 +1,8 @@
 import { PRODUCERS, UPGRADES, TALENTS } from '../game/catalog';
 import { ACHIEVEMENTS } from '../game/achievements';
-import type { GameState } from '../game/engine';
+import { upgradeCost, type GameState } from '../game/engine';
 import { text } from './copy';
-import { translate as tr } from './localization';
+import { getLanguage, translate as tr } from './localization';
 import { format } from './format';
 import { icon } from './icons';
 import { crewScenery } from './crew-art';
@@ -14,9 +14,9 @@ export function crewPanel(game: GameState): string {
 }
 
 export function upgradePanel(game: GameState): string {
-  return `<div class="panel-intro"><span class="eyebrow">${text.boardEyebrow}</span><h2>${text.boardTitle}</h2><p>${text.upgradeHint}</p></div>
+  return `<div class="panel-intro"><span class="eyebrow">${text.boardEyebrow}</span><h2>${text.boardTitle}</h2><p>${text.upgradeHint}</p>${game.chapters ? `<p>${getLanguage() === 'es' ? 'Los precios aumentan un 10% por capítulo completado.' : 'Prices rise 10% per completed chapter.'}</p>` : ''}</div>
     <div class="upgrade-board"><div class="board-heading">${icon('cat')}<span>${text.upgrades}</span>${icon('paw')}</div>
-    <div class="board-notes">${[...UPGRADES].sort((a,b) => a.cost - b.cost).map((item, index) => `<button class="upgrade sticky-note note-${index % 4}" id="upgrade-${item.id}" data-action="upgrade-info" data-id="${item.id}" aria-label="${text.inspect} ${tr(item.name)}"><span class="note-pin" aria-hidden="true"></span><span class="note-cat" aria-hidden="true">${icon(item.icon)}</span><strong>${tr(item.name)}</strong>${item.id === 'master' && !game.talents.includes('knitters') ? `<span class="note-lock" aria-hidden="true">${icon('lock')}</span>` : ''}<span class="upgrade-price" id="upgrade-price-${item.id}">${format(item.cost)}</span></button>`).join('')}</div>
+    <div class="board-notes">${[...UPGRADES].sort((a,b) => a.cost - b.cost).map((item, index) => `<button class="upgrade sticky-note note-${index % 4}" id="upgrade-${item.id}" data-action="upgrade-info" data-id="${item.id}" aria-label="${text.inspect} ${tr(item.name)}"><span class="note-pin" aria-hidden="true"></span><span class="note-cat" aria-hidden="true">${icon(item.icon)}</span><strong>${tr(item.name)}</strong>${item.id === 'master' && !game.talents.includes('knitters') ? `<span class="note-lock" aria-hidden="true">${icon('lock')}</span>` : ''}<span class="upgrade-price" id="upgrade-price-${item.id}">${format(upgradeCost(game, item))}</span></button>`).join('')}</div>
     <p class="chalk-note">${text.boardNote}</p><div class="board-ledge" aria-hidden="true"><i></i><i></i></div></div><p class="panel-note">${text.boardReset}</p>`;
 }
 

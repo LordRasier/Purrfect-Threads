@@ -1,0 +1,19 @@
+.tablet-app .navigation button[data-screen="achievements"] { position:relative; }
+.tablet-app .navigation #achievement-unread-count:not([hidden]) {
+  display:grid;
+  place-items:center;
+  position:absolute;
+  top:2px;
+  left:calc(50% - 18px);
+  min-width:16px;
+  height:16px;
+  padding:0 3px;
+  border:2px solid #fffaf0;
+  border-radius:999px;
+  background:#b42318;
+  color:#fff;
+  font-size:10px;
+  font-weight:800;
+  line-height:1;
+}
+.tablet-app .navigation button[data-screen="achievements"]:has(#achievement-unread-count:not([hidden])) > .icon { color:#b42318; }

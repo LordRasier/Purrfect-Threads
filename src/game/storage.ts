@@ -40,7 +40,7 @@ function knownList<T extends string | number>(value: unknown, known: readonly T[
 export function decode(raw: string): GameState {
   if (raw.length > 100000) throw new Error('Save file is too large.');
   const data = record(JSON.parse(raw));
-  if (data.version !== 1 && data.version !== 2 && data.version !== 3 && data.version !== 4) throw new Error('This save version is not supported.');
+  if (data.version !== 1 && data.version !== 2 && data.version !== 3 && data.version !== 4 && data.version !== 5) throw new Error('This save version is not supported.');
   const game = createGame(integer(data.savedAt));
   for (const key of ['yarn', 'lifetime', 'runEarned', 'points', 'claimed'] as const) game[key] = decimal(data[key]);
   const owned = record(data.owned);
@@ -51,7 +51,7 @@ export function decode(raw: string): GameState {
   game.coat = integer(data.coat, 5);
   if (game.coat !== 0 && !game.collection.includes(game.coat)) throw new Error('Selected cat is locked.');
   game.chapters = integer(data.chapters, MAX_CHAPTERS);
-  if (data.version === 4) {
+  if (data.version >= 4) {
     game.legacyClaimed = decimal(data.legacyClaimed);
     game.legacyChapters = integer(data.legacyChapters);
   } else {
@@ -65,13 +65,15 @@ export function decode(raw: string): GameState {
   if (game.yarn.gt(game.lifetime) || game.runEarned.gt(game.lifetime) || game.points.gt(game.claimed) || !game.points.floor().eq(game.points) || !game.claimed.floor().eq(game.claimed)) throw new Error('Inconsistent save totals.');
   if (game.yarn.gt(game.runEarned)) throw new Error('Unearned progress in save.');
   if (data.version <= 3 && game.claimed.gt(game.lifetime.div(100000).sqrt().floor())) throw new Error('Unearned legacy progress in save.');
-  if (data.version === 4 && (game.legacyChapters > game.chapters || game.legacyClaimed.gt(game.lifetime.div(100000).sqrt().floor()) || !game.claimed.eq(game.legacyClaimed.add(game.chapters - game.legacyChapters)))) throw new Error('Unearned progress in save.');
+  if (data.version >= 4 && (game.legacyChapters > game.chapters || game.legacyClaimed.gt(game.lifetime.div(100000).sqrt().floor()) || !game.claimed.eq(game.legacyClaimed.add(game.chapters - game.legacyChapters)))) throw new Error('Unearned progress in save.');
   const stats = record(data.stats);
   game.stats.taps = integer(stats.taps);
   if (typeof stats.playSeconds !== 'number' || !Number.isFinite(stats.playSeconds) || stats.playSeconds < 0) throw new Error('Invalid play time.');
   game.stats.playSeconds = stats.playSeconds;
   if (data.version >= 2) {
     game.achievements = knownList(data.achievements, ACHIEVEMENTS.map(item => item.id));
+    // Existing patches predate unread tracking, so present them once after migration.
+    game.readAchievements = data.version >= 5 ? knownList(data.readAchievements, game.achievements) : [];
     for (const key of ['upgradePurchases', 'bulkPurchases', 'maxPurchases', 'coatChanges'] as const) game.stats[key] = integer(stats[key]);
     game.stats.offlineYarn = decimal(stats.offlineYarn);
     if (game.stats.offlineYarn.gt(game.lifetime)) throw new Error('Invalid offline total.');
