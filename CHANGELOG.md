@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.6.1 — Closed testing candidate
+
+### Fixed
+- Added a prominent bilingual account-deletion request link, distinct from disconnecting.
+- Aligned bundled privacy disclosures with optional Firebase identity, purchase records, manual deletion and retained anti-replay data.
+
+### Release status
+- Android version code: 3. Not a production release or a completed Play review.
+- The previous signed 0.6.0 / code 2 AAB remains unchanged. New signing, upload, live policy publication and device checks are separate release gates.
+
 ## 0.6.0 — Internal testing candidate
 
 ### Added

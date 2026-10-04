@@ -27,3 +27,15 @@ it('presents busy, cancelled, failed and disconnected-clear-failed recovery', ()
   expect(accountPresentation({ ...signedOut, notice: 'clear-failed' }).message).toContain('Disconnected');
   expect(accountPresentation({ ...signedOut, status: 'signed-in' }).action).toBe('account-disconnect');
 });
+it('offers an explicit account deletion request in every state and both languages', () => {
+  for (const language of ['en', 'es'] as const) {
+    setLanguage(language);
+    for (const status of ['signed-in', 'signed-out', 'unavailable', 'busy'] as const) {
+      const html = accountCard({ status, pending: true, notice: null });
+      expect(html).toContain('href="https://www.auraliax.com/privacy-purrfect-threads#delete-account"');
+      expect(html).toContain(language === 'en' ? 'Request account deletion' : 'Solicitar eliminación de cuenta');
+      expect(html).toContain('rel="noopener noreferrer"');
+      expect(html).not.toContain('data-action="account-delete"');
+    }
+  }
+});

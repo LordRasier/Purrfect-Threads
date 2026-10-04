@@ -31,6 +31,7 @@ export function accountCard(state = unavailableAccount): string {
     <div class="account-actions"><button id="account-action" class="soft-button" data-action="${view.action}" aria-describedby="account-disclosure account-status" ${view.disabled ? 'disabled' : ''}>${view.label}</button>
     <button id="account-refresh" class="soft-button" data-action="account-refresh" ${view.refresh ? '' : 'hidden'} ${state.pending ? 'disabled' : ''}>${tr('Check account status')}</button></div>
     <p class="account-note">${tr('Disconnecting signs out on this device; it does not delete your account.')}</p>
+    <a class="soft-button" href="https://www.auraliax.com/privacy-purrfect-threads#delete-account" target="_blank" rel="noopener noreferrer">${tr('Request account deletion')}</a>
   </section>`;
 }
 /** Update existing controls instead of replacing focused buttons or the live region. */

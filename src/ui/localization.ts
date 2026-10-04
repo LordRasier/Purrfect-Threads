@@ -5,6 +5,7 @@ export type Language = 'en' | 'es';
 let language: Language = 'en';
 
 const sourceCatalog: Record<string, string> = {
+  'Request account deletion': 'Solicitar eliminación de cuenta',
   'Unverified or interrupted bonus earnings may be lost. Reconnect after 12 hours without verification.': 'Las ganancias adicionales no verificadas o interrumpidas pueden perderse. Vuelve a conectarte tras 12 horas sin verificación.',
   'Google/Firebase processes account identifiers and App Check signals to verify optional purchases. Saved games are not synced. Purchases require an available verification service.': 'Google/Firebase procesa identificadores de cuenta y señales de App Check para verificar compras opcionales. Las partidas no se sincronizan. Las compras requieren un servicio de verificación disponible.',
   'Google account connected. Use Restore purchases to check the verification service.': 'Cuenta de Google conectada. Usa Restaurar compras para consultar el servicio de verificación.',

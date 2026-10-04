@@ -29,8 +29,8 @@ android {
         applicationId "com.rasie.purrfectthreads"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2
-        versionName "0.6.0"
+        versionCode 3
+        versionName "0.6.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField "boolean", "PURRFECT_ADS_PRODUCTION", "false"
         buildConfigField "boolean", "PURRFECT_BILLING_FOUNDATION_ENABLED", billingFoundationEnabled.toString()
